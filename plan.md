@@ -26,6 +26,8 @@
 - ✅ Accessible, customizable components
 - ✅ React-based with modern patterns
 
+Use bun for everything, not npm.
+
 ## Database Schema Design
 
 All db management is done using PocketBase.
