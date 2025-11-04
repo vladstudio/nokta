@@ -221,9 +221,9 @@ talk/
 **Login/Register Screen**
 - **Components**: `Container`, `Dialog`, `Text Field`, `Button`
 - **Layout**: Centered modal with space-themed illustration
-- **Features**: 
+- **Features**:
   - Email/password login
-  - OAuth options (Google, GitHub)
+  - ~~OAuth options (Google, GitHub)~~
   - "Remember me" checkbox
   - Password reset link
   - Register toggle
