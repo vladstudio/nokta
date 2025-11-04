@@ -91,6 +91,14 @@ talk/
 │   ├── pb_data/          # PocketBase data
 │   ├── pb_migrations/    # Schema migrations
 │   └── pocketbase*       # Executable
+├── admin/
+│   ├── src/
+│   │   ├── components/   # UI components (9ui)
+│   │   ├── pages/        # Route pages
+│   │   ├── services/     # PocketBase API
+│   │   └── types/        # TypeScript types
+│   ├── package.json
+│   └── vite.config.ts    # Build configuration
 └── frontend/
     ├── src/
     │   ├── components/   # UI components
@@ -116,10 +124,27 @@ talk/
    - User login
    - Profile management
 
-### Phase 2: Space Management  (from admin UI)
-   - Create space
-   - Many-to-many user-space relationships
-   - Space-specific permissions
+### Phase 2: Admin UI (Separate SPA)
+1. **Setup**
+   - Initialize Vite + React + TypeScript
+   - Install wouter for routing
+   - Install 9ui components and dependencies
+   - Configure Tailwind CSS
+
+2. **Authentication**
+   - Login page with email/password
+   - PocketBase auth integration
+   - Protected routes (admin role check)
+
+3. **Space Management**
+   - List all spaces
+   - Create new space
+   - Edit space details
+
+4. **User Management per Space**
+   - View space members
+   - Add users to space
+   - Edit user roles (admin/member)
 
 ### Phase 3: Chat Infrastructure
 1. **Chat Creation Logic**

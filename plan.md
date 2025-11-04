@@ -6,10 +6,13 @@
 - [x] Configure auth & access rules (email/password only)
 - [x] Test API endpoints
 
-## Phase 2: Space Management
-- [ ] Create space (admin UI)
-- [ ] User-space relationships
-- [ ] Space permissions
+## Phase 2: Admin UI
+- [x] Setup Vite + React + wouter + 9ui
+- [x] Login page with PocketBase auth
+- [x] Protected routes (admin check)
+- [x] Spaces list page
+- [x] Create/edit space
+- [x] Space members management
 
 ## Phase 3: Chat Infrastructure
 - [ ] Auto-generate space-wide chat
