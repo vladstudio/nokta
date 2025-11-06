@@ -32,12 +32,14 @@
 - [x] Responsive layouts
 
 ## Phase 5: UX Enhancements
-- [ ] Optimistic UI (show message immediately, rollback on error)
-- [ ] IndexedDB cache (store recent messages for instant load)
-- [ ] Retry queue (auto-retry failed sends when reconnected)
-- [ ] Connection status indicator (offline banner)
-- [ ] Typing indicators
-- [ ] Online status
-- [ ] Profile management
-- [ ] File uploads (future)
-- [ ] Notifications (future)
+- [x] Optimistic UI (show message immediately, rollback on error)
+- [x] IndexedDB cache (store recent messages for instant load)
+- [x] Retry queue (auto-retry failed sends when reconnected)
+- [x] Connection status indicator (offline banner)
+- [x] Typing indicators
+- [x] Online status
+- [x] Profile management
+
+## future
+- [ ] File uploads
+- [ ] Notifications

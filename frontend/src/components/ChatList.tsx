@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
+import { usePresence } from '../hooks/usePresence';
 
 interface ChatListProps {
   chats: Chat[];
@@ -9,6 +11,23 @@ interface ChatListProps {
 
 export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatListProps) {
   const currentUser = auth.user;
+
+  // Collect all participant IDs for presence tracking
+  const participantIds = useMemo(() => {
+    const ids = new Set<string>();
+    chats.forEach((chat) => {
+      if (chat.expand?.participants) {
+        chat.expand.participants.forEach((p) => {
+          if (p.id !== currentUser?.id) {
+            ids.add(p.id);
+          }
+        });
+      }
+    });
+    return Array.from(ids);
+  }, [chats, currentUser?.id]);
+
+  const { isUserOnline } = usePresence(participantIds);
 
   const getChatName = (chat: Chat) => {
     if (chat.type === 'public') {
@@ -32,6 +51,21 @@ export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatLi
     return chat.type === 'public' ? '👥' : '💬';
   };
 
+  const getOnlineStatus = (chat: Chat) => {
+    if (chat.type === 'public') return null;
+
+    // For DM, check if other participant is online
+    if (chat.expand?.participants) {
+      const otherParticipants = chat.expand.participants.filter(
+        (p) => p.id !== currentUser?.id
+      );
+      if (otherParticipants.length === 1) {
+        return isUserOnline(otherParticipants[0].id);
+      }
+    }
+    return null;
+  };
+
   return (
     <div className="w-80 md:w-80 sm:w-full bg-white border-r border-gray-200 flex flex-col chat-list">
       <div className="p-4 border-b border-gray-200">
@@ -52,7 +86,17 @@ export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatLi
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{getChatIcon(chat)}</span>
+                  <div className="relative">
+                    <span className="text-2xl">{getChatIcon(chat)}</span>
+                    {getOnlineStatus(chat) !== null && (
+                      <span
+                        className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
+                          getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'
+                        }`}
+                        title={getOnlineStatus(chat) ? 'Online' : 'Offline'}
+                      />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">
                       {getChatName(chat)}

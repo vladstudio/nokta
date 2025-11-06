@@ -1,18 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
 import { messages as messagesAPI, auth } from '../services/pocketbase';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
+import { useTypingIndicator } from '../hooks/useTypingIndicator';
+import { messageQueue, type PendingMessage } from '../utils/messageQueue';
+import { messageCache } from '../utils/messageCache';
 import type { Message } from '../types';
 
 interface ChatWindowProps {
   chatId: string;
 }
 
+interface DisplayMessage extends Message {
+  isPending?: boolean;
+  isFailed?: boolean;
+  tempId?: string;
+}
+
 export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUser = auth.user;
+  const { isOnline } = useConnectionStatus();
+  const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
 
   useEffect(() => {
     loadMessages();
@@ -20,7 +34,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     // Subscribe to real-time updates
     const unsubscribe = messagesAPI.subscribe(chatId, (data) => {
       if (data.action === 'create') {
-        setMessages((prev) => [...prev, data.record as Message]);
+        const newMsg = data.record as Message;
+        setMessages((prev) => [...prev, newMsg]);
+        // Cache new message
+        messageCache.addMessage(newMsg).catch(console.error);
       } else if (data.action === 'update') {
         setMessages((prev) =>
           prev.map((msg) => (msg.id === data.record.id ? (data.record as Message) : msg))
@@ -30,19 +47,46 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       }
     });
 
+    // Subscribe to pending messages queue
+    const unsubscribeQueue = messageQueue.subscribe((queue) => {
+      setPendingMessages(queue.filter((m) => m.chatId === chatId));
+    });
+
     return () => {
       unsubscribe.then((unsub) => unsub());
+      unsubscribeQueue();
     };
   }, [chatId]);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, pendingMessages]);
+
+  // Process queue when connection is restored
+  useEffect(() => {
+    if (isOnline) {
+      messageQueue.processQueue(
+        (chatId, content) => messagesAPI.create(chatId, content),
+        isOnline
+      );
+    }
+  }, [isOnline]);
 
   const loadMessages = async () => {
     try {
+      // Try to load from cache first for instant display
+      const cached = await messageCache.getMessages(chatId);
+      if (cached.length > 0) {
+        setMessages(cached);
+        setLoading(false);
+      }
+
+      // Then load from server
       const result = await messagesAPI.list(chatId);
       setMessages(result.items);
+
+      // Update cache
+      await messageCache.saveMessages(chatId, result.items);
     } catch (err) {
       console.error('Failed to load messages:', err);
     } finally {
@@ -58,15 +102,42 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
 
+    const content = newMessage.trim();
+    setNewMessage('');
+
+    if (!isOnline) {
+      // Queue message for later
+      messageQueue.add(chatId, content);
+      return;
+    }
+
+    // Optimistic UI: add to queue immediately
+    const tempId = messageQueue.add(chatId, content);
     setSending(true);
+
     try {
-      await messagesAPI.create(chatId, newMessage.trim());
-      setNewMessage('');
+      messageQueue.updateStatus(tempId, 'sending');
+      const result = await messagesAPI.create(chatId, content);
+      messageQueue.remove(tempId);
     } catch (err) {
       console.error('Failed to send message:', err);
-      alert('Failed to send message');
+      messageQueue.updateStatus(tempId, 'failed');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleRetry = async (tempId: string) => {
+    const pending = pendingMessages.find((m) => m.tempId === tempId);
+    if (!pending) return;
+
+    try {
+      messageQueue.updateStatus(tempId, 'sending');
+      await messagesAPI.create(pending.chatId, pending.content);
+      messageQueue.remove(tempId);
+    } catch (err) {
+      console.error('Failed to retry message:', err);
+      messageQueue.updateStatus(tempId, 'failed');
     }
   };
 
@@ -85,16 +156,33 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     );
   }
 
+  // Combine real and pending messages for display
+  const allMessages: DisplayMessage[] = [
+    ...messages,
+    ...pendingMessages.map((p) => ({
+      id: p.tempId,
+      chat: p.chatId,
+      sender: currentUser?.id || '',
+      type: 'text' as const,
+      content: p.content,
+      created: p.createdAt.toISOString(),
+      updated: p.createdAt.toISOString(),
+      isPending: p.status === 'sending' || p.status === 'pending',
+      isFailed: p.status === 'failed',
+      tempId: p.tempId,
+    })),
+  ];
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 ? (
+        {allMessages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No messages yet. Start the conversation!
           </div>
         ) : (
-          messages.map((message) => {
+          allMessages.map((message) => {
             const isOwn = message.sender === currentUser?.id;
             const senderName = message.expand?.sender?.name || message.expand?.sender?.email || 'Unknown';
 
@@ -108,7 +196,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                     <span className="text-xs font-medium text-gray-700">
                       {isOwn ? 'You' : senderName}
                     </span>
-                    {message.created && (
+                    {message.created && !message.isPending && (
                       <span className="text-xs text-gray-400">
                         {new Date(message.created).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -116,11 +204,26 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                         })}
                       </span>
                     )}
+                    {message.isPending && (
+                      <span className="text-xs text-gray-400">Sending...</span>
+                    )}
+                    {message.isFailed && (
+                      <button
+                        onClick={() => message.tempId && handleRetry(message.tempId)}
+                        className="text-xs text-red-500 hover:text-red-700 underline"
+                      >
+                        Failed - Retry
+                      </button>
+                    )}
                   </div>
                   <div
                     className={`rounded-lg px-4 py-2 ${
                       isOwn
-                        ? 'bg-blue-600 text-white'
+                        ? message.isFailed
+                          ? 'bg-red-100 text-red-900 border border-red-300'
+                          : message.isPending
+                          ? 'bg-blue-400 text-white opacity-70'
+                          : 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
@@ -134,12 +237,26 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Typing Indicator */}
+      {typingUsers.length > 0 && (
+        <div className="px-6 py-2 text-sm text-gray-500 italic">
+          {typingUsers.length === 1
+            ? `${typingUsers[0].userName} is typing...`
+            : typingUsers.length === 2
+            ? `${typingUsers[0].userName} and ${typingUsers[1].userName} are typing...`
+            : `${typingUsers.length} people are typing...`}
+        </div>
+      )}
+
       {/* Message Input */}
       <div className="border-t border-gray-200 p-4">
         <form onSubmit={handleSend} className="flex space-x-4">
           <textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => {
+              setNewMessage(e.target.value);
+              onTyping();
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
             rows={2}

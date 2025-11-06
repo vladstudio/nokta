@@ -118,4 +118,5 @@ export const messages = {
   },
 };
 
+export { pb };
 export default pb;
