@@ -29,3 +29,16 @@ export interface AuthStore {
   token: string;
   user: User;
 }
+
+export interface Chat {
+  id: string;
+  space: string;
+  type: 'public' | 'private';
+  participants: string[];
+  name?: string;
+  created: string;
+  updated: string;
+  expand?: {
+    participants?: User[];
+  };
+}

@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import SpacesPage from './pages/SpacesPage';
 import SpaceFormPage from './pages/SpaceFormPage';
 import SpaceMembersPage from './pages/SpaceMembersPage';
+import ChatsPage from './pages/ChatsPage';
 
 function App() {
   return (
@@ -25,6 +26,12 @@ function App() {
       <Route path="/spaces/:id/edit">
         <ProtectedRoute>
           <SpaceFormPage />
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/spaces/:id/chats">
+        <ProtectedRoute>
+          <ChatsPage />
         </ProtectedRoute>
       </Route>
 

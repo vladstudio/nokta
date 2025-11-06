@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { User, Space, SpaceMember } from '../types';
+import type { User, Space, SpaceMember, Chat } from '../types';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
@@ -86,6 +86,20 @@ export const users = {
   async list() {
     const records = await pb.collection('users').getFullList<User>();
     return records;
+  },
+};
+
+export const chats = {
+  async list(spaceId: string) {
+    const records = await pb.collection('chats').getFullList<Chat>({
+      filter: `space = "${spaceId}"`,
+    });
+    return records;
+  },
+
+  async getOne(id: string) {
+    const record = await pb.collection('chats').getOne<Chat>(id);
+    return record;
   },
 };
 

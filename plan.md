@@ -15,8 +15,8 @@
 - [x] Space members management
 
 ## Phase 3: Chat Infrastructure
-- [ ] Auto-generate space-wide chat
-- [ ] Auto-generate DM chats between members
+- [x] Auto-generate space-wide chat
+- [x] Auto-generate DM chats between members
 - [ ] PocketBase real-time subscriptions
 - [ ] TinyBase MergeableStore setup
 - [ ] Message sync logic

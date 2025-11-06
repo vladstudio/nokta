@@ -79,16 +79,26 @@ export default function SpacesPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {spaces.map((space) => (
-              <Link key={space.id} href={`/spaces/${space.id}`}>
-                <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {space.name}
-                  </h3>
-                  <p className="text-gray-500 text-sm mt-2">
-                    Created {new Date(space.created).toLocaleDateString()}
-                  </p>
+              <div key={space.id} className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {space.name}
+                </h3>
+                <p className="text-gray-500 text-sm mt-2">
+                  Created {new Date(space.created).toLocaleDateString()}
+                </p>
+                <div className="mt-4 flex gap-2">
+                  <Link href={`/spaces/${space.id}`}>
+                    <button className="flex-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                      Members
+                    </button>
+                  </Link>
+                  <Link href={`/spaces/${space.id}/chats`}>
+                    <button className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                      Chats
+                    </button>
+                  </Link>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
