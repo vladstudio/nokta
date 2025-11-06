@@ -4,29 +4,26 @@
 
 **Deployment Strategy**: Separate backend and frontend deployments
 - **Backend**: PocketBase server (standalone executable). Docs: docs/pocketbase
-- **Frontend**: React SPA with TinyBase sync layer. Docs: docs/tinybase.org
-- **UI Components**: 9ui component library: docs/9ui.md
+- **Frontend**: React SPA with PocketBase real-time subscriptions
+- **UI Components**: Tailwind CSS for styling (9ui for future enhancement)
 
-## Tech Stack Analysis
+## Tech Stack
 
-**PocketBase** (Backend)
-- ✅ Built-in authentication with OAuth2 support
-- ✅ Real-time subscriptions via SSE
-- ✅ Flexible collection-based data modeling
-- ✅ REST API with access control rules
+**Backend: PocketBase**
+- Built-in authentication (email/password)
+- Real-time subscriptions via SSE (Server-Sent Events)
+- Collection-based data modeling with relations
+- REST API with access control rules
+- File uploads and storage
 
-**TinyBase** (Sync Engine)
-- ✅ MergeableStore for conflict resolution
-- ✅ Real-time synchronization via WebSockets/BroadcastChannel
-- ✅ React hooks and components
-- ✅ Offline support with persistence
+**Frontend: React + Tailwind**
+- React 19 with TypeScript
+- Tailwind CSS 4 for styling
+- wouter for lightweight routing
+- PocketBase SDK for API calls and real-time subscriptions
 
-**9ui** (Components)
-- ✅ Complete component library for chat UI
-- ✅ Accessible, customizable components
-- ✅ React-based with modern patterns
-
-Use bun for everything, not npm.
+**Package Manager**
+- Use bun for all package management
 
 ## Database Schema Design
 
@@ -102,9 +99,9 @@ talk/
 └── frontend/
     ├── src/
     │   ├── components/   # UI components
-    │   ├── stores/       # TinyBase stores
+    │   ├── pages/        # Route pages
     │   ├── hooks/        # Custom React hooks
-    │   ├── services/     # API services
+    │   ├── services/     # PocketBase API
     │   ├── utils/        # Utilities
     │   └── types/        # TypeScript types
     ├── package.json
@@ -153,36 +150,44 @@ talk/
    - Chat participant management
 
 2. **Real-time Messaging**
-   - TinyBase MergeableStore setup
-   - PocketBase real-time subscriptions
-   - Message synchronization
+   - PocketBase real-time subscriptions (SSE)
+   - Message send/receive via REST API
+   - Live updates for new messages
 
 ### Phase 4: Frontend Development
 1. **Core UI Components**
-   - Authentication forms (9ui)
-   - Space management interface
-   - Chat interface with message list
-   - User profile management
-   - Responsive design; layouts adapt to screen size.
+   - Authentication forms (login/register)
+   - Space dashboard and selection
+   - Chat list sidebar
+   - Chat window with message display
+   - Message input with send
+   - Responsive design; layouts adapt to screen size
 
 2. **Real-time Features**
-   - Live message updates
-   - Online status indicators
-   - Typing indicators
+   - Live message updates via PocketBase SSE
+   - Auto-scroll to latest messages
+   - Message timestamps
 
 3. **State Management**
-   - TinyBase stores for chat data
-   - React hooks for UI state
-   - Offline support with sync
+   - React useState/useEffect for UI state
+   - PocketBase SDK for data fetching
+   - Real-time subscriptions for live updates
 
-### Phase 5: Advanced Features (Future)
-1. **Media Support**
+### Phase 5: UX Enhancements
+1. **Immediate Improvements**
+   - Optimistic UI (show message immediately, rollback on error)
+   - IndexedDB cache (store recent messages for instant load)
+   - Retry queue (auto-retry failed sends when reconnected)
+   - Connection status indicator (offline banner)
+
+2. **Advanced Features (Future)**
+   - Typing indicators
+   - Online status indicators
+   - User profile management
    - File uploads
    - Image/GIF support
    - Audio messages
    - Video messages
-
-2. **Enhanced UX**
    - Push notifications
    - Message search
    - Message reactions

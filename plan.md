@@ -7,33 +7,35 @@
 - [x] Test API endpoints
 
 ## Phase 2: Admin UI
-- [x] Setup Vite + React + wouter + Tailwind (not 9ui yet)
+- [x] Setup Vite + React + wouter + Tailwind
 - [x] Login page with PocketBase auth
-- [x] Protected routes (basic auth check, not admin-specific)
+- [x] Protected routes
 - [x] Spaces list page
-- [x] Create/edit space (no delete)
+- [x] Create/edit space
 - [x] Space members management (add, view, change roles)
-- [x] Chats page (read-only admin view)
+- [x] Chats page (read-only view)
 
 ## Phase 3: Chat Infrastructure
 - [x] Auto-generate space-wide chat (backend hook)
 - [x] Auto-generate DM chats between members (backend hook)
 - [x] Backend collections created
-- [ ] PocketBase real-time subscriptions (frontend)
-- [ ] TinyBase MergeableStore setup (frontend)
-- [ ] Message sync logic (frontend)
-- [ ] Message sending UI
+- [x] PocketBase real-time subscriptions (frontend)
+- [x] Message sending UI
 
 ## Phase 4: Frontend Core
-- [x] Vite + React + TinyBase setup
+- [x] Vite + React + TypeScript setup
 - [x] Auth forms (login/register)
 - [x] Space dashboard
 - [x] Chat list sidebar
 - [x] Chat window with messages
-- [x] Real-time message updates (PocketBase SSE)
-- [x] Responsive layouts (mobile-first)
+- [x] Real-time message updates
+- [x] Responsive layouts
 
-## Phase 5: Polish & Advanced
+## Phase 5: UX Enhancements
+- [ ] Optimistic UI (show message immediately, rollback on error)
+- [ ] IndexedDB cache (store recent messages for instant load)
+- [ ] Retry queue (auto-retry failed sends when reconnected)
+- [ ] Connection status indicator (offline banner)
 - [ ] Typing indicators
 - [ ] Online status
 - [ ] Profile management
