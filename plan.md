@@ -7,28 +7,31 @@
 - [x] Test API endpoints
 
 ## Phase 2: Admin UI
-- [x] Setup Vite + React + wouter + 9ui
+- [x] Setup Vite + React + wouter + Tailwind (not 9ui yet)
 - [x] Login page with PocketBase auth
-- [x] Protected routes (admin check)
+- [x] Protected routes (basic auth check, not admin-specific)
 - [x] Spaces list page
-- [x] Create/edit space
-- [x] Space members management
+- [x] Create/edit space (no delete)
+- [x] Space members management (add, view, change roles)
+- [x] Chats page (read-only admin view)
 
 ## Phase 3: Chat Infrastructure
-- [x] Auto-generate space-wide chat
-- [x] Auto-generate DM chats between members
-- [ ] PocketBase real-time subscriptions
-- [ ] TinyBase MergeableStore setup
-- [ ] Message sync logic
+- [x] Auto-generate space-wide chat (backend hook)
+- [x] Auto-generate DM chats between members (backend hook)
+- [x] Backend collections created
+- [ ] PocketBase real-time subscriptions (frontend)
+- [ ] TinyBase MergeableStore setup (frontend)
+- [ ] Message sync logic (frontend)
+- [ ] Message sending UI
 
 ## Phase 4: Frontend Core
-- [ ] Vite + React + TinyBase setup
-- [ ] Auth forms (login/register)
-- [ ] Space dashboard
-- [ ] Chat list sidebar
-- [ ] Chat window with messages
-- [ ] Real-time message updates
-- [ ] Responsive layouts
+- [x] Vite + React + TinyBase setup
+- [x] Auth forms (login/register)
+- [x] Space dashboard
+- [x] Chat list sidebar
+- [x] Chat window with messages
+- [x] Real-time message updates (PocketBase SSE)
+- [x] Responsive layouts (mobile-first)
 
 ## Phase 5: Polish & Advanced
 - [ ] Typing indicators
