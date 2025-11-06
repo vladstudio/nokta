@@ -61,9 +61,11 @@ export default function SpacesPage() {
                 className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 text-left border border-gray-200"
               >
                 <h2 className="text-xl font-semibold text-gray-900">{space.name}</h2>
-                <p className="mt-2 text-sm text-gray-500">
-                  Created {new Date(space.created).toLocaleDateString()}
-                </p>
+                {space.created && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Created {new Date(space.created).toLocaleDateString()}
+                  </p>
+                )}
               </button>
             ))}
           </div>

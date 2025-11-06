@@ -79,7 +79,7 @@ export default function ChatsPage() {
                         {chat.name || 'General'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Created {new Date(chat.created).toLocaleDateString()}
+                        Created {chat.created ? new Date(chat.created).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
                     <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
@@ -110,7 +110,7 @@ export default function ChatsPage() {
                           `${chat.participants.length} participants`}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Created {new Date(chat.created).toLocaleDateString()}
+                        Created {chat.created ? new Date(chat.created).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
                     <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">

@@ -10,8 +10,8 @@ export interface User {
 export interface Space {
   id: string;
   name: string;
-  created: string;
-  updated: string;
+  created?: string;
+  updated?: string;
 }
 
 export interface SpaceMember {
@@ -31,8 +31,8 @@ export interface Chat {
   type: 'public' | 'private';
   participants: string[];
   name?: string;
-  created: string;
-  updated: string;
+  created?: string;
+  updated?: string;
   expand?: {
     participants?: User[];
   };
@@ -44,8 +44,8 @@ export interface Message {
   sender: string | null;
   type: 'text';
   content: string;
-  created: string;
-  updated: string;
+  created?: string;
+  updated?: string;
   expand?: {
     sender?: User;
   };

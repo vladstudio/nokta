@@ -67,7 +67,6 @@ export const chats = {
     const records = await pb.collection('chats').getFullList<Chat>({
       filter: `space = "${spaceId}"`,
       expand: 'participants',
-      sort: '-updated',
     });
     return records;
   },

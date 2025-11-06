@@ -1,0 +1,14 @@
+{
+  "lockfileVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "talk-backend-scripts",
+      "dependencies": {
+        "pocketbase": "^0.26.3",
+      },
+    },
+  },
+  "packages": {
+    "pocketbase": ["pocketbase@0.26.3", "", {}, "sha512-5deUKRoEczpxxuHzwr6/DHVmgbggxylEVig8CKN+MjvtYxPUqX/C6puU0yaR2yhTi8zrh7J9s7Ty+qBGwVzWOQ=="],
+  }
+}

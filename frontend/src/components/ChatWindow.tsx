@@ -108,12 +108,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                     <span className="text-xs font-medium text-gray-700">
                       {isOwn ? 'You' : senderName}
                     </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(message.created).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    {message.created && (
+                      <span className="text-xs text-gray-400">
+                        {new Date(message.created).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
                   </div>
                   <div
                     className={`rounded-lg px-4 py-2 ${

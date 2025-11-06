@@ -161,7 +161,7 @@ export default function SpaceMembersPage() {
                       {member.expand?.user?.email || member.user}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Joined {new Date(member.joined_at).toLocaleDateString()}
+                      Joined {member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'Unknown'}
                     </p>
                   </div>
                   <div>

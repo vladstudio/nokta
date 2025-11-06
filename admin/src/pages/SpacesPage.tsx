@@ -84,7 +84,7 @@ export default function SpacesPage() {
                   {space.name}
                 </h3>
                 <p className="text-gray-500 text-sm mt-2">
-                  Created {new Date(space.created).toLocaleDateString()}
+                  Created {space.created ? new Date(space.created).toLocaleDateString() : 'Unknown'}
                 </p>
                 <div className="mt-4 flex gap-2">
                   <Link href={`/spaces/${space.id}`}>

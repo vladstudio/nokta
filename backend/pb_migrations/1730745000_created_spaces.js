@@ -8,6 +8,11 @@ migrate((app) => {
         name: "name",
         type: "text",
         required: true,
+        options: {
+          min: null,
+          max: null,
+          pattern: ""
+        }
       },
     ],
   })
