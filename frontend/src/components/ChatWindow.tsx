@@ -100,12 +100,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         setMessages(cached);
       }
 
-      // Then load from server
+      // Then load from server (fetches latest 50, descending)
       const result = await messagesAPI.list(chatId);
-      setMessages(result.items);
+      // Reverse to display chronologically (oldest first)
+      const chronologicalMessages = [...result.items].reverse();
+      setMessages(chronologicalMessages);
 
-      // Update cache
-      await messageCache.saveMessages(chatId, result.items);
+      // Update cache with chronological order
+      await messageCache.saveMessages(chatId, chronologicalMessages);
     } catch (err) {
       console.error('Failed to load messages:', err);
     } finally {

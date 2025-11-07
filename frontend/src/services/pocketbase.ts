@@ -88,11 +88,11 @@ export const chats = {
 };
 
 export const messages = {
-  async list(chatId: string, page = 1, perPage = 500) {
+  async list(chatId: string, page = 1, perPage = 50) {
     const records = await pb.collection('messages').getList<Message>(page, perPage, {
       filter: `chat = "${chatId}"`,
       expand: 'sender',
-      sort: 'created', // Sort by created timestamp ascending (oldest first, chronological)
+      sort: '-created', // Sort descending to get LATEST 50 messages
     });
     return records;
   },
