@@ -9,7 +9,7 @@ pb.autoCancellation(false);
 export const auth = {
   async login(email: string, password: string) {
     const authData = await pb.collection('users').authWithPassword(email, password);
-    return authData.record as User;
+    return authData.record as unknown as User;
   },
 
   async register(email: string, password: string, passwordConfirm: string, name?: string) {

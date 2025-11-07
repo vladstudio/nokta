@@ -14,8 +14,8 @@ export function useTypingIndicator(
   chatId: string,
   onTypingUsersChange: (users: TypingUser[]) => void
 ) {
-  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const broadcastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
+  const broadcastTimerRef = useRef<number | null>(null);
   const lastBroadcastRef = useRef<number>(0);
   const typingUsersRef = useRef<Map<string, TypingUser>>(new Map());
 
