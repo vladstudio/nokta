@@ -231,6 +231,11 @@ async function createMessages(chatData, users) {
   console.log(`Adding 300 messages to ${chat.name} in ${space.name}...`);
   let successCount = 0;
 
+  // Spread messages over the past 7 days
+  const now = Date.now();
+  const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+  const timeIncrement = (now - sevenDaysAgo) / 300; // Evenly space messages
+
   for (let i = 0; i < 300; i++) {
     // Randomly pick a user
     const user = users[Math.floor(Math.random() * users.length)];
@@ -238,12 +243,16 @@ async function createMessages(chatData, users) {
     // Login as that user
     await pb.collection('users').authWithPassword(user.email, '1234567890');
 
+    // Calculate timestamp for this message (spread chronologically)
+    const messageTime = new Date(sevenDaysAgo + (timeIncrement * i));
+
     try {
       await pb.collection('messages').create({
         chat: chat.id,
         sender: user.id,
         content: getRandomMessage(),
-        type: 'text'
+        type: 'text',
+        created: messageTime.toISOString()
       });
       successCount++;
 
