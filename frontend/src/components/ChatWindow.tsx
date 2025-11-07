@@ -29,6 +29,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastLoadTimeRef = useRef(0);
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
@@ -118,8 +119,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   const loadOlderMessages = useCallback(async () => {
     if (loadingOlder || !hasMore) return;
+    lastLoadTimeRef.current = Date.now();
     setLoadingOlder(true);
-    const firstMsgId = messages[0]?.id;
 
     try {
       const nextPage = page + 1;
@@ -131,19 +132,22 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       }
 
       const olderMessages = [...result.items].reverse();
-      setMessages((prev) => [...olderMessages, ...prev]);
+      setMessages((prev) => {
+        const firstMsgId = prev[0]?.id;
+        const updated = [...olderMessages, ...prev];
+        requestAnimationFrame(() => {
+          document.getElementById(`msg-${firstMsgId}`)?.scrollIntoView();
+        });
+        return updated;
+      });
       setPage(nextPage);
       setHasMore(result.page < result.totalPages);
-
-      requestAnimationFrame(() => {
-        document.getElementById(`msg-${firstMsgId}`)?.scrollIntoView();
-      });
     } catch (err) {
       console.error('Failed to load older messages:', err);
     } finally {
       setLoadingOlder(false);
     }
-  }, [loadingOlder, hasMore, page, chatId, messages]);
+  }, [loadingOlder, hasMore, page, chatId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
@@ -154,7 +158,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     if (!container) return;
 
     const handleScroll = () => {
-      if (container.scrollTop < 100 && hasMore && !loadingOlder) {
+      const timeSinceLastLoad = Date.now() - lastLoadTimeRef.current;
+      if (container.scrollTop < 100 && hasMore && !loadingOlder && timeSinceLastLoad > 1000) {
         loadOlderMessages();
       }
     };
