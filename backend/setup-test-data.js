@@ -106,18 +106,15 @@ async function createUsers() {
   return createdUsers;
 }
 
-async function createSpaces(adminUser) {
+async function createSpaces() {
   console.log('\n🏢 Creating spaces...');
   const createdSpaces = [];
 
-  // Login as admin user to create spaces
-  await pb.collection('users').authWithPassword(adminUser.email, '1234567890');
-
+  // Stay authenticated as admin (already authenticated in ensureAdmin)
   for (const space of SPACES) {
     try {
       const record = await pb.collection('spaces').create({
-        name: space.name,
-        created_by: adminUser.id
+        name: space.name
       });
       console.log(`✓ Created space: ${space.name}`);
       createdSpaces.push(record);
@@ -132,6 +129,7 @@ async function createSpaces(adminUser) {
 async function addMembersToSpaces(spaces, users) {
   console.log('\n👥 Adding members to spaces...');
 
+  // Already authenticated as admin from ensureAdmin()
   for (const space of spaces) {
     for (const user of users) {
       try {
@@ -285,14 +283,14 @@ async function main() {
       process.exit(1);
     }
 
-    // Create spaces
-    const spaces = await createSpaces(users[0]);
+    // Create spaces (stays authenticated as admin)
+    const spaces = await createSpaces();
     if (spaces.length < 2) {
       console.error('\n✗ Failed to create required spaces. Exiting.');
       process.exit(1);
     }
 
-    // Add members to spaces
+    // Add members to spaces (already authenticated as admin)
     await addMembersToSpaces(spaces, users);
 
     // Wait a bit for auto-chat creation hook to complete
