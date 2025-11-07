@@ -141,11 +141,59 @@ async function addMembersToSpaces(spaces, users) {
           role: 'member'
         });
         console.log(`✓ Added ${user.name} to ${space.name}`);
+        // Small delay to avoid race condition with hook
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         console.error(`✗ Failed to add ${user.name} to ${space.name}:`, error.message);
       }
     }
   }
+}
+
+async function createDMChats(spaces, users) {
+  console.log('\n💬 Creating DM chats between members...');
+
+  // Login as first user to create chats
+  await pb.collection('users').authWithPassword(users[0].email, '1234567890');
+
+  let totalCreated = 0;
+  let totalSkipped = 0;
+
+  for (const space of spaces) {
+    // Create DM between every pair of users in this space
+    for (let i = 0; i < users.length; i++) {
+      for (let j = i + 1; j < users.length; j++) {
+        const user1 = users[i];
+        const user2 = users[j];
+        const sortedIds = [user1.id, user2.id].sort();
+
+        try {
+          // Check if DM already exists
+          const existing = await pb.collection('chats').getFirstListItem(
+            `space = "${space.id}" && type = "private" && participants.id ?= "${sortedIds[0]}" && participants.id ?= "${sortedIds[1]}"`
+          );
+          console.log(`  ℹ️  DM already exists: ${user1.name} ↔ ${user2.name} in ${space.name}`);
+          totalSkipped++;
+        } catch (notFoundError) {
+          // DM doesn't exist, create it
+          try {
+            await pb.collection('chats').create({
+              space: space.id,
+              type: 'private',
+              participants: sortedIds
+            });
+            console.log(`  ✓ Created DM: ${user1.name} ↔ ${user2.name} in ${space.name}`);
+            totalCreated++;
+          } catch (createError) {
+            console.error(`  ✗ Failed to create DM: ${user1.name} ↔ ${user2.name}:`, createError.message);
+          }
+        }
+      }
+    }
+  }
+
+  console.log(`\n📊 DM chats: ${totalCreated} created, ${totalSkipped} already existed`);
+  return { created: totalCreated, skipped: totalSkipped };
 }
 
 async function getPublicChats(spaces, users) {
@@ -249,7 +297,10 @@ async function main() {
 
     // Wait a bit for auto-chat creation hook to complete
     console.log('\n⏳ Waiting for auto-chat creation hook...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Create DM chats between all members (in case hook missed any due to race conditions)
+    const dmStats = await createDMChats(spaces, users);
 
     // Get public chats
     const chats = await getPublicChats(spaces, users);
@@ -263,7 +314,8 @@ async function main() {
     console.log('\n📊 Summary:');
     console.log(`  - Users created: ${users.length}`);
     console.log(`  - Spaces created: ${spaces.length}`);
-    console.log(`  - Public chats found: ${chats.length}`);
+    console.log(`  - Public chats: ${chats.length}`);
+    console.log(`  - DM chats: ${dmStats.created + dmStats.skipped} (${dmStats.created} created, ${dmStats.skipped} from hook)`);
     console.log(`  - Messages created: ${chats.length * 300}`);
     console.log('\n🔑 Credentials:');
     console.log('  Admin (PocketBase Dashboard):');
