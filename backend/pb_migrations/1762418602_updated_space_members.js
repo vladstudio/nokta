@@ -1,11 +1,11 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_746599622")
+  const collection = app.findCollectionByNameOrId("space_members")
 
   // add field
   collection.fields.addAt(1, new Field({
     "cascadeDelete": true,
-    "collectionId": "pbc_3929545014",
+    "collectionId": app.findCollectionByNameOrId("spaces").id,
     "hidden": false,
     "id": "memberspace",
     "maxSelect": 1,
@@ -19,8 +19,8 @@ migrate((app) => {
 
   // add field
   collection.fields.addAt(2, new Field({
-    "cascadeDelete": true,
-    "collectionId": "_pb_users_auth_",
+    "cascadeDelete": false, // Preserve membership records when user is deleted
+    "collectionId": app.findCollectionByNameOrId("users").id,
     "hidden": false,
     "id": "memberuser",
     "maxSelect": 1,
@@ -63,7 +63,7 @@ migrate((app) => {
 
   return app.save(collection)
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_746599622")
+  const collection = app.findCollectionByNameOrId("space_members")
 
   // remove field
   collection.fields.removeById("memberspace")

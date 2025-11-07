@@ -13,9 +13,10 @@ migrate((app) => {
 }, (app) => {
   const chats = app.findCollectionByNameOrId("chats")
 
-  // Rollback
+  // Rollback to previous state (from 1730745005_configure_access_rules.js)
   chats.viewRule = "@request.auth.id != ''"
   chats.listRule = "@request.auth.id != ''"
+  chats.createRule = null
 
   app.save(chats)
 

@@ -1,11 +1,11 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_3861817060")
+  const collection = app.findCollectionByNameOrId("chats")
 
   // add field
   collection.fields.addAt(1, new Field({
     "cascadeDelete": true,
-    "collectionId": "pbc_3929545014",
+    "collectionId": app.findCollectionByNameOrId("spaces").id,
     "hidden": false,
     "id": "chatspace",
     "maxSelect": 1,
@@ -36,7 +36,7 @@ migrate((app) => {
   // add field
   collection.fields.addAt(3, new Field({
     "cascadeDelete": false,
-    "collectionId": "_pb_users_auth_",
+    "collectionId": app.findCollectionByNameOrId("users").id,
     "hidden": false,
     "id": "chatparticipants",
     "maxSelect": 999,
@@ -66,7 +66,7 @@ migrate((app) => {
 
   return app.save(collection)
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_3861817060")
+  const collection = app.findCollectionByNameOrId("chats")
 
   // remove field
   collection.fields.removeById("chatspace")

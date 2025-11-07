@@ -1,11 +1,11 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const collection = app.findCollectionByNameOrId("pbc_2605467279")
+  const collection = app.findCollectionByNameOrId("messages")
 
   // add field
   collection.fields.addAt(1, new Field({
     "cascadeDelete": true,
-    "collectionId": "pbc_3861817060",
+    "collectionId": app.findCollectionByNameOrId("chats").id,
     "hidden": false,
     "id": "msgchat",
     "maxSelect": 1,
@@ -19,15 +19,15 @@ migrate((app) => {
 
   // add field
   collection.fields.addAt(2, new Field({
-    "cascadeDelete": true,
-    "collectionId": "_pb_users_auth_",
+    "cascadeDelete": false, // Don't delete messages when user is deleted
+    "collectionId": app.findCollectionByNameOrId("users").id,
     "hidden": false,
     "id": "msgsender",
     "maxSelect": 1,
     "minSelect": 0,
     "name": "sender",
     "presentable": false,
-    "required": true,
+    "required": false, // Allow null sender for system messages or deleted users
     "system": false,
     "type": "relation"
   }))
@@ -67,7 +67,7 @@ migrate((app) => {
 
   return app.save(collection)
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("pbc_2605467279")
+  const collection = app.findCollectionByNameOrId("messages")
 
   // remove field
   collection.fields.removeById("msgchat")
