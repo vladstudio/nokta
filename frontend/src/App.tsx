@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { auth } from './services/pocketbase';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionBanner from './components/ConnectionBanner';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacesPage from './pages/SpacesPage';
 import SpacePage from './pages/SpacePage';
@@ -28,7 +29,7 @@ function App() {
   }, [isAuthenticated, setLocation]);
 
   return (
-    <>
+    <ErrorBoundary>
       <ConnectionBanner />
       <Switch>
         <Route path="/login" component={LoginPage} />
@@ -46,7 +47,7 @@ function App() {
           {isAuthenticated ? <SpacesPage /> : <LoginPage />}
         </Route>
       </Switch>
-    </>
+    </ErrorBoundary>
   );
 }
 

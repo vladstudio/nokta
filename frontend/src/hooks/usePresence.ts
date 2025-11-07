@@ -86,7 +86,7 @@ export function usePresence(userIds: string[]) {
     const intervalId = setInterval(fetchPresence, HEARTBEAT_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [userIds.join(',')]);
+  }, [userIds]);
 
   return {
     presenceMap,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { spaces, chats, auth } from '../services/pocketbase';
+import LoadingSpinner from '../components/LoadingSpinner';
 import type { Space, Chat } from '../types';
 import ChatList from '../components/ChatList';
 import ChatWindow from '../components/ChatWindow';
@@ -18,11 +19,6 @@ export default function SpacePage() {
   const [error, setError] = useState('');
   const [showProfile, setShowProfile] = useState(false);
 
-  useEffect(() => {
-    if (!spaceId) return;
-    loadData();
-  }, [spaceId]);
-
   const loadData = async () => {
     if (!spaceId) return;
 
@@ -38,16 +34,23 @@ export default function SpacePage() {
       if (chatsData.length > 0 && !selectedChatId) {
         setSelectedChatId(chatsData[0].id);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load space');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load space';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (!spaceId) return;
+    loadData();
+  }, [spaceId]);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <LoadingSpinner size="lg" />
         <div className="text-gray-600">Loading...</div>
       </div>
     );

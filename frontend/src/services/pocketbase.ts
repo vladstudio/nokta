@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase';
 import type { User, Space, SpaceMember, Chat, Message } from '../types';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
 // Enable auto-cancellation for duplicate requests
 pb.autoCancellation(false);

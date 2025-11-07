@@ -12,6 +12,22 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/[a-z]/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/[A-Z]/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/[0-9]/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -24,14 +40,24 @@ export default function LoginPage() {
       } else {
         if (password !== passwordConfirm) {
           setError('Passwords do not match');
+          setLoading(false);
           return;
         }
+
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+          setError(passwordError);
+          setLoading(false);
+          return;
+        }
+
         await auth.register(email, password, passwordConfirm, name);
         await auth.login(email, password);
         setLocation('/');
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

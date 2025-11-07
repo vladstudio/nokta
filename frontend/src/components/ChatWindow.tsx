@@ -4,6 +4,7 @@ import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { messageQueue, type PendingMessage } from '../utils/messageQueue';
 import { messageCache } from '../utils/messageCache';
+import LoadingSpinner from './LoadingSpinner';
 import type { Message } from '../types';
 
 interface ChatWindowProps {
@@ -78,7 +79,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       const cached = await messageCache.getMessages(chatId);
       if (cached.length > 0) {
         setMessages(cached);
-        setLoading(false);
       }
 
       // Then load from server
@@ -150,7 +150,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex flex-col items-center justify-center gap-4">
+        <LoadingSpinner size="lg" />
         <div className="text-gray-600">Loading messages...</div>
       </div>
     );

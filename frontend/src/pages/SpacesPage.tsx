@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { spaces } from '../services/pocketbase';
+import LoadingSpinner from '../components/LoadingSpinner';
 import type { Space } from '../types';
 
 export default function SpacesPage() {
@@ -17,8 +18,9 @@ export default function SpacesPage() {
     try {
       const records = await spaces.list();
       setSpaceList(records);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load spaces');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load spaces';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -26,7 +28,8 @@ export default function SpacesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <LoadingSpinner size="lg" />
         <div className="text-gray-600">Loading spaces...</div>
       </div>
     );

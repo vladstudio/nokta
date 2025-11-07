@@ -7,6 +7,15 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
+interface PocketBaseRecord {
+  id: string;
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+  [key: string]: unknown;
+}
+
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const currentUser = auth.user;
   const [name, setName] = useState(currentUser?.name || '');
@@ -14,7 +23,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     currentUser?.avatar
-      ? pb.getFileUrl(currentUser as any, currentUser.avatar)
+      ? pb.files.getUrl(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
       : null
   );
   const [saving, setSaving] = useState(false);
@@ -62,9 +71,10 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       setTimeout(() => {
         onClose();
       }, 1500);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to update profile:', err);
-      setError(err?.message || 'Failed to update profile');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
