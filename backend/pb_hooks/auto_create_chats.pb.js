@@ -125,6 +125,49 @@ onRecordAfterCreateSuccess((e) => {
     })
 
     console.log(`[auto_create_chats] DM chat creation complete for user ${newUserId} in space ${spaceId}: created=${createdCount}, skipped=${skippedCount}`)
+
+    // Initialize read status for all chats in this space for the new member
+    try {
+      const allChatsInSpace = $app.findRecordsByFilter(
+        "chats",
+        `space = {:spaceId}`,
+        "",
+        0,
+        0,
+        { spaceId }
+      )
+
+      const readStatusCollection = e.app.findCollectionByNameOrId("chat_read_status")
+      let readStatusCreated = 0
+
+      arrayOf(allChatsInSpace).forEach((chat) => {
+        try {
+          // Check if read status already exists
+          const existingStatus = $app.findFirstRecordByFilter(
+            "chat_read_status",
+            `user = {:userId} && chat = {:chatId}`,
+            { userId: newUserId, chatId: chat.id }
+          )
+          // Already exists, skip
+        } catch (err) {
+          // Doesn't exist, create it
+          try {
+            const readStatus = new Record(readStatusCollection)
+            readStatus.set("user", newUserId)
+            readStatus.set("chat", chat.id)
+            readStatus.set("last_read_at", new DateTime())
+            e.app.save(readStatus)
+            readStatusCreated++
+          } catch (saveErr) {
+            console.warn(`[auto_create_chats] Failed to create read status for user ${newUserId}, chat ${chat.id}:`, saveErr.message)
+          }
+        }
+      })
+
+      console.log(`[auto_create_chats] Initialized read status for user ${newUserId} in space ${spaceId}: created=${readStatusCreated} records`)
+    } catch (err) {
+      console.error(`[auto_create_chats] Failed to initialize read status for user ${newUserId}:`, err.message)
+    }
   } catch (err) {
     console.error(`[auto_create_chats] Unexpected error processing space member ${e.record.id}:`, err.message)
   }

@@ -1,6 +1,7 @@
 import { Route, Switch, useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
 import { auth, spaces } from './services/pocketbase';
+import { requestNotificationPermission, getNotificationPermission } from './utils/notifications';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -37,6 +38,29 @@ function App() {
       });
     }
   }, [isAuthenticated, location, setLocation]);
+
+  // Request notification permission
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const requestPermission = async () => {
+      const permission = getNotificationPermission();
+
+      if (permission.canRequest) {
+        // Small delay to let user see the app first
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const granted = await requestNotificationPermission();
+        if (granted) {
+          console.log('Notification permission granted');
+        } else {
+          console.log('Notification permission not granted');
+        }
+      }
+    };
+
+    requestPermission();
+  }, [isAuthenticated]);
 
   return (
     <ErrorBoundary>

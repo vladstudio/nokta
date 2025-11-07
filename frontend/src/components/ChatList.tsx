@@ -8,9 +8,10 @@ interface ChatListProps {
   chats: Chat[];
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
+  unreadCounts?: Map<string, number>;
 }
 
-export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatListProps) {
+export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCounts = new Map() }: ChatListProps) {
   const currentUser = auth.user;
 
   // Collect all participant IDs for presence tracking
@@ -78,20 +79,32 @@ export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatLi
           <div className="p-4 text-center text-gray-500 text-sm">No chats available</div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {chats.map((chat) => (
-              <Button key={chat.id} variant="default" onClick={() => onSelectChat(chat.id)} className={`w-full px-4 py-3 text-left rounded-none border-0 hover:bg-gray-50 ${selectedChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}>
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <span className="text-2xl">{getChatIcon(chat)}</span>
-                    {getOnlineStatus(chat) !== null && <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'}`} title={getOnlineStatus(chat) ? 'Online' : 'Offline'} />}
+            {chats.map((chat) => {
+              const unreadCount = unreadCounts.get(chat.id) || 0;
+              const hasUnread = unreadCount > 0;
+
+              return (
+                <Button key={chat.id} variant="default" onClick={() => onSelectChat(chat.id)} className={`w-full px-4 py-3 text-left rounded-none border-0 hover:bg-gray-50 ${selectedChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}>
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <span className="text-2xl">{getChatIcon(chat)}</span>
+                      {getOnlineStatus(chat) !== null && <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'}`} title={getOnlineStatus(chat) ? 'Online' : 'Offline'} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm text-gray-900 truncate ${hasUnread ? 'font-semibold' : 'font-medium'}`}>{getChatName(chat)}</div>
+                      <div className="text-xs text-gray-500">{chat.type === 'public' ? 'Public chat' : 'Private chat'}</div>
+                    </div>
+                    {hasUnread && (
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">{getChatName(chat)}</div>
-                    <div className="text-xs text-gray-500">{chat.type === 'public' ? 'Public chat' : 'Private chat'}</div>
-                  </div>
-                </div>
-              </Button>
-            ))}
+                </Button>
+              );
+            })}
           </div>
         )}
       </div>

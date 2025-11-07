@@ -34,6 +34,7 @@ export interface Chat {
   name?: string;
   created?: string;
   updated?: string;
+  unreadCount?: number; // Computed client-side, not from DB
   expand?: {
     participants?: User[];
   };
@@ -50,4 +51,13 @@ export interface Message {
   expand?: {
     sender?: User;
   };
+}
+
+export interface ChatReadStatus {
+  id: string;
+  user: string;
+  chat: string;
+  last_read_at: string; // ISO datetime
+  created?: string;
+  updated?: string;
 }

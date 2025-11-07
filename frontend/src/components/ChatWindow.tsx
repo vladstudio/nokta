@@ -10,6 +10,7 @@ import type { Message } from '../types';
 
 interface ChatWindowProps {
   chatId: string;
+  onOpen?: () => void;
 }
 
 interface DisplayMessage extends Message {
@@ -18,7 +19,7 @@ interface DisplayMessage extends Message {
   tempId?: string;
 }
 
-export default function ChatWindow({ chatId }: ChatWindowProps) {
+export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -40,6 +41,21 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     const c = messagesContainerRef.current;
     return c && c.scrollHeight - c.scrollTop - c.clientHeight < 150;
   };
+
+  // Mark chat as read when opened
+  useEffect(() => {
+    onOpen?.();
+  }, [chatId, onOpen]);
+
+  // Mark as read when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      onOpen?.();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [onOpen]);
 
   useEffect(() => {
     prevStateRef.current = { lastMsgId: '', pendingCount: 0 };

@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { User, Space, SpaceMember, Chat, Message } from '../types';
+import type { User, Space, SpaceMember, Chat, Message, ChatReadStatus } from '../types';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
@@ -114,6 +114,13 @@ export const messages = {
     return record;
   },
 
+  async countUnread(chatId: string, afterTimestamp: string): Promise<number> {
+    const result = await pb.collection('messages').getList(1, 1, {
+      filter: `chat = "${chatId}" && created > "${afterTimestamp}"`,
+    });
+    return result.totalItems;
+  },
+
   subscribe(chatId: string, callback: (data: any) => void) {
     return pb.collection('messages').subscribe('*', callback, {
       filter: `chat = "${chatId}"`,
@@ -122,6 +129,72 @@ export const messages = {
 
   unsubscribe(subscriptionId?: string) {
     return pb.collection('messages').unsubscribe(subscriptionId);
+  },
+};
+
+export const chatReadStatus = {
+  /**
+   * Get read status for all chats in a space
+   * Returns map of chatId -> last_read_at
+   */
+  async getForSpace(userId: string, spaceId: string): Promise<Map<string, string>> {
+    const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
+      filter: `user = "${userId}" && chat.space = "${spaceId}"`,
+      expand: 'chat',
+    });
+
+    const map = new Map<string, string>();
+    records.forEach(record => {
+      map.set(record.chat, record.last_read_at);
+    });
+    return map;
+  },
+
+  /**
+   * Get or create read status for a specific chat
+   */
+  async getOrCreate(userId: string, chatId: string): Promise<ChatReadStatus> {
+    try {
+      const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
+        filter: `user = "${userId}" && chat = "${chatId}"`,
+      });
+
+      if (records.length > 0) {
+        return records[0];
+      }
+    } catch (err) {
+      // Doesn't exist, create it
+    }
+
+    return await pb.collection('chat_read_status').create<ChatReadStatus>({
+      user: userId,
+      chat: chatId,
+      last_read_at: new Date().toISOString(),
+    });
+  },
+
+  /**
+   * Mark chat as read (update last_read_at to now)
+   */
+  async markAsRead(userId: string, chatId: string): Promise<void> {
+    const status = await this.getOrCreate(userId, chatId);
+
+    await pb.collection('chat_read_status').update(status.id, {
+      last_read_at: new Date().toISOString(),
+    });
+  },
+
+  /**
+   * Subscribe to read status changes (for multi-device sync)
+   */
+  subscribe(userId: string, callback: (data: any) => void) {
+    return pb.collection('chat_read_status').subscribe('*', callback, {
+      filter: `user = "${userId}"`,
+    });
+  },
+
+  unsubscribe(subscriptionId?: string) {
+    return pb.collection('chat_read_status').unsubscribe(subscriptionId);
   },
 };
 

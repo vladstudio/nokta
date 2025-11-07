@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { spaces, chats } from '../services/pocketbase';
+import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { Space, Chat } from '../types';
 import ChatList from '../components/ChatList';
@@ -16,6 +17,9 @@ export default function SpacePage() {
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Unread messages tracking with notifications
+  const { unreadCounts, markChatAsRead } = useUnreadMessages(spaceId, chatList, chatId);
 
   const loadData = useCallback(async () => {
     if (!spaceId) return;
@@ -47,6 +51,25 @@ export default function SpacePage() {
     loadData();
   }, [loadData]);
 
+  // Handle notification clicks
+  useEffect(() => {
+    const handleNotificationClick = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { chatId: targetChatId, spaceId: targetSpaceId } = customEvent.detail;
+
+      // Navigate to the chat
+      if (targetSpaceId && targetChatId) {
+        setLocation(`/spaces/${targetSpaceId}/${targetChatId}`);
+      }
+    };
+
+    window.addEventListener('notification-click', handleNotificationClick);
+
+    return () => {
+      window.removeEventListener('notification-click', handleNotificationClick);
+    };
+  }, [setLocation]);
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
@@ -75,13 +98,17 @@ export default function SpacePage() {
           chats={chatList}
           selectedChatId={chatId || null}
           onSelectChat={handleSelectChat}
+          unreadCounts={unreadCounts}
         />
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {chatId ? (
           <div className="flex-1 overflow-hidden">
-            <ChatWindow chatId={chatId} />
+            <ChatWindow
+              chatId={chatId}
+              onOpen={() => markChatAsRead(chatId)}
+            />
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
