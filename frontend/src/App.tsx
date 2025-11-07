@@ -48,7 +48,7 @@ function App() {
             <NoSpacesPage />
           </ProtectedRoute>
         </Route>
-        <Route path="/spaces/:id">
+        <Route path="/spaces/:spaceId/:chatId?">
           <ProtectedRoute>
             <SpacePage />
           </ProtectedRoute>

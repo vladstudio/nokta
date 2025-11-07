@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useRoute } from 'wouter';
+import { useRoute, useLocation } from 'wouter';
 import { spaces, chats } from '../services/pocketbase';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Button } from '../ui';
@@ -8,12 +8,13 @@ import ChatList from '../components/ChatList';
 import ChatWindow from '../components/ChatWindow';
 
 export default function SpacePage() {
-  const [, params] = useRoute('/spaces/:id');
-  const spaceId = params?.id;
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+  const [, setLocation] = useLocation();
+  const spaceId = params?.spaceId;
+  const chatId = params?.chatId;
 
   const [space, setSpace] = useState<Space | null>(null);
   const [chatList, setChatList] = useState<Chat[]>([]);
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,14 +31,18 @@ export default function SpacePage() {
       ]);
       setSpace(spaceData);
       setChatList(chatsData);
-      setSelectedChatId(chatsData.length > 0 ? chatsData[0].id : null);
+
+      // If no chatId in URL but chats exist, redirect to first chat
+      if (!chatId && chatsData.length > 0) {
+        setLocation(`/spaces/${spaceId}/${chatsData[0].id}`);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load space';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [spaceId]);
+  }, [spaceId, chatId, setLocation]);
 
   useEffect(() => {
     loadData();
@@ -60,27 +65,35 @@ export default function SpacePage() {
     );
   }
 
+  const handleSelectChat = (newChatId: string) => {
+    setLocation(`/spaces/${spaceId}/${newChatId}`);
+  };
+
+  const handleBackToChats = () => {
+    setLocation(`/spaces/${spaceId}`);
+  };
+
   return (
     <div className="flex-1 flex overflow-hidden bg-gray-50">
       {/* Chat List Sidebar - Hidden on mobile when chat is selected */}
-      <div className={`${selectedChatId ? 'hidden md:flex' : 'flex'} shrink-0`}>
+      <div className={`${chatId ? 'hidden md:flex' : 'flex'} shrink-0`}>
         <ChatList
           chats={chatList}
-          selectedChatId={selectedChatId}
-          onSelectChat={setSelectedChatId}
+          selectedChatId={chatId || null}
+          onSelectChat={handleSelectChat}
         />
       </div>
 
       {/* Chat Window - Full width on mobile */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {selectedChatId ? (
+        {chatId ? (
           <>
             {/* Mobile back button */}
             <div className="md:hidden shrink-0 bg-white border-b border-gray-200 px-4 py-3">
-              <Button variant="default" onClick={() => setSelectedChatId(null)} className="text-blue-600 hover:text-blue-700 text-sm border-0 px-0">← Back to chats</Button>
+              <Button variant="default" onClick={handleBackToChats} className="text-blue-600 hover:text-blue-700 text-sm border-0 px-0">← Back to chats</Button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <ChatWindow chatId={selectedChatId} />
+              <ChatWindow chatId={chatId} />
             </div>
           </>
         ) : (
