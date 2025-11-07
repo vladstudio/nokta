@@ -80,7 +80,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, pendingMessages]);
+  }, [messages, pendingMessages, loading]);
 
   // Process queue when connection is restored
   useEffect(() => {
@@ -114,7 +114,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   };
 
   const handleSend = async (e: React.FormEvent) => {
