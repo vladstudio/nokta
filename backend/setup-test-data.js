@@ -22,34 +22,6 @@ const SPACES = [
   { name: 'Team Beta' }
 ];
 
-const RANDOM_MESSAGES = [
-  "Hey there!", "How's it going?", "Great!", "Sounds good", "Let me check",
-  "I agree", "Not sure about that", "Makes sense", "Can you clarify?", "Perfect!",
-  "Thanks!", "You're welcome", "No problem", "Sure thing", "Absolutely",
-  "I think so", "Maybe", "Good point", "Interesting", "Tell me more",
-  "Got it", "Okay", "Cool", "Nice", "Awesome", "Exactly", "Right",
-  "I see", "Indeed", "For sure", "Definitely", "Perhaps", "Probably",
-  "Let's do it", "Sounds like a plan", "I'm on it", "Working on it",
-  "Done", "Almost there", "In progress", "Give me a sec", "One moment",
-  "Be right back", "Here now", "Ready when you are", "All set",
-  "What do you think?", "Any thoughts?", "How about this?", "Good idea?",
-  "Should we?", "Want to?", "Ready?", "Now?", "Later?", "Today?",
-  "Tomorrow?", "This week?", "Next week?", "Soon?", "Eventually?",
-  "Quick question", "Just wondering", "By the way", "Oh and",
-  "Also", "Plus", "Additionally", "Furthermore", "Moreover",
-  "On another note", "Speaking of which", "That reminds me",
-  "Good morning!", "Good afternoon!", "Good evening!", "Good night!",
-  "See you!", "Talk soon!", "Catch you later!", "Take care!",
-  "Have a good one!", "Cheers!", "Best!", "Regards!",
-  "lol", "haha", "hehe", "😊", "👍", "👌", "🎉", "🚀",
-  "Agreed", "Noted", "Confirmed", "Acknowledged", "Understood",
-  "Will do", "On my way", "Almost done", "Just finished"
-];
-
-function getRandomMessage() {
-  return RANDOM_MESSAGES[Math.floor(Math.random() * RANDOM_MESSAGES.length)];
-}
-
 async function ensureAdmin() {
   console.log('\n👑 Checking admin account...');
 
@@ -250,7 +222,7 @@ async function createMessages(chatData, users) {
       await pb.collection('messages').create({
         chat: chat.id,
         sender: user.id,
-        content: getRandomMessage(),
+        content: `Message ${i + 1}`,
         type: 'text',
         created: messageTime.toISOString()
       });

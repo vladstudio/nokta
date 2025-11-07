@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { spaces } from '../services/pocketbase';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Button } from '../ui';
 import type { Space } from '../types';
 
 export default function SpacesPage() {
@@ -58,18 +59,10 @@ export default function SpacesPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {spaceList.map((space) => (
-              <button
-                key={space.id}
-                onClick={() => setLocation(`/spaces/${space.id}`)}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 text-left border border-gray-200"
-              >
+              <Button key={space.id} variant="default" onClick={() => setLocation(`/spaces/${space.id}`)} className="bg-white shadow-sm hover:shadow-md p-6 text-left h-auto">
                 <h2 className="text-xl font-semibold text-gray-900">{space.name}</h2>
-                {space.created && (
-                  <p className="mt-2 text-sm text-gray-500">
-                    Created {new Date(space.created).toLocaleDateString()}
-                  </p>
-                )}
-              </button>
+                {space.created && <p className="mt-2 text-sm text-gray-500">Created {new Date(space.created).toLocaleDateString()}</p>}
+              </Button>
             ))}
           </div>
         )}

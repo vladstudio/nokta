@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
+import { Button } from '../ui';
 
 interface ChatListProps {
   chats: Chat[];
@@ -78,35 +79,18 @@ export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatLi
         ) : (
           <div className="divide-y divide-gray-100">
             {chats.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => onSelectChat(chat.id)}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                  selectedChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                }`}
-              >
+              <Button key={chat.id} variant="default" onClick={() => onSelectChat(chat.id)} className={`w-full px-4 py-3 text-left rounded-none border-0 hover:bg-gray-50 ${selectedChatId === chat.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}>
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <span className="text-2xl">{getChatIcon(chat)}</span>
-                    {getOnlineStatus(chat) !== null && (
-                      <span
-                        className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                          getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
-                        title={getOnlineStatus(chat) ? 'Online' : 'Offline'}
-                      />
-                    )}
+                    {getOnlineStatus(chat) !== null && <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'}`} title={getOnlineStatus(chat) ? 'Online' : 'Offline'} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {getChatName(chat)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {chat.type === 'public' ? 'Public chat' : 'Private chat'}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900 truncate">{getChatName(chat)}</div>
+                    <div className="text-xs text-gray-500">{chat.type === 'public' ? 'Public chat' : 'Private chat'}</div>
                   </div>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         )}

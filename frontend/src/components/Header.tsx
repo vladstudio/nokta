@@ -1,6 +1,7 @@
 import { useLocation } from 'wouter';
 import { auth } from '../services/pocketbase';
 import { useLayout } from '../contexts/LayoutContext';
+import { Button } from '../ui';
 
 export default function Header() {
   const [, setLocation] = useLocation();
@@ -31,15 +32,8 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-700">
-            {user?.name || user?.email}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-          >
-            Logout
-          </button>
+          <span className="text-sm text-gray-700">{user?.name || user?.email}</span>
+          <Button variant="default" onClick={handleLogout} className="text-sm">Logout</Button>
         </div>
       </div>
     </header>

@@ -3,6 +3,7 @@ import { useRoute } from 'wouter';
 import { spaces, chats } from '../services/pocketbase';
 import { useLayout } from '../contexts/LayoutContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Button } from '../ui';
 import type { Space, Chat } from '../types';
 import ChatList from '../components/ChatList';
 import ChatWindow from '../components/ChatWindow';
@@ -86,12 +87,7 @@ export default function SpacePage() {
           <>
             {/* Mobile back button */}
             <div className="md:hidden shrink-0 bg-white border-b border-gray-200 px-4 py-3">
-              <button
-                onClick={() => setSelectedChatId(null)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                ← Back to chats
-              </button>
+              <Button variant="default" onClick={() => setSelectedChatId(null)} className="text-blue-600 hover:text-blue-700 text-sm border-0 px-0">← Back to chats</Button>
             </div>
             <div className="flex-1 overflow-hidden">
               <ChatWindow chatId={selectedChatId} />
