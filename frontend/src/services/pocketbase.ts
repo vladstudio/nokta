@@ -92,7 +92,6 @@ export const messages = {
     const records = await pb.collection('messages').getList<Message>(page, perPage, {
       filter: `chat = "${chatId}"`,
       expand: 'sender',
-      sort: 'created',
     });
     return records;
   },
