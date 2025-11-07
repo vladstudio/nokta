@@ -31,11 +31,18 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
+  const prevStateRef = useRef({ lastMsgId: '', pendingCount: 0 });
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
 
+  const isAtBottom = () => {
+    const c = messagesContainerRef.current;
+    return c && c.scrollHeight - c.scrollTop - c.clientHeight < 150;
+  };
+
   useEffect(() => {
+    prevStateRef.current = { lastMsgId: '', pendingCount: 0 };
     setPage(1);
     setHasMore(false);
     setLoadingOlder(false);
@@ -97,6 +104,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       );
     }
   }, [isOnline]);
+
+  // Auto-scroll: when current user sends OR when new message arrives and already at bottom
+  useEffect(() => {
+    const { lastMsgId: prevLastId, pendingCount: prevPending } = prevStateRef.current;
+    const lastMsgId = messages[messages.length - 1]?.id || '';
+    prevStateRef.current = { lastMsgId, pendingCount: pendingMessages.length };
+
+    if (!loading && prevLastId && lastMsgId !== prevLastId) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.sender === currentUser?.id || isAtBottom()) requestAnimationFrame(scrollToBottom);
+    }
+    if (prevPending && pendingMessages.length > prevPending) requestAnimationFrame(scrollToBottom);
+  }, [messages, pendingMessages, loading]);
 
   const loadMessages = async () => {
     try {
