@@ -1,6 +1,8 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { auth } from '../services/pocketbase';
+import { LayoutProvider } from '../contexts/LayoutContext';
+import Header from './Header';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -30,11 +32,20 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center">
         <div className="text-gray-600">Loading...</div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  return (
+    <LayoutProvider>
+      <div className="fixed inset-0 flex flex-col">
+        <Header />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {children}
+        </main>
+      </div>
+    </LayoutProvider>
+  );
 }

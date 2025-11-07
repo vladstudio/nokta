@@ -33,16 +33,35 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     loadMessages();
 
     // Subscribe to real-time updates
-    const unsubscribe = messagesAPI.subscribe(chatId, (data) => {
+    const unsubscribe = messagesAPI.subscribe(chatId, async (data) => {
       if (data.action === 'create') {
-        const newMsg = data.record as Message;
-        setMessages((prev) => [...prev, newMsg]);
-        // Cache new message
-        messageCache.addMessage(newMsg).catch(console.error);
+        // Fetch the full message with expanded sender data
+        // PocketBase doesn't support expand in subscriptions, so we fetch it separately
+        try {
+          const expandedMsg = await messagesAPI.getOne(data.record.id);
+          setMessages((prev) => [...prev, expandedMsg]);
+          // Cache new message
+          messageCache.addMessage(expandedMsg).catch(console.error);
+        } catch (err) {
+          console.error('Failed to fetch expanded message:', err);
+          // Fallback to the raw message without expand
+          const newMsg = data.record as Message;
+          setMessages((prev) => [...prev, newMsg]);
+        }
       } else if (data.action === 'update') {
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === data.record.id ? (data.record as Message) : msg))
-        );
+        // Fetch updated message with expand
+        try {
+          const expandedMsg = await messagesAPI.getOne(data.record.id);
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === data.record.id ? expandedMsg : msg))
+          );
+        } catch (err) {
+          console.error('Failed to fetch expanded message:', err);
+          // Fallback to the raw update
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === data.record.id ? (data.record as Message) : msg))
+          );
+        }
       } else if (data.action === 'delete') {
         setMessages((prev) => prev.filter((msg) => msg.id !== data.record.id));
       }

@@ -21,7 +21,7 @@ rm -rf pb_data
 2. You'll see a "Create your first admin" form
 3. Enter:
    - **Email**: `vlad@vlad.studio`
-   - **Password**: `123123123`
+   - **Password**: `1234567890`
 4. Click "Create and Login"
 
 ### Step 3: Run Setup Script
@@ -48,12 +48,12 @@ This will:
 
 **Admin (PocketBase Dashboard)**
 - Email: vlad@vlad.studio
-- Password: 123123123
+- Password: 1234567890
 - URL: http://127.0.0.1:8090/_/
 
 **Test Users (Frontend App)**
-- Alice: a@test.com / 123123123
-- Bob: b@test.com / 123123123
+- Alice: a@test.com / 1234567890
+- Bob: b@test.com / 1234567890
 - URL: http://localhost:3000
 
 ## One-Line Reset (Automated)

@@ -28,7 +28,7 @@ export default function SpacesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <LoadingSpinner size="lg" />
         <div className="text-gray-600">Loading spaces...</div>
       </div>
@@ -37,22 +37,22 @@ export default function SpacesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="text-red-600">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <div className="flex-1 flex flex-col overflow-y-auto bg-gray-50">
+      <div className="flex-1 flex flex-col max-w-7xl w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="shrink-0 mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Spaces</h1>
           <p className="mt-2 text-sm text-gray-600">Select a space to start chatting</p>
         </div>
 
         {spaceList.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="flex-1 flex items-center justify-center">
             <p className="text-gray-500">No spaces available</p>
           </div>
         ) : (

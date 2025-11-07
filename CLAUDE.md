@@ -40,10 +40,10 @@ cd admin && npm run lint  # Run ESLint
 - PocketBase Dashboard: http://127.0.0.1:8090/_/
 
 ### Test Credentials
-- **Admin (PocketBase Dashboard)**: vlad@vlad.studio / 123123123
+- **Admin (PocketBase Dashboard)**: vlad@vlad.studio / 1234567890
 - **Test Users (Frontend App)**:
-  - a@test.com / 123123123 (Alice)
-  - b@test.com / 123123123 (Bob)
+  - a@test.com / 1234567890 (Alice)
+  - b@test.com / 1234567890 (Bob)
 
 ## Architecture
 

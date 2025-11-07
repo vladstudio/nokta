@@ -96,6 +96,13 @@ export const messages = {
     return records;
   },
 
+  async getOne(id: string) {
+    const record = await pb.collection('messages').getOne<Message>(id, {
+      expand: 'sender',
+    });
+    return record;
+  },
+
   async create(chatId: string, content: string) {
     const record = await pb.collection('messages').create<Message>({
       chat: chatId,

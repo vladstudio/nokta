@@ -1,4 +1,4 @@
-# Space Chat Implementation Plan
+# "Talk" Implementation Plan
 
 ## Phase 1: Backend Setup
 - [x] Initialize PocketBase
