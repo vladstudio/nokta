@@ -68,7 +68,7 @@ export default function ChatList({ chats, selectedChatId, onSelectChat }: ChatLi
   };
 
   return (
-    <div className="w-80 md:w-80 sm:w-full bg-white border-r border-gray-200 flex flex-col chat-list">
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col chat-list">
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold text-gray-900">Chats</h2>
       </div>

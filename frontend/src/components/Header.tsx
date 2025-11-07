@@ -8,9 +8,9 @@ const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
 export default function Header() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:id');
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
   const user = auth.user;
-  const currentSpaceId = params?.id;
+  const currentSpaceId = params?.spaceId;
 
   const [spaceList, setSpaceList] = useState<Space[]>([]);
 
@@ -50,15 +50,18 @@ export default function Header() {
 
   return (
     <header className="shrink-0 bg-white border-b border-gray-200">
-      <div className="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center h-16 px-8">
         {spaceList.length > 0 ? (
-          <div className="w-64">
-            <Select
-              value={currentSpaceId}
-              onChange={handleSpaceChange}
-              options={options}
-              placeholder="Select space..."
-            />
+          <div className="flex items-center gap-3">
+            <img src="/favicon.svg" alt="Talk" className="w-6 h-6" />
+            <div className="w-64">
+              <Select
+                value={currentSpaceId}
+                onChange={handleSpaceChange}
+                options={options}
+                placeholder="Select space..."
+              />
+            </div>
           </div>
         ) : (
           <div className="text-lg font-semibold text-gray-900">Talk</div>
