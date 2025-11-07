@@ -1,0 +1,12 @@
+{
+  "name": "talk-backend-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Setup and utility scripts for PocketBase",
+  "scripts": {
+    "setup": "node setup-test-data.js"
+  },
+  "dependencies": {
+    "pocketbase": "^0.23.0"
+  }
+}

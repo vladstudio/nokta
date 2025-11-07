@@ -6,3 +6,8 @@ cd /Users/vlad/Code/talk/admin && npm run dev
 - Admin App: http://localhost:5173
 - PocketBase API: http://127.0.0.1:8090/api/
 - PocketBase Dashboard: http://127.0.0.1:8090/_/
+
+users:
+testuser@example.com
+admin@test.com 
+Test1234
