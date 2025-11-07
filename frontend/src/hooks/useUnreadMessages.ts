@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { chatReadStatus, messages, auth } from '../services/pocketbase';
 import { showMessageNotification } from '../utils/notifications';
 import type { Chat } from '../types';
@@ -20,13 +20,29 @@ export function useUnreadMessages(
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   const userId = auth.user?.id;
   const readStatusMapRef = useRef<Map<string, string>>(new Map());
+  const currentChatIdRef = useRef(currentChatId);
+  const chatsRef = useRef(chats);
 
+  // Update refs when props change
+  useEffect(() => {
+    currentChatIdRef.current = currentChatId;
+  }, [currentChatId]);
+
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
+
+  // Create stable chatIds for dependency tracking
+  const chatIds = useMemo(() => chats.map(c => c.id).sort().join(','), [chats]);
+
+  // Load initial unread counts - only when space or chatIds change
   useEffect(() => {
     if (!spaceId || !userId || chats.length === 0) {
       return;
     }
 
-    // Load initial unread counts
+    let isCancelled = false;
+
     const loadUnreadCounts = async () => {
       try {
         // Get read status for all chats
@@ -51,13 +67,30 @@ export function useUnreadMessages(
           })
         );
 
-        setUnreadCounts(counts);
+        if (!isCancelled) {
+          setUnreadCounts(counts);
+        }
       } catch (err) {
         console.error('Failed to load unread counts:', err);
       }
     };
 
     loadUnreadCounts();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [spaceId, userId, chatIds]);
+
+  // Set up real-time subscriptions - separate effect
+  useEffect(() => {
+    if (!spaceId || !userId || chats.length === 0) {
+      return;
+    }
+
+    let isMounted = true;
+    let messagesUnsubscribe: (() => void) | undefined;
+    let readStatusUnsubscribe: (() => void) | undefined;
 
     // Subscribe to new messages across all chats in this space
     const handleNewMessage = async (data: any) => {
@@ -70,7 +103,7 @@ export function useUnreadMessages(
         }
 
         // Don't increment/notify if user is actively viewing this chat
-        const isViewingChat = message.chat === currentChatId;
+        const isViewingChat = message.chat === currentChatIdRef.current;
         const isWindowFocused = document.hasFocus();
 
         if (!isViewingChat || !isWindowFocused) {
@@ -86,7 +119,7 @@ export function useUnreadMessages(
           try {
             // Fetch expanded message data to get sender info
             const expandedMsg = await messages.getOne(message.id);
-            const chat = chats.find(c => c.id === message.chat);
+            const chat = chatsRef.current.find(c => c.id === message.chat);
 
             if (chat && expandedMsg.expand?.sender) {
               const sender = expandedMsg.expand.sender;
@@ -145,11 +178,6 @@ export function useUnreadMessages(
       }
     };
 
-    // Subscribe to messages in this space
-    let isMounted = true;
-    let messagesUnsubscribe: (() => void) | undefined;
-    let readStatusUnsubscribe: (() => void) | undefined;
-
     // Subscribe to read status changes (for multi-device sync)
     const handleReadStatusUpdate = async (data: any) => {
       if (data.action === 'update' || data.action === 'create') {
@@ -176,10 +204,10 @@ export function useUnreadMessages(
     const setupSubscriptions = async () => {
       try {
         // Subscribe to all messages across chats in this space
-        const chatIds = chats.map(c => c.id);
-        if (chatIds.length > 0) {
+        const currentChatIds = chats.map(c => c.id);
+        if (currentChatIds.length > 0) {
           // Subscribe to each chat individually
-          const unsubscribePromises = chatIds.map(chatId =>
+          const unsubscribePromises = currentChatIds.map(chatId =>
             messages.subscribe(chatId, handleNewMessage)
           );
           const unsubscribeFns = await Promise.all(unsubscribePromises);
@@ -215,12 +243,12 @@ export function useUnreadMessages(
       if (messagesUnsubscribe) messagesUnsubscribe();
       if (readStatusUnsubscribe) readStatusUnsubscribe();
     };
-  }, [spaceId, userId, chats, currentChatId]);
+  }, [spaceId, userId, chatIds]);
 
   /**
    * Mark a chat as read and reset its unread count
    */
-  const markChatAsRead = async (chatId: string) => {
+  const markChatAsRead = useCallback(async (chatId: string) => {
     if (!userId) return;
 
     try {
@@ -238,7 +266,7 @@ export function useUnreadMessages(
     } catch (err) {
       console.error('Failed to mark chat as read:', err);
     }
-  };
+  }, [userId]);
 
   return {
     unreadCounts,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { pb, auth } from '../services/pocketbase';
 
 const HEARTBEAT_INTERVAL = 30000; // Update every 30 seconds
@@ -15,7 +15,7 @@ export function usePresence(userIds: string[]) {
   const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Send heartbeat to update own presence
-  const sendHeartbeat = async () => {
+  const sendHeartbeat = useCallback(async () => {
     if (!auth.user) return;
 
     try {
@@ -25,10 +25,10 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to update presence:', err);
     }
-  };
+  }, []);
 
   // Fetch presence for users
-  const fetchPresence = async () => {
+  const fetchPresence = useCallback(async () => {
     if (userIds.length === 0) return;
 
     try {
@@ -56,7 +56,7 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to fetch presence:', err);
     }
-  };
+  }, [userIds]);
 
   // Start heartbeat
   useEffect(() => {
@@ -73,7 +73,7 @@ export function usePresence(userIds: string[]) {
         clearInterval(heartbeatTimerRef.current);
       }
     };
-  }, []);
+  }, [sendHeartbeat]);
 
   // Fetch presence periodically
   useEffect(() => {
@@ -86,7 +86,7 @@ export function usePresence(userIds: string[]) {
     const intervalId = setInterval(fetchPresence, HEARTBEAT_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [userIds]);
+  }, [fetchPresence, userIds.length]);
 
   return {
     presenceMap,

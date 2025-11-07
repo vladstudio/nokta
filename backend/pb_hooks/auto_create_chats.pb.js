@@ -126,51 +126,74 @@ onRecordAfterCreateSuccess((e) => {
 
     console.log(`[auto_create_chats] DM chat creation complete for user ${newUserId} in space ${spaceId}: created=${createdCount}, skipped=${skippedCount}`)
 
-    // Initialize read status for all chats in this space for the new member
-    try {
-      const allChatsInSpace = $app.findRecordsByFilter(
-        "chats",
-        `space = {:spaceId}`,
-        "",
-        0,
-        0,
-        { spaceId }
-      )
-
-      const readStatusCollection = e.app.findCollectionByNameOrId("chat_read_status")
-      let readStatusCreated = 0
-
-      arrayOf(allChatsInSpace).forEach((chat) => {
-        try {
-          // Check if read status already exists
-          const existingStatus = $app.findFirstRecordByFilter(
-            "chat_read_status",
-            `user = {:userId} && chat = {:chatId}`,
-            { userId: newUserId, chatId: chat.id }
-          )
-          // Already exists, skip
-        } catch (err) {
-          // Doesn't exist, create it
-          try {
-            const readStatus = new Record(readStatusCollection)
-            readStatus.set("user", newUserId)
-            readStatus.set("chat", chat.id)
-            readStatus.set("last_read_at", new DateTime())
-            e.app.save(readStatus)
-            readStatusCreated++
-          } catch (saveErr) {
-            console.warn(`[auto_create_chats] Failed to create read status for user ${newUserId}, chat ${chat.id}:`, saveErr.message)
-          }
-        }
-      })
-
-      console.log(`[auto_create_chats] Initialized read status for user ${newUserId} in space ${spaceId}: created=${readStatusCreated} records`)
-    } catch (err) {
-      console.error(`[auto_create_chats] Failed to initialize read status for user ${newUserId}:`, err.message)
-    }
+    // Note: Read status initialization is now handled by the chats hook (see below)
+    // This prevents race conditions where chats are created while this code runs
   } catch (err) {
     console.error(`[auto_create_chats] Unexpected error processing space member ${e.record.id}:`, err.message)
   }
 
   e.next()
 }, "space_members")
+
+/**
+ * Auto-create read status for all space members when a chat is created
+ * This prevents race conditions where users join while read status is being initialized
+ */
+onRecordAfterCreateSuccess((e) => {
+  const chatId = e.record.id
+  const spaceId = e.record.get("space")
+
+  if (!chatId || !spaceId) {
+    console.error("[auto_create_chats] Missing required fields: chat or space")
+    e.next()
+    return
+  }
+
+  try {
+    // Get all members in this space
+    const spaceMembers = $app.findRecordsByFilter(
+      "space_members",
+      `space = {:spaceId}`,
+      "",
+      0,
+      0,
+      { spaceId }
+    )
+
+    const readStatusCollection = e.app.findCollectionByNameOrId("chat_read_status")
+    let createdCount = 0
+
+    // Create read status for each member
+    arrayOf(spaceMembers).forEach((member) => {
+      const userId = member.get("user")
+
+      try {
+        // Check if read status already exists
+        const existingStatus = $app.findFirstRecordByFilter(
+          "chat_read_status",
+          `user = {:userId} && chat = {:chatId}`,
+          { userId, chatId }
+        )
+        // Already exists, skip
+      } catch (err) {
+        // Doesn't exist, create it
+        try {
+          const readStatus = new Record(readStatusCollection)
+          readStatus.set("user", userId)
+          readStatus.set("chat", chatId)
+          readStatus.set("last_read_at", new Date().toISOString())
+          e.app.save(readStatus)
+          createdCount++
+        } catch (saveErr) {
+          console.warn(`[auto_create_chats] Failed to create read status for user ${userId}, chat ${chatId}:`, saveErr.message)
+        }
+      }
+    })
+
+    console.log(`[auto_create_chats] Created ${createdCount} read status records for chat ${chatId}`)
+  } catch (err) {
+    console.error(`[auto_create_chats] Failed to create read status for chat ${chatId}:`, err.message)
+  }
+
+  e.next()
+}, "chats")

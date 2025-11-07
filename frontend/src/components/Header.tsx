@@ -36,17 +36,17 @@ export default function Header() {
     [spaceList]
   );
 
-  const handleSpaceChange = (spaceId: string | null) => {
+  const handleSpaceChange = useCallback((spaceId: string | null) => {
     if (spaceId) {
       localStorage.setItem(LAST_SPACE_KEY, spaceId);
       setLocation(`/spaces/${spaceId}`);
     }
-  };
+  }, [setLocation]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     auth.logout();
     setLocation('/login');
-  };
+  }, [setLocation]);
 
   return (
     <header className="shrink-0 bg-white border-b border-gray-200">

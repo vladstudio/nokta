@@ -154,16 +154,12 @@ export const chatReadStatus = {
    * Get or create read status for a specific chat
    */
   async getOrCreate(userId: string, chatId: string): Promise<ChatReadStatus> {
-    try {
-      const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
-        filter: `user = "${userId}" && chat = "${chatId}"`,
-      });
+    const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
+      filter: `user = "${userId}" && chat = "${chatId}"`,
+    });
 
-      if (records.length > 0) {
-        return records[0];
-      }
-    } catch (err) {
-      // Doesn't exist, create it
+    if (records.length > 0) {
+      return records[0];
     }
 
     return await pb.collection('chat_read_status').create<ChatReadStatus>({
@@ -189,7 +185,7 @@ export const chatReadStatus = {
    */
   subscribe(userId: string, callback: (data: any) => void) {
     return pb.collection('chat_read_status').subscribe('*', callback, {
-      filter: `user = "${userId}"`,
+      filter: pb.filter('user = {:userId}', { userId }),
     });
   },
 

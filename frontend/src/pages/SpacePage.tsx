@@ -21,6 +21,17 @@ export default function SpacePage() {
   // Unread messages tracking with notifications
   const { unreadCounts, markChatAsRead } = useUnreadMessages(spaceId, chatList, chatId);
 
+  // Memoized callback to prevent infinite re-renders
+  const handleOpenChat = useCallback(() => {
+    if (chatId) {
+      markChatAsRead(chatId);
+    }
+  }, [chatId, markChatAsRead]);
+
+  const handleSelectChat = useCallback((newChatId: string) => {
+    setLocation(`/spaces/${spaceId}/${newChatId}`);
+  }, [spaceId, setLocation]);
+
   const loadData = useCallback(async () => {
     if (!spaceId) return;
 
@@ -87,10 +98,6 @@ export default function SpacePage() {
     );
   }
 
-  const handleSelectChat = (newChatId: string) => {
-    setLocation(`/spaces/${spaceId}/${newChatId}`);
-  };
-
   return (
     <div className="flex-1 flex overflow-hidden bg-gray-50">
       <div className="flex shrink-0">
@@ -107,7 +114,7 @@ export default function SpacePage() {
           <div className="flex-1 overflow-hidden">
             <ChatWindow
               chatId={chatId}
-              onOpen={() => markChatAsRead(chatId)}
+              onOpen={handleOpenChat}
             />
           </div>
         ) : (
