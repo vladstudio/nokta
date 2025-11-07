@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRoute } from 'wouter';
 import { spaces, chats } from '../services/pocketbase';
-import { useLayout } from '../contexts/LayoutContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Button } from '../ui';
 import type { Space, Chat } from '../types';
@@ -11,7 +10,6 @@ import ChatWindow from '../components/ChatWindow';
 export default function SpacePage() {
   const [, params] = useRoute('/spaces/:id');
   const spaceId = params?.id;
-  const { setSpaceName } = useLayout();
 
   const [space, setSpace] = useState<Space | null>(null);
   const [chatList, setChatList] = useState<Chat[]>([]);
@@ -19,8 +17,11 @@ export default function SpacePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!spaceId) return;
+
+    setLoading(true);
+    setError('');
 
     try {
       const [spaceData, chatsData] = await Promise.all([
@@ -28,30 +29,19 @@ export default function SpacePage() {
         chats.list(spaceId),
       ]);
       setSpace(spaceData);
-      setSpaceName(spaceData.name);
       setChatList(chatsData);
-
-      // Auto-select first chat if available
-      if (chatsData.length > 0 && !selectedChatId) {
-        setSelectedChatId(chatsData[0].id);
-      }
+      setSelectedChatId(chatsData.length > 0 ? chatsData[0].id : null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load space';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [spaceId]);
 
   useEffect(() => {
-    if (!spaceId) return;
     loadData();
-
-    // Clear space name when component unmounts
-    return () => {
-      setSpaceName(null);
-    };
-  }, [spaceId]);
+  }, [loadData]);
 
   if (loading) {
     return (

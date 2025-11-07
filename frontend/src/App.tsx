@@ -1,41 +1,51 @@
 import { Route, Switch, useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
-import { auth } from './services/pocketbase';
+import { auth, spaces } from './services/pocketbase';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
-import SpacesPage from './pages/SpacesPage';
 import SpacePage from './pages/SpacePage';
+import NoSpacesPage from './pages/NoSpacesPage';
+import LoadingSpinner from './components/LoadingSpinner';
+import { LAST_SPACE_KEY } from './components/Header';
 
 function App() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isValid);
 
   useEffect(() => {
-    // Listen for auth changes
     const unsubscribe = auth.onChange(() => {
       setIsAuthenticated(auth.isValid);
     });
-
     return unsubscribe;
   }, []);
 
   useEffect(() => {
-    // Redirect to spaces if authenticated and on root
-    if (isAuthenticated && window.location.pathname === '/') {
-      setLocation('/spaces');
+    if (isAuthenticated && (location === '/' || location === '/spaces')) {
+      spaces.list().then(spaceList => {
+        if (spaceList.length === 0) {
+          setLocation('/no-spaces');
+        } else {
+          const lastSpaceId = localStorage.getItem(LAST_SPACE_KEY);
+          const targetSpace = spaceList.find(s => s.id === lastSpaceId) || spaceList[0];
+          setLocation(`/spaces/${targetSpace.id}`);
+        }
+      }).catch((err) => {
+        console.error('Failed to load spaces:', err);
+        setLocation('/no-spaces');
+      });
     }
-  }, [isAuthenticated, setLocation]);
+  }, [isAuthenticated, location, setLocation]);
 
   return (
     <ErrorBoundary>
       <ConnectionBanner />
       <Switch>
         <Route path="/login" component={LoginPage} />
-        <Route path="/spaces">
+        <Route path="/no-spaces">
           <ProtectedRoute>
-            <SpacesPage />
+            <NoSpacesPage />
           </ProtectedRoute>
         </Route>
         <Route path="/spaces/:id">
@@ -44,7 +54,13 @@ function App() {
           </ProtectedRoute>
         </Route>
         <Route>
-          {isAuthenticated ? <SpacesPage /> : <LoginPage />}
+          {isAuthenticated ? (
+            <div className="flex-1 flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : (
+            <LoginPage />
+          )}
         </Route>
       </Switch>
     </ErrorBoundary>

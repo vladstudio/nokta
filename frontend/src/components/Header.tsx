@@ -1,12 +1,47 @@
-import { useLocation } from 'wouter';
-import { auth } from '../services/pocketbase';
-import { useLayout } from '../contexts/LayoutContext';
-import { Button } from '../ui';
+import { useLocation, useRoute } from 'wouter';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { auth, spaces } from '../services/pocketbase';
+import { Button, Select } from '../ui';
+import type { Space } from '../types';
+
+const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
 export default function Header() {
   const [, setLocation] = useLocation();
+  const [, params] = useRoute('/spaces/:id');
   const user = auth.user;
-  const { spaceName } = useLayout();
+  const currentSpaceId = params?.id;
+
+  const [spaceList, setSpaceList] = useState<Space[]>([]);
+
+  const loadSpaces = useCallback(() => {
+    spaces.list().then(setSpaceList).catch(err => {
+      console.error('Failed to load spaces:', err);
+      setSpaceList([]);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadSpaces();
+  }, [loadSpaces]);
+
+  useEffect(() => {
+    if (currentSpaceId) {
+      loadSpaces();
+    }
+  }, [currentSpaceId, loadSpaces]);
+
+  const options = useMemo(() =>
+    spaceList.map(s => ({ value: s.id, label: s.name })),
+    [spaceList]
+  );
+
+  const handleSpaceChange = (spaceId: string | null) => {
+    if (spaceId) {
+      localStorage.setItem(LAST_SPACE_KEY, spaceId);
+      setLocation(`/spaces/${spaceId}`);
+    }
+  };
 
   const handleLogout = () => {
     auth.logout();
@@ -16,20 +51,18 @@ export default function Header() {
   return (
     <header className="shrink-0 bg-white border-b border-gray-200">
       <div className="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setLocation('/spaces')}
-            className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors"
-          >
-            Talk
-          </button>
-          {spaceName && (
-            <>
-              <span className="text-gray-400">/</span>
-              <span className="text-lg text-gray-700">{spaceName}</span>
-            </>
-          )}
-        </div>
+        {spaceList.length > 0 ? (
+          <div className="w-64">
+            <Select
+              value={currentSpaceId}
+              onChange={handleSpaceChange}
+              options={options}
+              placeholder="Select space..."
+            />
+          </div>
+        ) : (
+          <div className="text-lg font-semibold text-gray-900">Talk</div>
+        )}
 
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-700">{user?.name || user?.email}</span>
@@ -39,3 +72,5 @@ export default function Header() {
     </header>
   );
 }
+
+export { LAST_SPACE_KEY };
