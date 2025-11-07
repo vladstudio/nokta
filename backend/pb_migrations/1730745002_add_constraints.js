@@ -1,8 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  // Add unique constraints to prevent duplicate data
-
-  // Prevent duplicate space memberships (same user in same space)
+  // Add unique constraint to prevent duplicate space memberships
   const spaceMembers = app.findCollectionByNameOrId("space_members")
   spaceMembers.indexes = spaceMembers.indexes || []
   spaceMembers.indexes.push(
