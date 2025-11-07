@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { messages as messagesAPI, auth } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -24,12 +24,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string }>>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
 
   useEffect(() => {
+    setPage(1);
+    setHasMore(false);
+    setLoadingOlder(false);
     loadMessages();
 
     // Subscribe to real-time updates
@@ -78,9 +85,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     };
   }, [chatId]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, pendingMessages, loading]);
 
   // Process queue when connection is restored
   useEffect(() => {
@@ -94,30 +98,70 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   const loadMessages = async () => {
     try {
-      // Try to load from cache first for instant display
       const cached = await messageCache.getMessages(chatId);
-      if (cached.length > 0) {
-        setMessages(cached);
-      }
+      if (cached.length > 0) setMessages(cached);
 
-      // Then load from server (fetches latest 50, descending)
-      const result = await messagesAPI.list(chatId);
-      // Reverse to display chronologically (oldest first)
+      const result = await messagesAPI.list(chatId, 1, 50);
       const chronologicalMessages = [...result.items].reverse();
       setMessages(chronologicalMessages);
+      setHasMore(result.totalPages > 1);
+      setPage(1);
 
-      // Update cache with chronological order
       await messageCache.saveMessages(chatId, chronologicalMessages);
     } catch (err) {
       console.error('Failed to load messages:', err);
     } finally {
       setLoading(false);
+      requestAnimationFrame(() => scrollToBottom());
     }
   };
+
+  const loadOlderMessages = useCallback(async () => {
+    if (loadingOlder || !hasMore) return;
+    setLoadingOlder(true);
+    const firstMsgId = messages[0]?.id;
+
+    try {
+      const nextPage = page + 1;
+      const result = await messagesAPI.list(chatId, nextPage, 50);
+
+      if (result.items.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      const olderMessages = [...result.items].reverse();
+      setMessages((prev) => [...olderMessages, ...prev]);
+      setPage(nextPage);
+      setHasMore(result.page < result.totalPages);
+
+      requestAnimationFrame(() => {
+        document.getElementById(`msg-${firstMsgId}`)?.scrollIntoView();
+      });
+    } catch (err) {
+      console.error('Failed to load older messages:', err);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [loadingOlder, hasMore, page, chatId, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   };
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop < 100 && hasMore && !loadingOlder) {
+        loadOlderMessages();
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingOlder, loadOlderMessages, loading]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +182,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
     try {
       messageQueue.updateStatus(tempId, 'sending');
-      const result = await messagesAPI.create(chatId, content);
+      await messagesAPI.create(chatId, content);
       messageQueue.remove(tempId);
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -198,7 +242,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+        {loadingOlder && (
+          <div className="flex justify-center py-2">
+            <LoadingSpinner size="sm" />
+          </div>
+        )}
         {allMessages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No messages yet. Start the conversation!
@@ -211,6 +260,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             return (
               <div
                 key={message.id}
+                id={`msg-${message.id}`}
                 className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-xl ${isOwn ? 'order-2' : 'order-1'}`}>
@@ -239,15 +289,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                     )}
                   </div>
                   <div
-                    className={`rounded-lg px-4 py-2 ${
-                      isOwn
-                        ? message.isFailed
-                          ? 'bg-red-100 text-red-900 border border-red-300'
-                          : message.isPending
+                    className={`rounded-lg px-4 py-2 ${isOwn
+                      ? message.isFailed
+                        ? 'bg-red-100 text-red-900 border border-red-300'
+                        : message.isPending
                           ? 'bg-blue-400 text-white opacity-70'
                           : 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
+                      : 'bg-gray-100 text-gray-900'
+                      }`}
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                   </div>
@@ -265,8 +314,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
           {typingUsers.length === 1
             ? `${typingUsers[0].userName} is typing...`
             : typingUsers.length === 2
-            ? `${typingUsers[0].userName} and ${typingUsers[1].userName} are typing...`
-            : `${typingUsers.length} people are typing...`}
+              ? `${typingUsers[0].userName} and ${typingUsers[1].userName} are typing...`
+              : `${typingUsers.length} people are typing...`}
         </div>
       )}
 
