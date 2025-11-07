@@ -67,6 +67,8 @@ export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
     // Subscribe to real-time updates
     const unsubscribe = messagesAPI.subscribe(chatId, async (data) => {
       if (data.action === 'create') {
+        // Clear typing indicator for this sender
+        setTypingUsers((prev) => prev.filter((u) => u.userId !== data.record.sender));
         // Fetch the full message with expanded sender data
         // PocketBase doesn't support expand in subscriptions, so we fetch it separately
         try {

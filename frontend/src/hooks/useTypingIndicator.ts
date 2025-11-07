@@ -35,7 +35,7 @@ export function useTypingIndicator(
       .create({
         chat: chatId,
         user: auth.user.id,
-        user_name: auth.user.name || auth.user.email,
+        userName: auth.user.name || auth.user.email,
         timestamp: new Date().toISOString(),
       })
       .catch(() => {
@@ -86,7 +86,7 @@ export function useTypingIndicator(
         const now = Date.now();
         const typingUser: TypingUser = {
           userId: record.user,
-          userName: record.user_name || 'Unknown',
+          userName: record.userName || 'Unknown',
           timestamp: now,
         };
 
