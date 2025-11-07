@@ -1,9 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-// Constants - FIX #6: Extract magic values
-const DEFAULT_PUBLIC_CHAT_NAME = "General"
-const MAX_PARTICIPANTS = 999
-
 /**
  * Auto-create space-wide public chat when a space is created
  * FIX #5: Added proper error handling and logging
@@ -15,7 +11,7 @@ onRecordAfterCreateSuccess((e) => {
 
     chat.set("space", e.record.id)
     chat.set("type", "public")
-    chat.set("name", DEFAULT_PUBLIC_CHAT_NAME)
+    chat.set("name", "General")
     chat.set("participants", [])
 
     e.app.save(chat)
@@ -69,7 +65,7 @@ onRecordAfterCreateSuccess((e) => {
     const existingMembers = $app.findRecordsByFilter(
       "space_members",
       `space = {:spaceId} && user != {:userId}`,
-      "-created",
+      "",
       0,
       0,
       { spaceId, userId: newUserId }

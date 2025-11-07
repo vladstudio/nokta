@@ -88,7 +88,18 @@ async function createUsers() {
       console.log(`✓ Created user: ${user.name} (${user.email})`);
       createdUsers.push(record);
     } catch (error) {
-      console.error(`✗ Failed to create user ${user.email}:`, error.message);
+      // If user already exists, fetch it instead
+      if (error.response?.data?.email?.code === 'validation_not_unique') {
+        try {
+          const existing = await pb.collection('users').getFirstListItem(`email="${user.email}"`);
+          console.log(`ℹ️  User already exists: ${user.name} (${user.email})`);
+          createdUsers.push(existing);
+        } catch (fetchError) {
+          console.error(`✗ Failed to fetch existing user ${user.email}:`, fetchError.message);
+        }
+      } else {
+        console.error(`✗ Failed to create user ${user.email}:`, error.message);
+      }
     }
   }
 
@@ -137,15 +148,17 @@ async function addMembersToSpaces(spaces, users) {
   }
 }
 
-async function getPublicChats(spaces) {
+async function getPublicChats(spaces, users) {
   console.log('\n💬 Finding public chats...');
   const chats = [];
+
+  // Login as first user to access chats
+  await pb.collection('users').authWithPassword(users[0].email, '1234567890');
 
   for (const space of spaces) {
     try {
       const chatList = await pb.collection('chats').getFullList({
-        filter: `space = "${space.id}" && type = "public"`,
-        sort: '-created'
+        filter: `space = "${space.id}" && type = "public"`
       });
 
       if (chatList.length > 0) {
@@ -156,6 +169,9 @@ async function getPublicChats(spaces) {
       }
     } catch (error) {
       console.error(`✗ Failed to get chats for ${space.name}:`, error.message);
+      if (error.response) {
+        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+      }
     }
   }
 
@@ -236,7 +252,7 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Get public chats
-    const chats = await getPublicChats(spaces);
+    const chats = await getPublicChats(spaces, users);
 
     // Create messages in each chat
     for (const chatData of chats) {
