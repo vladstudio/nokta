@@ -7,7 +7,7 @@ import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
-import NoSpacesPage from './pages/NoSpacesPage';
+import MySpacesPage from './pages/MySpacesPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
 
@@ -26,7 +26,7 @@ function App() {
     if (isAuthenticated && (location === '/' || location === '/spaces')) {
       spaces.list().then(spaceList => {
         if (spaceList.length === 0) {
-          setLocation('/no-spaces');
+          setLocation('/my-spaces');
         } else {
           const lastSpaceId = localStorage.getItem(LAST_SPACE_KEY);
           const targetSpace = spaceList.find(s => s.id === lastSpaceId) || spaceList[0];
@@ -34,7 +34,7 @@ function App() {
         }
       }).catch((err) => {
         console.error('Failed to load spaces:', err);
-        setLocation('/no-spaces');
+        setLocation('/my-spaces');
       });
     }
   }, [isAuthenticated, location, setLocation]);
@@ -67,9 +67,9 @@ function App() {
       <ConnectionBanner />
       <Switch>
         <Route path="/login" component={LoginPage} />
-        <Route path="/no-spaces">
+        <Route path="/my-spaces">
           <ProtectedRoute>
-            <NoSpacesPage />
+            <MySpacesPage />
           </ProtectedRoute>
         </Route>
         <Route path="/spaces/:spaceId/chats/:chatId?">

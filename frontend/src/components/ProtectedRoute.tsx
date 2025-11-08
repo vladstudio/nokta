@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   return (
     <div className="fixed inset-0 flex overflow-hidden">
-      <Sidebar />
+      {location !== '/my-spaces' && <Sidebar />}
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>

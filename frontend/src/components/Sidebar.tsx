@@ -66,15 +66,9 @@ export default function Sidebar() {
   useFavicon(hasUnread);
 
   const menuItems = useMemo(() => [
-    ...spaceList.map(space => ({
-      label: space.name,
-      onClick: () => {
-        localStorage.setItem(LAST_SPACE_KEY, space.id);
-        setLocation(`/spaces/${space.id}/chats`);
-      },
-    })),
+    { label: 'My Spaces', onClick: () => { setLocation('/my-spaces'); } },
     { label: 'Log Out', onClick: () => { auth.logout(); setLocation('/login'); } },
-  ], [spaceList, setLocation]);
+  ], [setLocation]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
