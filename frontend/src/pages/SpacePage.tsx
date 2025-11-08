@@ -3,7 +3,7 @@ import { useRoute, useLocation } from 'wouter';
 import ChatWindow from '../components/ChatWindow';
 
 export default function SpacePage() {
-  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
 
@@ -11,7 +11,7 @@ export default function SpacePage() {
     const handleNotificationClick = (event: Event) => {
       const { chatId: targetChatId, spaceId: targetSpaceId } = (event as CustomEvent).detail;
       if (targetSpaceId && targetChatId) {
-        setLocation(`/spaces/${targetSpaceId}/${targetChatId}`);
+        setLocation(`/spaces/${targetSpaceId}/chats/${targetChatId}`);
       }
     };
     window.addEventListener('notification-click', handleNotificationClick);

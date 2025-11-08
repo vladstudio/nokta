@@ -11,7 +11,7 @@ const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
 export default function Sidebar() {
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
   const spaceId = params?.spaceId;
   const chatId = params?.chatId;
 
@@ -28,7 +28,7 @@ export default function Sidebar() {
       const data = await chats.list(spaceId);
       setChatList(data);
       if (!chatId && data.length > 0) {
-        setLocation(`/spaces/${spaceId}/${data[0].id}`);
+        setLocation(`/spaces/${spaceId}/chats/${data[0].id}`);
       }
     } catch {
       setChatList([]);
@@ -70,14 +70,14 @@ export default function Sidebar() {
       label: space.name,
       onClick: () => {
         localStorage.setItem(LAST_SPACE_KEY, space.id);
-        setLocation(`/spaces/${space.id}`);
+        setLocation(`/spaces/${space.id}/chats`);
       },
     })),
     { label: 'Log Out', onClick: () => { auth.logout(); setLocation('/login'); } },
   ], [spaceList, setLocation]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
-    setLocation(`/spaces/${spaceId}/${newChatId}`);
+    setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
   }, [spaceId, setLocation]);
 
   return (

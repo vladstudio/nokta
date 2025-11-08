@@ -4,13 +4,17 @@ interface MessageActionsProps {
   onCancel: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onCopy: () => void;
 }
 
-export default function MessageActions({ onCancel, onEdit, onDelete }: MessageActionsProps) {
+export default function MessageActions({ onCancel, onEdit, onDelete, onCopy }: MessageActionsProps) {
   return (
     <div className="border-t border-gray-200 p-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
+          <Button variant="primary" onClick={onCopy}>
+            Copy
+          </Button>
           {onEdit && (
             <Button variant="primary" onClick={onEdit}>
               Edit

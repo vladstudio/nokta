@@ -36,6 +36,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
@@ -305,6 +306,23 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const handleCopyMessage = async () => {
+    if (!selectedMessageId) return;
+
+    const message = messages.find(m => m.id === selectedMessageId) ||
+                    pendingMessages.find(m => m.tempId === selectedMessageId);
+    if (!message) return;
+
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setToastOpen(true);
+      setSelectedMessageId(null);
+      setTimeout(() => setToastOpen(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy message:', err);
+    }
+  };
+
   const autoResize = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -396,6 +414,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {selectedMessageId ? (
         <MessageActions
           onCancel={() => setSelectedMessageId(null)}
+          onCopy={handleCopyMessage}
           onEdit={
             allMessages.find(m => m.id === selectedMessageId)?.sender === currentUser?.id && !allMessages.find(m => m.id === selectedMessageId)?.isPending
               ? handleEditMessage
@@ -432,6 +451,16 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* Copy Success Notification */}
+      {toastOpen && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Message copied to clipboard</span>
+        </div>
+      )}
     </div>
   );
 }
