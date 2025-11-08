@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-beta.4",
+    "@daily-co/daily-react": "^0.24.0",
     "boring-avatars": "^2.0.4",
     "i18next": "^25.6.1",
+    "jotai": "^2.15.1",
+    "lucide-react": "^0.553.0",
     "pocketbase": "^0.26.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

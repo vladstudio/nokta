@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
-import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
+import { useAtom } from 'jotai';
+import { Phone } from 'lucide-react';
+import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useMessageList } from '../hooks/useMessageList';
@@ -14,8 +16,10 @@ import AddActions from './AddActions';
 import MessageInput from './MessageInput';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
-import { ScrollArea, useToastManager } from '../ui';
-import type { Message } from '../types';
+import { ScrollArea, useToastManager, Button } from '../ui';
+import { callsAPI } from '../services/calls';
+import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import type { Message, Chat, Call } from '../types';
 
 interface ChatWindowProps {
   chatId: string;
@@ -33,6 +37,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const toastManager = useToastManager();
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
+  const [chat, setChat] = useState<Chat | null>(null);
+  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [, setShowCallView] = useAtom(showCallViewAtom);
+  const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
 
   // Use custom hooks
   const {
@@ -83,6 +91,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     const c = messagesContainerRef.current;
     return c && c.scrollHeight - c.scrollTop - c.clientHeight < 150;
   };
+
+  // Load chat data
+  useEffect(() => {
+    chats.getOne(chatId).then(setChat).catch(() => setChat(null));
+  }, [chatId]);
 
   // Mark chat as read when opened
   useEffect(() => {
@@ -275,6 +288,23 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const handleStartCall = async () => {
+    if (!chat) return;
+    try {
+      const { call } = await callsAPI.create(chat.space, chat.participants);
+      setActiveCall(call);
+      setShowCallView(true);
+      setIsCallMinimized(false);
+    } catch (error) {
+      console.error('Failed to start call:', error);
+      toastManager.add({
+        title: 'Failed to start call',
+        description: 'Could not start the call. Please try again.',
+        data: { type: 'error' }
+      });
+    }
+  };
+
   useHotkeys('esc', () => {
     setSelectedMessageId(null);
     (document.activeElement as HTMLElement)?.blur();
@@ -331,6 +361,15 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   return (
     <div className="flex-1 flex flex-col bg-white min-h-0">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
+        <h2 className="text-lg font-semibold">{chat?.name || 'Chat'}</h2>
+        <Button onClick={handleStartCall} variant="ghost" size="default" className="gap-2">
+          <Phone className="w-4 h-4" />
+          Call
+        </Button>
+      </div>
+
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
           <div className="p-6 space-y-4">

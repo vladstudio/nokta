@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { useAtom } from 'jotai';
 import { auth, spaces, chats } from '../services/pocketbase';
+import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { Menu, ScrollArea } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
-import type { Space, Chat, PocketBaseEvent } from '../types';
+import MinimizedCallWidget from './MinimizedCallWidget';
+import CallInviteWidget from './CallInviteWidget';
+import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import type { Space, Chat, PocketBaseEvent, CallInvite } from '../types';
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
@@ -21,6 +26,10 @@ export default function Sidebar() {
   const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [callInvites, setCallInvites] = useState<CallInvite[]>([]);
+  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [, setShowCallView] = useAtom(showCallViewAtom);
+  const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
@@ -39,8 +48,19 @@ export default function Sidebar() {
     }
   }, [spaceId, chatId, setLocation]);
 
+  const loadInvites = useCallback(async () => {
+    if (!spaceId) return;
+    try {
+      const invites = await callsAPI.getMyInvites(spaceId);
+      setCallInvites(invites);
+    } catch {
+      setCallInvites([]);
+    }
+  }, [spaceId]);
+
   useEffect(() => { loadSpaces(); }, [loadSpaces]);
   useEffect(() => { loadChats(); }, [loadChats]);
+  useEffect(() => { loadInvites(); }, [loadInvites]);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -75,6 +95,40 @@ export default function Sidebar() {
     { label: t('sidebar.logOut'), onClick: () => { auth.logout(); setLocation('/login'); } },
   ], [setLocation, t]);
 
+  // Subscribe to call invites
+  useEffect(() => {
+    if (!spaceId) return;
+    const unsubscribe = callsAPI.subscribeToInvites((data) => {
+      if (data.action === 'create' && data.record.invitee === auth.user?.id) {
+        loadInvites();
+      } else if (data.action === 'delete') {
+        setCallInvites(prev => prev.filter(inv => inv.id !== data.record.id));
+      }
+    });
+    return () => { unsubscribe.then(fn => fn?.()); };
+  }, [spaceId, loadInvites]);
+
+  const handleAcceptInvite = useCallback(async (inviteId: string) => {
+    try {
+      const call = await callsAPI.acceptInvite(inviteId);
+      setActiveCall(call);
+      setShowCallView(true);
+      setIsCallMinimized(false); // Show full screen
+      setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
+    } catch (error) {
+      console.error('Failed to accept invite:', error);
+    }
+  }, [setActiveCall, setShowCallView, setIsCallMinimized]);
+
+  const handleDeclineInvite = useCallback(async (inviteId: string) => {
+    try {
+      await callsAPI.declineInvite(inviteId);
+      setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
+    } catch (error) {
+      console.error('Failed to decline invite:', error);
+    }
+  }, []);
+
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
   }, [spaceId, setLocation]);
@@ -104,6 +158,15 @@ export default function Sidebar() {
             unreadCounts={unreadCounts}
           />
         </ScrollArea>
+        {callInvites.map(invite => (
+          <CallInviteWidget
+            key={invite.id}
+            invite={invite}
+            onAccept={handleAcceptInvite}
+            onDecline={handleDeclineInvite}
+          />
+        ))}
+        <MinimizedCallWidget />
       </div>
       <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>

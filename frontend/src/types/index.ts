@@ -87,3 +87,28 @@ export interface UserPresenceData {
   id: string;
   last_seen: string;
 }
+
+export interface Call {
+  id: string;
+  space: string;
+  participants: string[];
+  daily_room_url: string;
+  daily_room_name: string;
+  created?: string;
+  expand?: {
+    participants?: User[];
+  };
+}
+
+export interface CallInvite {
+  id: string;
+  call: string;
+  inviter: string;
+  invitee: string;
+  created?: string;
+  expand?: {
+    call?: Call;
+    inviter?: User;
+    invitee?: User;
+  };
+}

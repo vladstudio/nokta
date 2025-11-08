@@ -1,5 +1,6 @@
 import { Route, Switch, useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
+import { Provider as JotaiProvider } from 'jotai';
 import { auth, spaces } from './services/pocketbase';
 import { requestNotificationPermission, getNotificationPermission } from './utils/notifications';
 import { ToastProvider } from './ui';
@@ -50,57 +51,72 @@ function App() {
     }
   }, [isAuthenticated, location, setLocation]);
 
-  // Request notification permission
+  // Request notification and media permissions
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const requestPermission = async () => {
+    const requestPermissions = async () => {
       const permission = getNotificationPermission();
 
       if (permission.canRequest) {
-        // Small delay to let user see the app first
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         const granted = await requestNotificationPermission();
         if (granted) {
           console.log('Notification permission granted');
-        } else {
-          console.log('Notification permission not granted');
+        }
+      }
+
+      // Request camera and microphone permissions
+      if (navigator.mediaDevices?.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: true
+          });
+          stream.getTracks().forEach(track => track.stop());
+          console.log('Media permissions granted');
+        } catch (error) {
+          if (error instanceof Error && error.name === 'NotAllowedError') {
+            console.warn('Media permissions denied');
+          }
         }
       }
     };
 
-    requestPermission();
+    requestPermissions();
   }, [isAuthenticated]);
 
   return (
-    <ToastProvider>
-      <ErrorBoundary>
-        <ConnectionBanner />
-        <Switch>
-          <Route path="/login" component={LoginPage} />
-          <Route path="/my-spaces">
-            <ProtectedRoute>
-              <MySpacesPage />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/spaces/:spaceId/chats/:chatId?">
-            <ProtectedRoute>
-              <SpacePage />
-            </ProtectedRoute>
-          </Route>
-          <Route>
-            {isAuthenticated ? (
-              <div className="flex-1 flex items-center justify-center">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : (
-              <LoginPage />
-            )}
-          </Route>
-        </Switch>
-      </ErrorBoundary>
-    </ToastProvider>
+    <JotaiProvider>
+      <ToastProvider>
+        <ErrorBoundary>
+          <ConnectionBanner />
+          <Switch>
+            <Route path="/login" component={LoginPage} />
+            <Route path="/my-spaces">
+              <ProtectedRoute>
+                <MySpacesPage />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/spaces/:spaceId/chats/:chatId?">
+              <ProtectedRoute>
+                <SpacePage />
+              </ProtectedRoute>
+            </Route>
+            <Route>
+              {isAuthenticated ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <LoadingSpinner size="lg" />
+                </div>
+              ) : (
+                <LoginPage />
+              )}
+            </Route>
+          </Switch>
+        </ErrorBoundary>
+      </ToastProvider>
+    </JotaiProvider>
   );
 }
 
