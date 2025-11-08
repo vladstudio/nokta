@@ -32,11 +32,15 @@ export interface Chat {
   type: 'public' | 'private';
   participants: string[];
   name?: string;
+  last_message_at?: string;
+  last_message_content?: string;
+  last_message_sender?: string;
   created?: string;
   updated?: string;
   unreadCount?: number; // Computed client-side, not from DB
   expand?: {
     participants?: User[];
+    last_message_sender?: User;
   };
 }
 

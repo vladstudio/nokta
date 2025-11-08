@@ -197,3 +197,24 @@ onRecordAfterCreateSuccess((e) => {
 
   e.next()
 }, "chats")
+
+/**
+ * Update chat's last message info when a message is created
+ */
+onRecordAfterCreateSuccess((e) => {
+  const chatId = e.record.get("chat")
+  const sender = e.record.get("sender")
+  const content = e.record.get("content")
+
+  try {
+    const chat = e.app.findRecordById("chats", chatId)
+    chat.set("last_message_at", new Date().toISOString())
+    chat.set("last_message_content", content)
+    chat.set("last_message_sender", sender)
+    e.app.save(chat)
+  } catch (err) {
+    console.error(`[auto_create_chats] Failed to update last message for chat ${chatId}:`, err.message)
+  }
+
+  e.next()
+}, "messages")

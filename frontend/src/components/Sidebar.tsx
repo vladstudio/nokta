@@ -37,6 +37,20 @@ export default function Sidebar() {
   useEffect(() => { loadSpaces(); }, [loadSpaces]);
   useEffect(() => { loadChats(); }, [loadChats]);
 
+  useEffect(() => {
+    if (!spaceId) return;
+    const unsubscribe = chats.subscribe(async (data) => {
+      if (data.action === 'update' && data.record.space === spaceId) {
+        const fullChat = await chats.getOne(data.record.id);
+        setChatList(prev => prev
+          .map(c => c.id === data.record.id ? fullChat : c)
+          .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))
+        );
+      }
+    });
+    return () => { unsubscribe.then(fn => fn?.()); };
+  }, [spaceId]);
+
   const currentSpace = useMemo(() =>
     spaceList.find(s => s.id === spaceId),
     [spaceList, spaceId]

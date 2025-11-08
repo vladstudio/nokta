@@ -66,14 +66,15 @@ export const chats = {
   async list(spaceId: string) {
     const records = await pb.collection('chats').getFullList<Chat>({
       filter: `space = "${spaceId}"`,
-      expand: 'participants',
+      expand: 'participants,last_message_sender',
+      sort: '-last_message_at',
     });
     return records;
   },
 
   async getOne(id: string) {
     const record = await pb.collection('chats').getOne<Chat>(id, {
-      expand: 'participants',
+      expand: 'participants,last_message_sender',
     });
     return record;
   },

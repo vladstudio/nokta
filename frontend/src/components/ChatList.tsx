@@ -49,8 +49,10 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           <div className={`text-sm text-gray-900 truncate ${hasUnread ? 'font-semibold' : 'font-medium'}`}>
             {getChatName(chat)}
           </div>
-          <div className="text-xs text-gray-500">
-            {chat.type === 'public' ? 'Public chat' : 'Private chat'}
+          <div className="text-xs text-gray-500 truncate">
+            {chat.last_message_content && chat.expand?.last_message_sender ?
+              `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
+              (chat.type === 'public' ? 'Public chat' : 'Private chat')}
           </div>
         </div>
         {hasUnread && (

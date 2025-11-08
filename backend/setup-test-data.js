@@ -14,7 +14,8 @@ const ADMIN = {
 
 const USERS = [
   { email: 'a@test.com', password: '1234567890', name: 'Alice' },
-  { email: 'b@test.com', password: '1234567890', name: 'Bob' }
+  { email: 'b@test.com', password: '1234567890', name: 'Bob' },
+  { email: 'c@test.com', password: '1234567890', name: 'Colin' }
 ];
 
 const SPACES = [
