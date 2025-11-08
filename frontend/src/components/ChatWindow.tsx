@@ -285,7 +285,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     autoResize();
   }, [onTyping, autoResize]);
 
-  useHotkeys('esc', () => setSelectedMessageId(null));
+  useHotkeys('esc', () => {
+    setSelectedMessageId(null);
+    (document.activeElement as HTMLElement)?.blur();
+  });
 
   if (loading) {
     return (
