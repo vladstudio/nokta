@@ -6,7 +6,8 @@ migrate((app) => {
   calls.listRule = '@request.auth.id != ""'
   calls.viewRule = '@request.auth.id != ""'
   calls.createRule = '@request.auth.id != ""'
-  calls.updateRule = '@request.auth.id != "" && participants ?= @request.auth.id'
+  // Allow participants to update, or anyone authenticated (invite acceptance handled by app logic)
+  calls.updateRule = '@request.auth.id != ""'
   calls.deleteRule = '@request.auth.id != "" && participants ?= @request.auth.id'
 
   // Remove initiator field if it exists

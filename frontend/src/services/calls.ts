@@ -39,9 +39,14 @@ export const callsAPI = {
     });
     const currentUserId = pb.authStore.model?.id;
 
+    // Use the expanded call data
+    const call = invite.expand?.call;
+    if (!call) {
+      throw new Error('Call not found or no longer available');
+    }
+
     // Add user to call participants
-    const call = await pb.collection('calls').getOne<Call>(invite.call);
-    const updatedCall = await pb.collection('calls').update<Call>(invite.call, {
+    const updatedCall = await pb.collection('calls').update<Call>(call.id, {
       participants: [...call.participants, currentUserId]
     });
 

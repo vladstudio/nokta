@@ -11,17 +11,7 @@ Talk is a real-time chat application built with PocketBase (backend) and React (
 
 ## Development Commands
 
-### Running the applications
-```bash
-# Backend (PocketBase server)
-cd backend && ./pocketbase serve
-
-# Frontend (runs on port 3000)
-cd frontend && npm run dev
-
-# Admin (runs on port 5173)
-cd admin && npm run dev
-```
+Never run dev servers; user does it in separate terminals.
 
 ### Building
 ```bash
