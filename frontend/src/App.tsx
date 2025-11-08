@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
 import NoSpacesPage from './pages/NoSpacesPage';
 import LoadingSpinner from './components/LoadingSpinner';
-import { LAST_SPACE_KEY } from './components/Header';
+import { LAST_SPACE_KEY } from './components/Sidebar';
 
 function App() {
   const [location, setLocation] = useLocation();

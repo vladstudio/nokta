@@ -1,5 +1,4 @@
 import { Select as BaseSelect } from '@base-ui-components/react/select';
-import { forwardRef } from 'react';
 
 interface Option<T = string> {
   value: T;
@@ -14,12 +13,19 @@ interface SelectProps<T = string> {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-const SelectComponent = <T extends string = string>(
-  { value, defaultValue, onChange, options, placeholder = 'Select...', disabled, className = '' }: SelectProps<T>,
-  ref: React.Ref<HTMLButtonElement>
-) => {
+export function Select<T extends string = string>({
+  value,
+  defaultValue,
+  onChange,
+  options,
+  placeholder = 'Select...',
+  disabled,
+  className = '',
+  ref,
+}: SelectProps<T>) {
   const selectedOption = options.find(opt => opt.value === value);
 
   return (
@@ -33,28 +39,24 @@ const SelectComponent = <T extends string = string>(
         </span>
         <BaseSelect.Icon className="ml-2 text-gray-500">▼</BaseSelect.Icon>
       </BaseSelect.Trigger>
-    <BaseSelect.Portal>
-      <BaseSelect.Positioner sideOffset={4}>
-        <BaseSelect.Popup className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
-          <BaseSelect.List>
-            {options.map((option) => (
-              <BaseSelect.Item
-                key={option.value}
-                value={option.value}
-                className="px-4 py-2 cursor-pointer hover:bg-gray-100 data-[highlighted]:bg-gray-100 data-[selected]:bg-blue-50 data-[selected]:text-blue-600 flex items-center justify-between"
-              >
-                <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
-                <BaseSelect.ItemIndicator className="ml-2">✓</BaseSelect.ItemIndicator>
-              </BaseSelect.Item>
-            ))}
-          </BaseSelect.List>
-        </BaseSelect.Popup>
-      </BaseSelect.Positioner>
-    </BaseSelect.Portal>
-  </BaseSelect.Root>
+      <BaseSelect.Portal>
+        <BaseSelect.Positioner sideOffset={4}>
+          <BaseSelect.Popup className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
+            <BaseSelect.List>
+              {options.map((option) => (
+                <BaseSelect.Item
+                  key={option.value}
+                  value={option.value}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 data-highlighted:bg-gray-100 data-selected:bg-blue-50 data-selected:text-blue-600 flex items-center justify-between"
+                >
+                  <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
+                  <BaseSelect.ItemIndicator className="ml-2">✓</BaseSelect.ItemIndicator>
+                </BaseSelect.Item>
+              ))}
+            </BaseSelect.List>
+          </BaseSelect.Popup>
+        </BaseSelect.Positioner>
+      </BaseSelect.Portal>
+    </BaseSelect.Root>
   );
-};
-
-export default forwardRef(SelectComponent) as <T extends string = string>(
-  props: SelectProps<T> & { ref?: React.Ref<HTMLButtonElement> }
-) => ReturnType<typeof SelectComponent>;
+}

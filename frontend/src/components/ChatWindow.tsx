@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { messages as messagesAPI, auth } from '../services/pocketbase';
+import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { messageQueue, type PendingMessage } from '../utils/messageQueue';
 import { messageCache } from '../utils/messageCache';
 import LoadingSpinner from './LoadingSpinner';
-import { Button, Input } from '../ui';
+import { Button, Input, ScrollArea } from '../ui';
 import type { Message } from '../types';
 
 interface ChatWindowProps {
   chatId: string;
-  onOpen?: () => void;
 }
 
 interface DisplayMessage extends Message {
@@ -19,7 +18,7 @@ interface DisplayMessage extends Message {
   tempId?: string;
 }
 
-export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
+export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -44,18 +43,22 @@ export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
 
   // Mark chat as read when opened
   useEffect(() => {
-    onOpen?.();
-  }, [chatId, onOpen]);
+    if (currentUser?.id) {
+      chatReadStatus.markAsRead(currentUser.id, chatId);
+    }
+  }, [chatId, currentUser?.id]);
 
   // Mark as read when window regains focus
   useEffect(() => {
     const handleFocus = () => {
-      onOpen?.();
+      if (currentUser?.id) {
+        chatReadStatus.markAsRead(currentUser.id, chatId);
+      }
     };
 
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [onOpen]);
+  }, [chatId, currentUser?.id]);
 
   useEffect(() => {
     prevStateRef.current = { lastMsgId: '', pendingCount: 0 };
@@ -264,7 +267,7 @@ export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
 
   if (loading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
         <LoadingSpinner size="lg" />
         <div className="text-gray-600">Loading messages...</div>
       </div>
@@ -289,73 +292,75 @@ export default function ChatWindow({ chatId, onOpen }: ChatWindowProps) {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Messages Area */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4">
-        {loadingOlder && (
-          <div className="flex justify-center py-2">
-            <LoadingSpinner size="sm" />
-          </div>
-        )}
-        {allMessages.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No messages yet. Start the conversation!
-          </div>
-        ) : (
-          allMessages.map((message) => {
-            const isOwn = message.sender === currentUser?.id;
-            const senderName = message.expand?.sender?.name || message.expand?.sender?.email || 'Unknown';
-
-            return (
-              <div
-                key={message.id}
-                id={`msg-${message.id}`}
-                className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-xl ${isOwn ? 'order-2' : 'order-1'}`}>
-                  <div className="flex items-baseline space-x-2 mb-1">
-                    <span className="text-xs font-medium text-gray-700">
-                      {isOwn ? 'You' : senderName}
-                    </span>
-                    {message.created && !message.isPending && (
-                      <span className="text-xs text-gray-400">
-                        {new Date(message.created).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    )}
-                    {message.isPending && (
-                      <span className="text-xs text-gray-400">Sending...</span>
-                    )}
-                    {message.isFailed && (
-                      <button
-                        onClick={() => message.tempId && handleRetry(message.tempId)}
-                        className="text-xs text-red-500 hover:text-red-700 underline"
-                      >
-                        Failed - Retry
-                      </button>
-                    )}
-                  </div>
-                  <div
-                    className={`rounded-lg px-4 py-2 ${isOwn
-                      ? message.isFailed
-                        ? 'bg-red-100 text-red-900 border border-red-300'
-                        : message.isPending
-                          ? 'bg-blue-400 text-white opacity-70'
-                          : 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                      }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                  </div>
-                </div>
+      <ScrollArea ref={messagesContainerRef}>
+          <div className="p-6 space-y-4">
+            {loadingOlder && (
+              <div className="flex justify-center py-2">
+                <LoadingSpinner size="sm" />
               </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            )}
+            {allMessages.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                No messages yet. Start the conversation!
+              </div>
+            ) : (
+              allMessages.map((message) => {
+                const isOwn = message.sender === currentUser?.id;
+                const senderName = message.expand?.sender?.name || message.expand?.sender?.email || 'Unknown';
+
+                return (
+                  <div
+                    key={message.id}
+                    id={`msg-${message.id}`}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-xl ${isOwn ? 'order-2' : 'order-1'}`}>
+                      <div className="flex items-baseline space-x-2 mb-1">
+                        <span className="text-xs font-medium text-gray-700">
+                          {isOwn ? 'You' : senderName}
+                        </span>
+                        {message.created && !message.isPending && (
+                          <span className="text-xs text-gray-400">
+                            {new Date(message.created).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        )}
+                        {message.isPending && (
+                          <span className="text-xs text-gray-400">Sending...</span>
+                        )}
+                        {message.isFailed && (
+                          <button
+                            onClick={() => message.tempId && handleRetry(message.tempId)}
+                            className="text-xs text-red-500 hover:text-red-700 underline"
+                          >
+                            Failed - Retry
+                          </button>
+                        )}
+                      </div>
+                      <div
+                        className={`rounded-lg px-4 py-2 ${isOwn
+                          ? message.isFailed
+                            ? 'bg-red-100 text-red-900 border border-red-300'
+                            : message.isPending
+                              ? 'bg-blue-400 text-white opacity-70'
+                              : 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                          }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+      </ScrollArea>
 
       {/* Typing Indicator */}
       {typingUsers.length > 0 && (

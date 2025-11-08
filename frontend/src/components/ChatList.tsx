@@ -122,32 +122,22 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
     return null;
   }, [currentUser?.id, isUserOnline]);
 
-  return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col chat-list">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Chats</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        {chats.length === 0 ? (
-          <div className="p-4 text-center text-gray-500 text-sm">No chats available</div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {chats.map((chat) => (
-              <ChatListItem
-                key={chat.id}
-                chat={chat}
-                isSelected={selectedChatId === chat.id}
-                unreadCount={unreadCounts.get(chat.id) || 0}
-                onSelectChat={onSelectChat}
-                getChatName={getChatName}
-                getChatIcon={getChatIcon}
-                getOnlineStatus={getOnlineStatus}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+  return chats.length === 0 ? (
+    <div className="p-4 text-center text-gray-500 text-sm">No chats available</div>
+  ) : (
+    <div className="divide-y divide-gray-100">
+      {chats.map((chat) => (
+        <ChatListItem
+          key={chat.id}
+          chat={chat}
+          isSelected={selectedChatId === chat.id}
+          unreadCount={unreadCounts.get(chat.id) || 0}
+          onSelectChat={onSelectChat}
+          getChatName={getChatName}
+          getChatIcon={getChatIcon}
+          getOnlineStatus={getOnlineStatus}
+        />
+      ))}
     </div>
   );
 }

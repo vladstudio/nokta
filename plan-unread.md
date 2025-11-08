@@ -449,7 +449,7 @@ export function SpacePage() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-80 border-r">
+      <div className="w-48 border-r">
         <ChatList
           chats={chats}
           selectedChatId={chatId}

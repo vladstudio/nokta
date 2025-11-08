@@ -1,3 +1,6 @@
 export { Button } from './Button';
 export { Input } from './Input';
-export { default as Select } from './Select';
+export { Select } from './Select';
+export { Menu } from './Menu';
+export { Popover } from './Popover';
+export { ScrollArea } from './ScrollArea';
