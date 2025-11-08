@@ -3,9 +3,10 @@ import { Button } from '../ui';
 interface MessageActionsProps {
   onCancel: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export default function MessageActions({ onCancel, onEdit }: MessageActionsProps) {
+export default function MessageActions({ onCancel, onEdit, onDelete }: MessageActionsProps) {
   return (
     <div className="border-t border-gray-200 p-4">
       <div className="flex items-center justify-between">
@@ -13,6 +14,11 @@ export default function MessageActions({ onCancel, onEdit }: MessageActionsProps
           {onEdit && (
             <Button variant="primary" onClick={onEdit}>
               Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button variant="primary" onClick={onDelete}>
+              Delete
             </Button>
           )}
         </div>

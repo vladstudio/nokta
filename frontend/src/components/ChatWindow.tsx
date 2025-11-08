@@ -9,6 +9,7 @@ import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
 import MessageActions from './MessageActions';
 import EditMessageDialog from './EditMessageDialog';
+import DeleteMessageDialog from './DeleteMessageDialog';
 import { Button, Input, ScrollArea } from '../ui';
 import type { Message } from '../types';
 
@@ -34,6 +35,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
@@ -288,6 +290,21 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const handleDeleteMessage = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedMessageId) return;
+
+    try {
+      await messagesAPI.delete(selectedMessageId);
+      setSelectedMessageId(null);
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+    }
+  };
+
   const autoResize = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -384,6 +401,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
               ? handleEditMessage
               : undefined
           }
+          onDelete={
+            allMessages.find(m => m.id === selectedMessageId)?.sender === currentUser?.id && !allMessages.find(m => m.id === selectedMessageId)?.isPending
+              ? handleDeleteMessage
+              : undefined
+          }
         />
       ) : (
         <div className="border-t border-gray-200 p-4">
@@ -402,6 +424,13 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         onOpenChange={setEditDialogOpen}
         initialContent={allMessages.find(m => m.id === selectedMessageId)?.content || ''}
         onSave={handleSaveEdit}
+      />
+
+      {/* Delete Message Dialog */}
+      <DeleteMessageDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

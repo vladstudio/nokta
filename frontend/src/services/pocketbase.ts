@@ -122,6 +122,10 @@ export const messages = {
     return record;
   },
 
+  async delete(messageId: string) {
+    await pb.collection('messages').delete(messageId);
+  },
+
   async countUnread(chatId: string, afterTimestamp: string): Promise<number> {
     const result = await pb.collection('messages').getList(1, 1, {
       filter: `chat = "${chatId}" && created > "${afterTimestamp}"`,
