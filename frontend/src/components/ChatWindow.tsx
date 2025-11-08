@@ -68,7 +68,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const prevStateRef = useRef({ lastMsgId: '', pendingCount: 0 });
+  const scrollStateRef = useRef({
+    lastMsgId: '',
+    pendingCount: 0,
+    hasScrolledInitially: false,
+    lastScrollLoadTime: 0,
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
@@ -98,9 +103,15 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return () => window.removeEventListener('focus', handleFocus);
   }, [chatId, currentUser?.id]);
 
-  // Reset selected message when chat changes
+  // Reset selected message and scroll state when chat changes
   useEffect(() => {
     setSelectedMessageId(null);
+    scrollStateRef.current = {
+      lastMsgId: '',
+      pendingCount: 0,
+      hasScrolledInitially: false,
+      lastScrollLoadTime: 0,
+    };
   }, [chatId]);
 
   // Process queue when connection is restored
@@ -113,36 +124,47 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   }, [isOnline]);
 
-  // Auto-scroll: when current user sends OR when new message arrives and already at bottom
+  // Auto-scroll: on initial load, when current user sends, OR when new message arrives and already at bottom
   useEffect(() => {
-    const { lastMsgId: prevLastId, pendingCount: prevPending } = prevStateRef.current;
+    const { lastMsgId: prevLastId, pendingCount: prevPending, hasScrolledInitially } = scrollStateRef.current;
     const lastMsg = messages[messages.length - 1];
     const lastMsgId = lastMsg?.id || '';
-    prevStateRef.current = { lastMsgId, pendingCount: pendingMessages.length };
 
-    if (!loading && prevLastId && lastMsgId !== prevLastId && lastMsg) {
-      if (lastMsg.sender === currentUser?.id || isAtBottom()) requestAnimationFrame(scrollToBottom);
+    scrollStateRef.current.lastMsgId = lastMsgId;
+    scrollStateRef.current.pendingCount = pendingMessages.length;
+
+    if (!loading && messages.length > 0) {
+      // Initial load: scroll to bottom once
+      if (!hasScrolledInitially) {
+        scrollStateRef.current.hasScrolledInitially = true;
+        requestAnimationFrame(scrollToBottom);
+      }
+      // New message arrived: scroll if user sent it or already at bottom
+      else if (lastMsgId !== prevLastId && lastMsg) {
+        if (lastMsg.sender === currentUser?.id || isAtBottom()) requestAnimationFrame(scrollToBottom);
+      }
     }
     if (prevPending && pendingMessages.length > prevPending) requestAnimationFrame(scrollToBottom);
   }, [messages, pendingMessages, loading, currentUser?.id]);
 
   // Scroll handler for loading older messages
+  // Dependencies: only re-run when loading state changes (initial mount -> loaded)
+  // This ensures the handler attaches once after ScrollArea renders, avoiding unnecessary re-attachments
   useEffect(() => {
     const container = messagesContainerRef.current;
-    if (!container) return;
+    if (!container || loading) return;
 
-    let lastLoadTime = 0;
     const handleScroll = () => {
-      const timeSinceLastLoad = Date.now() - lastLoadTime;
+      const timeSinceLastLoad = Date.now() - scrollStateRef.current.lastScrollLoadTime;
       if (container.scrollTop < 100 && hasMore && !loadingOlder && timeSinceLastLoad > 1000) {
-        lastLoadTime = Date.now();
+        scrollStateRef.current.lastScrollLoadTime = Date.now();
         loadOlderMessages();
       }
     };
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loadingOlder, loadOlderMessages]);
+  }, [loading, hasMore, loadingOlder, loadOlderMessages]);
 
   const handleSend = async (content: string) => {
     if (!isOnline) {
