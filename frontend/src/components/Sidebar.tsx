@@ -74,7 +74,7 @@ export default function Sidebar() {
   }, [spaceId, setLocation]);
 
   return (
-    <div className="w-48 bg-white border-r border-gray-200 flex flex-col min-h-0">
+    <div className="w-60 bg-white border-r border-gray-200 flex flex-col min-h-0">
       <ScrollArea>
         <div className="p-4">
           <Menu

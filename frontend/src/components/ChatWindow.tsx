@@ -32,6 +32,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
   const prevStateRef = useRef({ lastMsgId: '', pendingCount: 0 });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
@@ -217,6 +218,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     const content = newMessage.trim();
     setNewMessage('');
 
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
     if (!isOnline) {
       // Queue message for later
       messageQueue.add(chatId, content);
@@ -260,10 +266,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const autoResize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, []);
+
   const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value);
     onTyping();
-  }, [onTyping]);
+    autoResize();
+  }, [onTyping, autoResize]);
 
   if (loading) {
     return (
@@ -376,7 +391,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {/* Message Input */}
       <div className="border-t border-gray-200 p-4">
         <form onSubmit={handleSend} className="flex space-x-4">
-          <Input as="textarea" value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows={2} className="flex-1" />
+          <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows={2} className="flex-1 max-h-42 overflow-y-auto" />
           <Button type="submit" disabled={!newMessage.trim() || sending} className="px-6">
             {sending ? 'Sending...' : 'Send'}
           </Button>
