@@ -63,8 +63,8 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           </div>
         </div>
         {hasUnread && (
-          <div className="flex-shrink-0">
-            <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+          <div className="shrink-0">
+            <span className="inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           </div>

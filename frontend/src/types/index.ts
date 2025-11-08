@@ -71,7 +71,7 @@ export interface ChatReadStatus {
 
 // PocketBase real-time event types
 export interface PocketBaseEvent<T = any> {
-  action: 'create' | 'update' | 'delete';
+  action: string;
   record: T;
 }
 
