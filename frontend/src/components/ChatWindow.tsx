@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { messageQueue, type PendingMessage } from '../utils/messageQueue';
 import { messageCache } from '../utils/messageCache';
 import LoadingSpinner from './LoadingSpinner';
+import ChatMessage from './ChatMessage';
+import MessageActions from './MessageActions';
 import { Button, Input, ScrollArea } from '../ui';
 import type { Message } from '../types';
 
@@ -28,6 +31,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
@@ -66,6 +70,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     setPage(1);
     setHasMore(false);
     setLoadingOlder(false);
+    setSelectedMessageId(null);
     loadMessages();
 
     // Subscribe to real-time updates
@@ -280,6 +285,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     autoResize();
   }, [onTyping, autoResize]);
 
+  useHotkeys('esc', () => setSelectedMessageId(null));
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
@@ -321,57 +328,17 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                 No messages yet. Start the conversation!
               </div>
             ) : (
-              allMessages.map((message) => {
-                const isOwn = message.sender === currentUser?.id;
-                const senderName = message.expand?.sender?.name || message.expand?.sender?.email || 'Unknown';
-
-                return (
-                  <div
-                    key={message.id}
-                    id={`msg-${message.id}`}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-xl ${isOwn ? 'order-2' : 'order-1'}`}>
-                      <div className="flex items-baseline space-x-2 mb-1">
-                        <span className="text-xs font-medium text-gray-700">
-                          {isOwn ? 'You' : senderName}
-                        </span>
-                        {message.created && !message.isPending && (
-                          <span className="text-xs text-gray-400">
-                            {new Date(message.created).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                        )}
-                        {message.isPending && (
-                          <span className="text-xs text-gray-400">Sending...</span>
-                        )}
-                        {message.isFailed && (
-                          <button
-                            onClick={() => message.tempId && handleRetry(message.tempId)}
-                            className="text-xs text-red-500 hover:text-red-700 underline"
-                          >
-                            Failed - Retry
-                          </button>
-                        )}
-                      </div>
-                      <div
-                        className={`rounded-lg px-4 py-2 ${isOwn
-                          ? message.isFailed
-                            ? 'bg-red-100 text-red-900 border border-red-300'
-                            : message.isPending
-                              ? 'bg-blue-400 text-white opacity-70'
-                              : 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                          }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+              allMessages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  isOwn={message.sender === currentUser?.id}
+                  currentUserId={currentUser?.id || ''}
+                  isSelected={selectedMessageId === message.id}
+                  onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
+                  onRetry={handleRetry}
+                />
+              ))
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -388,15 +355,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         </div>
       )}
 
-      {/* Message Input */}
-      <div className="border-t border-gray-200 p-4">
-        <form onSubmit={handleSend} className="flex space-x-4">
-          <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows={2} className="flex-1 max-h-42 overflow-y-auto" />
-          <Button type="submit" disabled={!newMessage.trim() || sending} className="px-6">
-            {sending ? 'Sending...' : 'Send'}
-          </Button>
-        </form>
-      </div>
+      {/* Message Input or Actions */}
+      {selectedMessageId ? (
+        <MessageActions onCancel={() => setSelectedMessageId(null)} />
+      ) : (
+        <div className="border-t border-gray-200 p-4">
+          <form onSubmit={handleSend} className="flex space-x-4">
+            <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows={2} className="flex-1 max-h-42 overflow-y-auto" />
+            <Button type="submit" disabled={!newMessage.trim() || sending} className="px-6">
+              {sending ? 'Sending...' : 'Send'}
+            </Button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
