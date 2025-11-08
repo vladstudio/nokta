@@ -1,4 +1,5 @@
 import { Select as BaseSelect } from '@base-ui-components/react/select';
+import { Card } from './Card';
 
 interface Option<T = string> {
   value: T;
@@ -41,19 +42,21 @@ export function Select<T extends string = string>({
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner sideOffset={4}>
-          <BaseSelect.Popup className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
-            <BaseSelect.List>
-              {options.map((option) => (
-                <BaseSelect.Item
-                  key={option.value}
-                  value={option.value}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 data-highlighted:bg-gray-100 data-selected:bg-blue-50 data-selected:text-blue-600 flex items-center justify-between"
-                >
-                  <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
-                  <BaseSelect.ItemIndicator className="ml-2">✓</BaseSelect.ItemIndicator>
-                </BaseSelect.Item>
-              ))}
-            </BaseSelect.List>
+          <BaseSelect.Popup className="max-h-60 overflow-auto z-50">
+            <Card shadow="lg" border>
+              <BaseSelect.List>
+                {options.map((option) => (
+                  <BaseSelect.Item
+                    key={option.value}
+                    value={option.value}
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 data-highlighted:bg-gray-100 data-selected:bg-blue-50 data-selected:text-blue-600 flex items-center justify-between"
+                  >
+                    <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
+                    <BaseSelect.ItemIndicator className="ml-2">✓</BaseSelect.ItemIndicator>
+                  </BaseSelect.Item>
+                ))}
+              </BaseSelect.List>
+            </Card>
           </BaseSelect.Popup>
         </BaseSelect.Positioner>
       </BaseSelect.Portal>

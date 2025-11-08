@@ -1,4 +1,5 @@
 import { Toast as BaseToast } from '@base-ui-components/react/toast';
+import { Card } from './Card';
 
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
@@ -15,7 +16,7 @@ function ToastList() {
     const type = (toast.data?.type as ToastType) || 'info';
     return (
       <BaseToast.Root key={toast.id} toast={toast}>
-        <div className={`border-l-4 rounded-lg shadow-lg p-4 bg-white ${typeStyles[type]}`}>
+        <Card shadow="lg" padding="md" className={`border-l-4 ${typeStyles[type]}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               {toast.title && <div className="font-medium text-gray-900">{toast.title}</div>}
@@ -29,7 +30,7 @@ function ToastList() {
               </svg>
             </BaseToast.Close>
           </div>
-        </div>
+        </Card>
       </BaseToast.Root>
     );
   });

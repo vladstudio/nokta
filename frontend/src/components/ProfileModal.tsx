@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { auth, pb } from '../services/pocketbase';
-import { Button, Input } from '../ui';
+import { Alert, Button, FormLabel, Input } from '../ui';
 import type { User } from '../types';
 
 interface ProfileModalProps {
@@ -82,7 +82,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
@@ -123,29 +123,21 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <FormLabel htmlFor="name">Name</FormLabel>
             <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
           </div>
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <FormLabel htmlFor="email">Email</FormLabel>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
 
           {/* Error message */}
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          {error && <Alert variant="error">{error}</Alert>}
 
           {/* Success message */}
-          {success && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-              Profile updated successfully!
-            </div>
-          )}
+          {success && <Alert variant="success">Profile updated successfully!</Alert>}
 
           {/* Actions */}
           <div className="flex space-x-3 pt-4">

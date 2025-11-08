@@ -1,5 +1,8 @@
+export { Alert } from './Alert';
 export { Button } from './Button';
+export { Card } from './Card';
 export { Input } from './Input';
+export { FormLabel } from './FormLabel';
 export { Select } from './Select';
 export { Menu } from './Menu';
 export { Popover } from './Popover';

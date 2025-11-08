@@ -1,5 +1,6 @@
 import { Popover as BasePopover } from '@base-ui-components/react/popover';
 import type { ReactNode } from 'react';
+import { Card } from './Card';
 
 interface PopoverProps {
   trigger: ReactNode;
@@ -17,9 +18,11 @@ export function Popover({ trigger, children, title, open, defaultOpen, onOpenCha
       <BasePopover.Trigger>{trigger}</BasePopover.Trigger>
       <BasePopover.Portal>
         <BasePopover.Positioner sideOffset={8}>
-          <BasePopover.Popup className={`bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50 max-w-xs ${className}`}>
-            {title && <BasePopover.Title className="font-semibold text-gray-900 mb-2">{title}</BasePopover.Title>}
-            {children}
+          <BasePopover.Popup className={`z-50 max-w-xs ${className}`}>
+            <Card shadow="lg" border padding="md">
+              {title && <BasePopover.Title className="font-semibold text-gray-900 mb-2">{title}</BasePopover.Title>}
+              {children}
+            </Card>
           </BasePopover.Popup>
         </BasePopover.Positioner>
       </BasePopover.Portal>

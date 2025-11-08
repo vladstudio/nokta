@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, Button, Input, FileUpload, useToastManager } from '../ui';
+import { Alert, Dialog, Button, FormLabel, Input, FileUpload, useToastManager } from '../ui';
 import { auth, pb } from '../services/pocketbase';
 
 interface UserSettingsDialogProps {
@@ -103,21 +103,15 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         }
       >
         <div className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          {error && <Alert variant="error">{error}</Alert>}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+            <FormLabel>Avatar</FormLabel>
             <FileUpload value={avatar} onChange={handleAvatarChange} preview={avatarPreview} />
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Name
-            </label>
+            <FormLabel htmlFor="name">Name</FormLabel>
             <Input
               id="name"
               type="text"
@@ -128,9 +122,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <FormLabel htmlFor="email">Email</FormLabel>
             <Input
               id="email"
               type="email"
@@ -141,9 +133,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <FormLabel htmlFor="password">Password</FormLabel>
             <Input
               id="password"
               type="password"
