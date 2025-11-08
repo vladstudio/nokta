@@ -1,6 +1,21 @@
 import Avatar from 'boring-avatars';
 import pb from '../services/pocketbase';
 
+interface AvatarRecord {
+  id: string;
+  collectionId?: string;
+  collectionName?: string;
+  avatar?: string;
+  [key: string]: unknown;
+}
+
+interface GenericAvatarProps {
+  record: AvatarRecord | undefined;
+  displayName: string;
+  size?: number;
+  className?: string;
+}
+
 interface UserAvatarProps {
   user?: {
     id: string;
@@ -22,15 +37,13 @@ interface ChatAvatarProps {
   className?: string;
 }
 
-export function UserAvatar({ user, size = 40, className = '' }: UserAvatarProps) {
-  if (!user) {
+function GenericAvatar({ record, displayName, size = 40, className = '' }: GenericAvatarProps) {
+  if (!record) {
     return null;
   }
 
-  const displayName = user.name || user.email || 'User';
-
-  if (user.avatar) {
-    const avatarUrl = pb.files.getURL(user, user.avatar, { thumb: `${size}x${size}` });
+  if (record.avatar) {
+    const avatarUrl = pb.files.getURL(record, record.avatar, { thumb: `${size}x${size}` });
     return (
       <img
         src={avatarUrl}
@@ -52,32 +65,12 @@ export function UserAvatar({ user, size = 40, className = '' }: UserAvatarProps)
   );
 }
 
+export function UserAvatar({ user, size = 40, className = '' }: UserAvatarProps) {
+  const displayName = user?.name || user?.email || 'User';
+  return <GenericAvatar record={user} displayName={displayName} size={size} className={className} />;
+}
+
 export function ChatAvatar({ chat, size = 40, className = '' }: ChatAvatarProps) {
-  if (!chat) {
-    return null;
-  }
-
-  const displayName = chat.name || 'Chat';
-
-  if (chat.avatar) {
-    const avatarUrl = pb.files.getURL(chat, chat.avatar, { thumb: `${size}x${size}` });
-    return (
-      <img
-        src={avatarUrl}
-        alt={displayName}
-        className={`rounded-full ${className}`}
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-
-  return (
-    <Avatar
-      size={size}
-      name={displayName}
-      variant="beam"
-      colors={['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']}
-      className={className}
-    />
-  );
+  const displayName = chat?.name || 'Chat';
+  return <GenericAvatar record={chat} displayName={displayName} size={size} className={className} />;
 }

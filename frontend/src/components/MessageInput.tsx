@@ -1,0 +1,86 @@
+import { useState, useRef, useCallback } from 'react';
+import { Button, Input } from '../ui';
+
+interface MessageInputProps {
+  onSend: (content: string) => Promise<void>;
+  onTyping: () => void;
+  onAddClick: () => void;
+  disabled?: boolean;
+}
+
+export default function MessageInput({ onSend, onTyping, onAddClick, disabled = false }: MessageInputProps) {
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const autoResize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, []);
+
+  const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    onTyping();
+    autoResize();
+  }, [onTyping, autoResize]);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || sending || disabled) return;
+
+    const content = message.trim();
+    setMessage('');
+
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
+    setSending(true);
+    try {
+      await onSend(content);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e);
+    }
+  };
+
+  return (
+    <div className="border-t border-gray-200 p-4">
+      <form onSubmit={handleSend} className="flex items-end gap-2">
+        <Button
+          type="button"
+          variant="default"
+          onClick={onAddClick}
+          className="mb-2"
+          disabled={disabled}
+        >
+          +
+        </Button>
+        <Input
+          as="textarea"
+          ref={textareaRef}
+          value={message}
+          onChange={handleMessageChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Type a message..."
+          rows={2}
+          className="flex-1 max-h-42 overflow-y-auto"
+          disabled={disabled}
+        />
+        <Button type="submit" disabled={!message.trim() || sending || disabled}>
+          Send
+        </Button>
+      </form>
+    </div>
+  );
+}

@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
-import type { PocketBaseEvent } from '../types';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
-import { messageQueue, type PendingMessage } from '../utils/messageQueue';
-import { messageCache } from '../utils/messageCache';
+import { useMessageList } from '../hooks/useMessageList';
+import { useFileUpload } from '../hooks/useFileUpload';
+import { messageQueue } from '../utils/messageQueue';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
 import MessageActions from './MessageActions';
 import AddActions from './AddActions';
+import MessageInput from './MessageInput';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
-import { Button, Input, ScrollArea, useToastManager } from '../ui';
+import { ScrollArea, useToastManager } from '../ui';
 import type { Message } from '../types';
 
 interface ChatWindowProps {
@@ -26,42 +27,50 @@ interface DisplayMessage extends Message {
   uploadProgress?: number;
 }
 
-interface UploadingFile {
-  tempId: string;
-  chatId: string;
-  type: 'image' | 'file';
-  file: File;
-  progress: number;
-  status: 'uploading' | 'failed';
-}
-
 export default function ChatWindow({ chatId }: ChatWindowProps) {
   const toastManager = useToastManager();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string }>>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingOlder, setLoadingOlder] = useState(false);
+  const currentUser = auth.user;
+  const { isOnline } = useConnectionStatus();
+
+  // Use custom hooks
+  const {
+    messages,
+    pendingMessages,
+    loading,
+    loadingOlder,
+    hasMore,
+    loadOlderMessages,
+    typingUsers,
+    setTypingUsers,
+  } = useMessageList(chatId);
+
+  const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
+
+  const {
+    uploadingFiles,
+    fileInputRef,
+    handleFileSelect,
+    handleFileChange,
+    handleCancelUpload,
+    handleRetryUpload,
+  } = useFileUpload(chatId, isOnline, (title, description) => {
+    toastManager.add({ title, description, data: { type: 'error' } });
+  });
+
+  // Local UI state
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showAddActions, setShowAddActions] = useState(false);
-  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
-  const [fileInputType, setFileInputType] = useState<'image' | 'file'>('image');
+
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const lastLoadTimeRef = useRef(0);
   const prevStateRef = useRef({ lastMsgId: '', pendingCount: 0 });
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadAbortControllers = useRef<Map<string, AbortController>>(new Map());
-  const currentUser = auth.user;
-  const { isOnline } = useConnectionStatus();
-  const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  };
 
   const isAtBottom = () => {
     const c = messagesContainerRef.current;
@@ -87,62 +96,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return () => window.removeEventListener('focus', handleFocus);
   }, [chatId, currentUser?.id]);
 
+  // Reset selected message when chat changes
   useEffect(() => {
-    prevStateRef.current = { lastMsgId: '', pendingCount: 0 };
-    setPage(1);
-    setHasMore(false);
-    setLoadingOlder(false);
     setSelectedMessageId(null);
-    loadMessages();
-
-    // Subscribe to real-time updates
-    const unsubscribe = messagesAPI.subscribe(chatId, async (data: PocketBaseEvent<Message>) => {
-      if (data.action === 'create') {
-        // Clear typing indicator for this sender
-        setTypingUsers((prev) => prev.filter((u) => u.userId !== data.record.sender));
-        // Fetch the full message with expanded sender data
-        // PocketBase doesn't support expand in subscriptions, so we fetch it separately
-        try {
-          const expandedMsg = await messagesAPI.getOne(data.record.id);
-          setMessages((prev) => [...prev, expandedMsg]);
-          // Cache new message
-          messageCache.addMessage(expandedMsg).catch(console.error);
-        } catch (err) {
-          console.error('Failed to fetch expanded message:', err);
-          // Fallback to the raw message without expand
-          const newMsg = data.record as Message;
-          setMessages((prev) => [...prev, newMsg]);
-        }
-      } else if (data.action === 'update') {
-        // Fetch updated message with expand
-        try {
-          const expandedMsg = await messagesAPI.getOne(data.record.id);
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === data.record.id ? expandedMsg : msg))
-          );
-        } catch (err) {
-          console.error('Failed to fetch expanded message:', err);
-          // Fallback to the raw update
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === data.record.id ? (data.record as Message) : msg))
-          );
-        }
-      } else if (data.action === 'delete') {
-        setMessages((prev) => prev.filter((msg) => msg.id !== data.record.id));
-      }
-    });
-
-    // Subscribe to pending messages queue
-    const unsubscribeQueue = messageQueue.subscribe((queue) => {
-      setPendingMessages(queue.filter((m) => m.chatId === chatId));
-    });
-
-    return () => {
-      unsubscribe.then((unsub) => unsub());
-      unsubscribeQueue();
-    };
   }, [chatId]);
-
 
   // Process queue when connection is restored
   useEffect(() => {
@@ -157,118 +114,41 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   // Auto-scroll: when current user sends OR when new message arrives and already at bottom
   useEffect(() => {
     const { lastMsgId: prevLastId, pendingCount: prevPending } = prevStateRef.current;
-    const lastMsgId = messages[messages.length - 1]?.id || '';
+    const lastMsg = messages[messages.length - 1];
+    const lastMsgId = lastMsg?.id || '';
     prevStateRef.current = { lastMsgId, pendingCount: pendingMessages.length };
 
-    if (!loading && prevLastId && lastMsgId !== prevLastId) {
-      const lastMsg = messages[messages.length - 1];
+    if (!loading && prevLastId && lastMsgId !== prevLastId && lastMsg) {
       if (lastMsg.sender === currentUser?.id || isAtBottom()) requestAnimationFrame(scrollToBottom);
     }
     if (prevPending && pendingMessages.length > prevPending) requestAnimationFrame(scrollToBottom);
-  }, [messages, pendingMessages, loading]);
+  }, [messages, pendingMessages, loading, currentUser?.id]);
 
-  const loadMessages = async () => {
-    try {
-      const cached = await messageCache.getMessages(chatId);
-      if (cached.length > 0) setMessages(cached);
-
-      const result = await messagesAPI.list(chatId, 1, 50);
-      const chronologicalMessages = [...result.items].reverse();
-      setMessages(chronologicalMessages);
-      setHasMore(result.totalPages > 1);
-      setPage(1);
-
-      await messageCache.saveMessages(chatId, chronologicalMessages);
-    } catch (err) {
-      console.error('Failed to load messages:', err);
-      toastManager.add({
-        title: 'Failed to load messages',
-        description: 'Could not load messages. Please try again.',
-        data: { type: 'error' },
-      });
-    } finally {
-      setLoading(false);
-      requestAnimationFrame(() => scrollToBottom());
-    }
-  };
-
-  const loadOlderMessages = useCallback(async () => {
-    if (loadingOlder || !hasMore) return;
-    lastLoadTimeRef.current = Date.now();
-    setLoadingOlder(true);
-
-    try {
-      const nextPage = page + 1;
-      const result = await messagesAPI.list(chatId, nextPage, 50);
-
-      if (result.items.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      const olderMessages = [...result.items].reverse();
-      setMessages((prev) => {
-        const firstMsgId = prev[0]?.id;
-        const updated = [...olderMessages, ...prev];
-        requestAnimationFrame(() => {
-          document.getElementById(`msg-${firstMsgId}`)?.scrollIntoView();
-        });
-        return updated;
-      });
-      setPage(nextPage);
-      setHasMore(result.page < result.totalPages);
-    } catch (err) {
-      console.error('Failed to load older messages:', err);
-      toastManager.add({
-        title: 'Failed to load older messages',
-        description: 'Could not load older messages. Please try again.',
-        data: { type: 'error' },
-      });
-    } finally {
-      setLoadingOlder(false);
-    }
-  }, [loadingOlder, hasMore, page, chatId, toastManager]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-  };
-
+  // Scroll handler for loading older messages
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
+    let lastLoadTime = 0;
     const handleScroll = () => {
-      const timeSinceLastLoad = Date.now() - lastLoadTimeRef.current;
+      const timeSinceLastLoad = Date.now() - lastLoadTime;
       if (container.scrollTop < 100 && hasMore && !loadingOlder && timeSinceLastLoad > 1000) {
+        lastLoadTime = Date.now();
         loadOlderMessages();
       }
     };
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loadingOlder, loadOlderMessages, loading]);
+  }, [hasMore, loadingOlder, loadOlderMessages]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || sending) return;
-
-    const content = newMessage.trim();
-    setNewMessage('');
-
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
-
+  const handleSend = async (content: string) => {
     if (!isOnline) {
-      // Queue message for later
       messageQueue.add(chatId, content);
       return;
     }
 
-    // Optimistic UI: add to queue immediately
     const tempId = messageQueue.add(chatId, content);
-    setSending(true);
 
     try {
       messageQueue.updateStatus(tempId, 'sending');
@@ -277,12 +157,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     } catch (err) {
       console.error('Failed to send message:', err);
       messageQueue.updateStatus(tempId, 'failed');
-    } finally {
-      setSending(false);
     }
   };
 
-  const handleRetry = async (tempId: string) => {
+  const handleRetryMessage = async (tempId: string) => {
     const pending = pendingMessages.find((m) => m.tempId === tempId);
     if (!pending) return;
 
@@ -293,13 +171,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     } catch (err) {
       console.error('Failed to retry message:', err);
       messageQueue.updateStatus(tempId, 'failed');
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend(e);
     }
   };
 
@@ -380,131 +251,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
-  const handleFileSelect = (type: 'image' | 'file') => {
-    setFileInputType(type);
-    if (fileInputRef.current) {
-      fileInputRef.current.accept = type === 'image' ? 'image/*' : '*/*';
-      fileInputRef.current.multiple = true;
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    if (!isOnline) {
-      toastManager.add({
-        title: 'No connection',
-        description: 'Cannot upload files while offline',
-        data: { type: 'error' },
-      });
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
-    const MAX_SIZE = 50 * 1024 * 1024; // 50MB
-    const validFiles = files.filter(f => {
-      if (f.size > MAX_SIZE) {
-        toastManager.add({
-          title: 'File too large',
-          description: `${f.name} exceeds 50MB limit`,
-          data: { type: 'error' },
-        });
-        return false;
-      }
-      return true;
-    });
-
-    if (validFiles.length === 0) return;
-
-    setNewMessage('');
-    setShowAddActions(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-
-    const uploads: UploadingFile[] = validFiles.map(file => ({
-      tempId: `temp_${Date.now()}_${Math.random()}`,
-      chatId,
-      type: fileInputType,
-      file,
-      progress: 0,
-      status: 'uploading' as const,
-    }));
-
-    setUploadingFiles(prev => [...prev, ...uploads]);
-    uploads.forEach(upload => uploadFile(upload));
-  };
-
-  const uploadFile = async (upload: UploadingFile) => {
-    const abortController = new AbortController();
-    uploadAbortControllers.current.set(upload.tempId, abortController);
-
-    const progressInterval = setInterval(() => {
-      setUploadingFiles(prev =>
-        prev.map(u => u.tempId === upload.tempId
-          ? { ...u, progress: Math.min(u.progress + 10, 90) }
-          : u
-        )
-      );
-    }, 100);
-
-    try {
-      await messagesAPI.createWithFile(chatId, upload.type, upload.file);
-
-      clearInterval(progressInterval);
-      setUploadingFiles(prev =>
-        prev.map(u => u.tempId === upload.tempId ? { ...u, progress: 100 } : u)
-      );
-
-      setTimeout(() => {
-        setUploadingFiles(prev => prev.filter(u => u.tempId !== upload.tempId));
-        uploadAbortControllers.current.delete(upload.tempId);
-      }, 500);
-    } catch (err) {
-      clearInterval(progressInterval);
-      setUploadingFiles(prev =>
-        prev.map(u => u.tempId === upload.tempId
-          ? { ...u, status: 'failed' as const }
-          : u
-        )
-      );
-      uploadAbortControllers.current.delete(upload.tempId);
-    }
-  };
-
-  const handleCancelUpload = (tempId: string) => {
-    uploadAbortControllers.current.get(tempId)?.abort();
-    setUploadingFiles(prev => prev.filter(u => u.tempId !== tempId));
-    uploadAbortControllers.current.delete(tempId);
-  };
-
-  const handleRetryUpload = (tempId: string) => {
-    const upload = uploadingFiles.find(u => u.tempId === tempId);
-    if (!upload) return;
-
-    setUploadingFiles(prev =>
-      prev.map(u => u.tempId === tempId
-        ? { ...u, status: 'uploading' as const, progress: 0 }
-        : u
-      )
-    );
-    uploadFile(upload);
-  };
-
-  const autoResize = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  }, []);
-
-  const handleMessageChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNewMessage(e.target.value);
-    onTyping();
-    autoResize();
-  }, [onTyping, autoResize]);
-
   useHotkeys('esc', () => {
     setSelectedMessageId(null);
     (document.activeElement as HTMLElement)?.blur();
@@ -582,7 +328,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                   currentUserId={currentUser?.id || ''}
                   isSelected={selectedMessageId === message.id}
                   onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
-                  onRetry={message.type === 'text' ? handleRetry : handleRetryUpload}
+                  onRetry={message.type === 'text' ? handleRetryMessage : handleRetryUpload}
                   onCancelUpload={handleCancelUpload}
                 />
               ))
@@ -606,8 +352,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {showAddActions ? (
         <AddActions
           onCancel={() => setShowAddActions(false)}
-          onImageSelect={() => handleFileSelect('image')}
-          onFileSelect={() => handleFileSelect('file')}
+          onImageSelect={() => {
+            handleFileSelect('image');
+            setShowAddActions(false);
+          }}
+          onFileSelect={() => {
+            handleFileSelect('file');
+            setShowAddActions(false);
+          }}
         />
       ) : selectedMessageId ? (
         <MessageActions
@@ -617,22 +369,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
           onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
         />
       ) : (
-        <div className="border-t border-gray-200 p-4">
-          <form onSubmit={handleSend} className="flex items-end gap-2">
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => setShowAddActions(true)}
-              className="mb-2"
-            >
-              +
-            </Button>
-            <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message..." rows={2} className="flex-1 max-h-42 overflow-y-auto" />
-            <Button type="submit" disabled={!newMessage.trim() || sending}>
-              Send
-            </Button>
-          </form>
-        </div>
+        <MessageInput
+          onSend={handleSend}
+          onTyping={onTyping}
+          onAddClick={() => setShowAddActions(true)}
+        />
       )}
 
       {/* Hidden file input */}
