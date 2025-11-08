@@ -1,0 +1,318 @@
+================================================================================
+                    TALK PROJECT ARCHITECTURE OVERVIEW
+================================================================================
+
+1. DIRECTORY STRUCTURE
+================================================================================
+
+talk/
+├── backend/
+│   ├── pocketbase                    # Executable (43MB binary)
+│   ├── pb_data/                      # SQLite database + files
+│   ├── pb_hooks/                     # Business logic (auto-chat creation)
+│   └── pb_migrations/                # Schema migrations
+│
+├── frontend/                          # Main React app (port 3000)
+│   ├── src/
+│   │   ├── components/               # 15 React components
+│   │   ├── pages/                    # 3 pages (login, spaces, chat)
+│   │   ├── hooks/                    # 7 custom hooks (presence, typing, etc)
+│   │   ├── services/                 # Single pocketbase.ts file
+│   │   ├── types/                    # TypeScript interfaces
+│   │   ├── ui/                       # 10 base UI components
+│   │   └── utils/                    # Cache, queue, notifications
+│   └── vite.config.ts
+│
+└── docs/                              # 25+ markdown guides
+
+
+2. TECH STACK
+================================================================================
+
+FRONTEND:
+  - React 19.1.1              Latest React with no external state lib
+  - TypeScript 5.7            Type safe
+  - Tailwind CSS 4            Atomic CSS styling
+  - Vite 7                    Ultra-fast bundler
+  - wouter                    Lightweight router (3.7KB)
+  - PocketBase SDK 0.26.3     Real-time + auth
+  - i18next                   Internationalization (EN/RU)
+
+BACKEND:
+  - PocketBase 0.26.3         All-in-one (binary, no separate installation)
+  - SQLite                    Embedded database
+  - JavaScript                Hooks language (custom runtime)
+
+
+3. CORE ARCHITECTURE PATTERN
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            React Component                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  useState/useEffect (Local state)                                       │
+│         ↓                                                               │
+│  useMessageList, usePresence, useTypingIndicator (Custom hooks)        │
+│         ↓                                                               │
+│  services/pocketbase.ts (API layer)                                    │
+│         ↓                                                               │
+│  PocketBase SDK (Auth + Real-time SSE + REST)                          │
+│         ↓                                                               │
+│  PocketBase Server ← → SQLite Database                                 │
+│         ↓                                                               │
+│  IndexedDB Cache + Message Queue (Client-side persistence)             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+4. ROUTING
+================================================================================
+
+/login                               LoginPage (public)
+/my-spaces                           MySpacesPage (list of spaces)
+/spaces/:spaceId/chats/:chatId?      SpacePage (main chat UI)
+  └─ Sidebar + ChatWindow
+
+
+5. STATE MANAGEMENT
+================================================================================
+
+❌ NO Redux, Zustand, Recoil, or Jotai
+✓ Pure React hooks + PocketBase real-time subscriptions
+✓ IndexedDB for offline message cache
+✓ In-memory message queue for failed sends
+✓ Auto-optimistic updates with rollback
+
+
+6. REAL-TIME PROTOCOL
+================================================================================
+
+Protocol:   Server-Sent Events (SSE), not WebSockets
+Latency:    ~30 seconds (suitable for chat, NOT for video calls)
+Coverage:   Messages, Chats, Typing, Presence
+
+
+7. DATABASE COLLECTIONS
+================================================================================
+
+users (Auth)
+  - id, email, name, avatar, last_seen, language
+
+spaces
+  - id, name
+
+space_members
+  - space→spaces, user→users, role (admin|member)
+
+chats
+  - space, type (public|private), participants[]
+  - name, last_message_at, last_message_sender
+
+messages
+  - chat, sender, type (text|image|file), content, file
+
+chat_read_status
+  - user, chat, last_read_at
+
+typing_events (ephemeral)
+  - chat, user, userName, timestamp
+
+
+8. KEY HOOKS (700+ lines total)
+================================================================================
+
+useConnectionStatus   - Browser online/offline + PocketBase health check
+usePresence          - Heartbeat every 30s, online status for users
+useTypingIndicator   - Broadcast/listen to typing events
+useMessageList       - Fetch messages with infinite scroll
+useFileUpload        - File upload with progress tracking
+useUnreadMessages    - Track unread count per chat
+useFavicon           - Update favicon badge
+
+
+9. MESSAGE FLOW
+================================================================================
+
+SENDING:
+  User types → onTyping() broadcasts
+           ↓
+  Presses Enter → Create optimistic message (tempId)
+           ↓
+  Add to state → IndexedDB → Message Queue → POST /api
+           ↓
+  Success → Update with real ID, remove from queue
+  Failure → Keep in queue, show retry button
+
+
+RECEIVING:
+  PocketBase SSE event → subscribe callback
+           ↓
+  Check if in current chat → Fetch full record
+           ↓
+  Add to state + IndexedDB → Auto-scroll if at bottom
+
+
+10. COMPONENTS (15 total)
+================================================================================
+
+Major:
+  Sidebar.tsx              - Space/chat navigation
+  ChatWindow.tsx           - Message display + input
+  ChatList.tsx             - Chat list with unread badges
+  MessageInput.tsx         - Textarea with auto-resize
+  ChatMessage.tsx          - Individual message
+  UserSettingsDialog.tsx   - Profile settings
+  LoginPage.tsx            - Auth form
+
+Supporting:
+  AddActions.tsx           - File upload menu
+  ConnectionBanner.tsx     - Offline indicator
+  ErrorBoundary.tsx        - Error handling
+  Avatar.tsx               - User avatar display
+
+
+11. UI COMPONENTS (10 base)
+================================================================================
+
+Button, Input, Dialog, Menu, Card, ScrollArea
+Toast, Alert, FileUpload, Select, Switch, Radio
+
+
+12. FILE UPLOAD CAPABILITY
+================================================================================
+
+✓ Image (JPEG, PNG)       - With thumbnail generation
+✓ File (PDF, Documents)   - Any file type
+✓ Progress tracking       - Upload percentage display
+✓ Offline handling        - Queued until reconnect
+
+❌ NO audio/video recording/playback
+
+
+13. AUTHENTICATION
+================================================================================
+
+Method:     PocketBase JWT (email/password)
+Storage:    localStorage (via authStore)
+Flow:       login() → JWT + User record → Auto-refresh
+Guards:     ProtectedRoute component checks auth.isValid
+
+
+14. INTERNATIONALIZATION
+================================================================================
+
+Languages:  English (en), Russian (ru)
+Library:    react-i18next
+Storage:    User.language field
+Toggle:     Settings dialog
+
+
+15. PERFORMANCE OPTIMIZATIONS
+================================================================================
+
+Message Pagination      - 50 messages per page, lazy load older
+IndexedDB Cache         - Client-side offline storage
+Debouncing             - Typing (500ms), Presence (30s)
+useCallback/useMemo    - Prevent unnecessary re-renders
+Tailwind CSS 4         - Atomic CSS (no CSS-in-JS overhead)
+No external state lib  - Minimal JS bundle
+
+
+16. SECURITY
+================================================================================
+
+Server-enforced PocketBase rules:
+  - Users can only see messages in chats they participate in
+  - JWT required for all authenticated endpoints
+  - No client-side validation (server is source of truth)
+
+
+17. OFFLINE SUPPORT
+================================================================================
+
+✓ IndexedDB cache       - View recent messages offline
+✓ Message queue         - Queue sends until reconnection
+✓ Connection indicator  - Banner shows offline status
+✓ Auto-retry            - Processes queue on reconnect
+
+❌ No offline-first sync (pull/merge strategy)
+
+
+18. DEPLOYMENT
+================================================================================
+
+Backend:
+  - Single PocketBase binary
+  - SQLite database + file storage in pb_data/
+  - Single-server only (not horizontally scalable)
+
+Frontend:
+  - Static SPA (Vite output)
+  - CDN or static hosting
+  - VITE_POCKETBASE_URL env variable
+
+
+19. VIDEO/STREAMING CAPABILITIES
+================================================================================
+
+CURRENT:  ❌ NONE
+  - No WebRTC
+  - No signaling server
+  - No media streaming
+  - No audio/video recording or playback
+
+TO ADD VIDEO CALLS would require:
+  ✓ Separate signaling server (Node/Go) OR managed service
+  ✓ WebRTC library (simple-peer, peerjs, mediasoup-client)
+  ✓ New collections (calls, call_participants, ice_candidates)
+  ✓ New UI components (video window, call dialog)
+  ✓ Lower-latency protocol (WebSocket instead of SSE)
+  ✓ State management library (for complex call state)
+
+RECOMMENDED:
+  - Daily.co SDK (managed, easiest)
+  - simple-peer (minimal, P2P only)
+  - mediasoup (professional, requires infrastructure)
+
+
+20. KEY FILES
+================================================================================
+
+Frontend:
+  src/services/pocketbase.ts      - Single API service file (228 lines)
+  src/components/ChatWindow.tsx   - Main chat component (300+ lines)
+  src/components/Sidebar.tsx      - Navigation (100 lines)
+  src/hooks/*.ts                  - Real-time hooks (700+ lines total)
+  src/utils/messageCache.ts       - IndexedDB wrapper (104 lines)
+  src/utils/messageQueue.ts       - Retry queue (130 lines)
+
+Backend:
+  pb_hooks/auto_create_chats.pb.js - Auto-chat logic (220 lines)
+  pb_migrations/1730745000*.js     - Schema definition
+
+
+21. NOTABLE PATTERNS
+================================================================================
+
+✓ Service Layer             - Single pocketbase.ts file
+✓ Render Props/Hooks        - No Context, pure hooks
+✓ Optimistic Updates        - Messages appear instantly
+✓ Retry Queue               - Offline-first message sending
+✓ SSE Subscriptions         - Real-time with filtering
+✓ PocketBase Hooks          - Server-side auto-creation logic
+✓ Minimal Dependencies      - Only 7 npm packages (prod)
+
+
+22. ADMIN APP STATUS
+================================================================================
+
+NOT YET CREATED
+- Mentioned in project.md
+- Would be separate React SPA for space/member management
+- Port 5173 (in run.md)
+
+
+================================================================================
+                              END OF SUMMARY
+================================================================================
