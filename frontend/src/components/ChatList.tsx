@@ -3,6 +3,7 @@ import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
 import { Button } from '../ui';
+import { UserAvatar, ChatAvatar } from './Avatar';
 
 interface ChatListProps {
   chats: Chat[];
@@ -17,11 +18,11 @@ interface ChatListItemProps {
   unreadCount: number;
   onSelectChat: (chatId: string) => void;
   getChatName: (chat: Chat) => string;
-  getChatIcon: (chat: Chat) => string;
+  getOtherParticipant: (chat: Chat) => any;
   getOnlineStatus: (chat: Chat) => boolean | null;
 }
 
-const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getChatName, getChatIcon, getOnlineStatus }: ChatListItemProps) => {
+const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getChatName, getOtherParticipant, getOnlineStatus }: ChatListItemProps) => {
   const hasUnread = unreadCount > 0;
 
   const handleClick = useCallback(() => {
@@ -37,7 +38,11 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
     >
       <div className="flex items-center space-x-3">
         <div className="relative">
-          <span className="text-2xl">{getChatIcon(chat)}</span>
+          {chat.type === 'private' ? (
+            <UserAvatar user={getOtherParticipant(chat)} size={40} />
+          ) : (
+            <ChatAvatar chat={chat} size={40} />
+          )}
           {getOnlineStatus(chat) !== null && (
             <span
               className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'}`}
@@ -105,9 +110,17 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
     return 'Direct Message';
   }, [currentUser?.id]);
 
-  const getChatIcon = useCallback((chat: Chat) => {
-    return chat.type === 'public' ? '👥' : '💬';
-  }, []);
+  const getOtherParticipant = useCallback((chat: Chat) => {
+    if (chat.type === 'public') return null;
+
+    if (chat.expand?.participants) {
+      const otherParticipants = chat.expand.participants.filter(
+        (p) => p.id !== currentUser?.id
+      );
+      return otherParticipants[0] || null;
+    }
+    return null;
+  }, [currentUser?.id]);
 
   const getOnlineStatus = useCallback((chat: Chat) => {
     if (chat.type === 'public') return null;
@@ -136,7 +149,7 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
           unreadCount={unreadCounts.get(chat.id) || 0}
           onSelectChat={onSelectChat}
           getChatName={getChatName}
-          getChatIcon={getChatIcon}
+          getOtherParticipant={getOtherParticipant}
           getOnlineStatus={getOnlineStatus}
         />
       ))}

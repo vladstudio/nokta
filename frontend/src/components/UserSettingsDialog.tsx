@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Alert, Dialog, Button, FormLabel, Input, FileUpload, useToastManager } from '../ui';
 import { auth, pb } from '../services/pocketbase';
+import { UserAvatar } from './Avatar';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -107,7 +108,22 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
 
           <div>
             <FormLabel>Avatar</FormLabel>
-            <FileUpload value={avatar} onChange={handleAvatarChange} preview={avatarPreview} />
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0">
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt={currentUser.name || currentUser.email}
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <UserAvatar user={currentUser} size={80} />
+                )}
+              </div>
+              <div className="flex-1">
+                <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
+              </div>
+            </div>
           </div>
 
           <div>

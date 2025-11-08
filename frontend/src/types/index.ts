@@ -32,6 +32,7 @@ export interface Chat {
   type: 'public' | 'private';
   participants: string[];
   name?: string;
+  avatar?: string;
   last_message_at?: string;
   last_message_content?: string;
   last_message_sender?: string;

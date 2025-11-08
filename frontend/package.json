@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-beta.4",
+    "boring-avatars": "^2.0.4",
     "pocketbase": "^0.26.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
