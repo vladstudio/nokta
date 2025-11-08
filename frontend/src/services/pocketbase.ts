@@ -115,6 +115,13 @@ export const messages = {
     return record;
   },
 
+  async update(messageId: string, content: string) {
+    const record = await pb.collection('messages').update<Message>(messageId, {
+      content,
+    });
+    return record;
+  },
+
   async countUnread(chatId: string, afterTimestamp: string): Promise<number> {
     const result = await pb.collection('messages').getList(1, 1, {
       filter: `chat = "${chatId}" && created > "${afterTimestamp}"`,
