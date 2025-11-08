@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { auth, spaces, chats } from '../services/pocketbase';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
+import { useFavicon } from '../hooks/useFavicon';
 import { Menu, ScrollArea } from '../ui';
 import ChatList from './ChatList';
 import type { Space, Chat } from '../types';
@@ -57,6 +58,12 @@ export default function Sidebar() {
   );
 
   const { unreadCounts } = useUnreadMessages(spaceId, chatList, chatId);
+
+  const hasUnread = useMemo(() => {
+    return Array.from(unreadCounts.values()).some(count => count > 0);
+  }, [unreadCounts]);
+
+  useFavicon(hasUnread);
 
   const menuItems = useMemo(() => [
     ...spaceList.map(space => ({
