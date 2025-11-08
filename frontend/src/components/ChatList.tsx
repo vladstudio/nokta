@@ -1,4 +1,5 @@
 import { useMemo, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
@@ -23,6 +24,7 @@ interface ChatListItemProps {
 }
 
 const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getChatName, getOtherParticipant, getOnlineStatus }: ChatListItemProps) => {
+  const { t } = useTranslation();
   const hasUnread = unreadCount > 0;
 
   const handleClick = useCallback(() => {
@@ -57,7 +59,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           <div className="text-xs text-gray-500 truncate">
             {chat.last_message_content && chat.expand?.last_message_sender ?
               `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
-              (chat.type === 'public' ? 'Public chat' : 'Private chat')}
+              (chat.type === 'public' ? t('chatList.publicChat') : t('chatList.privateChat'))}
           </div>
         </div>
         {hasUnread && (
@@ -73,6 +75,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
 });
 
 export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCounts = new Map() }: ChatListProps) {
+  const { t } = useTranslation();
   const currentUser = auth.user;
 
   // Collect all participant IDs for presence tracking
@@ -107,8 +110,8 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
       }
     }
 
-    return 'Direct Message';
-  }, [currentUser?.id]);
+    return t('chatList.directMessage');
+  }, [currentUser?.id, t]);
 
   const getOtherParticipant = useCallback((chat: Chat) => {
     if (chat.type === 'public') return null;
@@ -138,7 +141,7 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   }, [currentUser?.id, isUserOnline]);
 
   return chats.length === 0 ? (
-    <div className="p-4 text-center text-gray-500 text-sm">No chats available</div>
+    <div className="p-4 text-center text-gray-500 text-sm">{t('chatList.noChats')}</div>
   ) : (
     <div className="divide-y divide-gray-100">
       {chats.map((chat) => (

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Alert, Dialog, Button, FormLabel, Input, FileUpload, useToastManager } from '../ui';
+import { useState, useEffect, useMemo } from 'react';
+import { Alert, Dialog, Button, FormLabel, Input, FileUpload, RadioGroup, useToastManager } from '../ui';
 import { auth, pb } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
+import { useTranslation } from 'react-i18next';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -18,9 +19,11 @@ interface PocketBaseRecord {
 export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsDialogProps) {
   const currentUser = auth.user;
   const toastManager = useToastManager();
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [language, setLanguage] = useState<'en' | 'ru'>('en');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -31,6 +34,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       setName(currentUser.name || '');
       setEmail(currentUser.email);
       setPassword('');
+      setLanguage(currentUser.language || 'en');
       setAvatar(null);
       setAvatarPreview(
         currentUser.avatar
@@ -66,15 +70,21 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         formData.append('password', password);
         formData.append('passwordConfirm', password);
       }
+      if (language !== currentUser.language) formData.append('language', language);
       if (avatar) formData.append('avatar', avatar);
 
       await pb.collection('users').update(currentUser.id, formData);
       await pb.collection('users').authRefresh();
 
+      // Update i18n language immediately
+      if (language !== i18n.language) {
+        await i18n.changeLanguage(language);
+      }
+
       onOpenChange(false);
       toastManager.add({
-        title: 'Settings saved',
-        description: 'Your profile has been updated successfully',
+        title: t('userSettingsDialog.settingsSaved'),
+        description: t('userSettingsDialog.settingsSavedDesc'),
         data: { type: 'success' },
       });
     } catch (err) {
@@ -86,19 +96,25 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
 
   if (!currentUser) return null;
 
+  const languageOptions = useMemo(() => [
+    { value: 'en' as const, label: t('languages.en') },
+    { value: 'ru' as const, label: t('languages.ru') },
+  ], [t]);
+
+
   return (
     <Dialog
         open={open}
         onOpenChange={onOpenChange}
-        title="My Settings"
-        description="Update your profile information"
+        title={t('userSettingsDialog.title')}
+        description={t('userSettingsDialog.description')}
         footer={
           <>
             <Button variant="default" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? t('common.loading') : t('common.save')}
             </Button>
           </>
         }
@@ -107,7 +123,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           {error && <Alert variant="error">{error}</Alert>}
 
           <div>
-            <FormLabel>Avatar</FormLabel>
+            <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
                 {avatarPreview ? (
@@ -127,36 +143,41 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           </div>
 
           <div>
-            <FormLabel htmlFor="name">Name</FormLabel>
+            <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
             <Input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder={t('userSettingsDialog.namePlaceholder')}
             />
           </div>
 
           <div>
-            <FormLabel htmlFor="email">Email</FormLabel>
+            <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder={t('userSettingsDialog.emailPlaceholder')}
             />
           </div>
 
           <div>
-            <FormLabel htmlFor="password">Password</FormLabel>
+            <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Leave blank to keep current"
+              placeholder={t('userSettingsDialog.leaveBlankPassword')}
             />
+          </div>
+
+          <div>
+            <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
+            <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
           </div>
         </div>
     </Dialog>

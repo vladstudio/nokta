@@ -42,9 +42,9 @@ export function Select<T extends string = string>({
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner sideOffset={4}>
-          <BaseSelect.Popup className="max-h-60 overflow-auto z-50">
+          <BaseSelect.Popup className="max-h-60 overflow-auto z-[100] min-w-[200px]">
             <Card shadow="lg" border>
-              <BaseSelect.List>
+              <BaseSelect.List className="py-1">
                 {options.map((option) => (
                   <BaseSelect.Item
                     key={option.value}

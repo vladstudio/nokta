@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { auth, spaces, chats } from '../services/pocketbase';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
@@ -11,6 +12,7 @@ import type { Space, Chat, PocketBaseEvent } from '../types';
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
 export default function Sidebar() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
   const spaceId = params?.spaceId;
@@ -68,10 +70,10 @@ export default function Sidebar() {
   useFavicon(hasUnread);
 
   const menuItems = useMemo(() => [
-    { label: 'My Spaces', onClick: () => { setLocation('/my-spaces'); } },
-    { label: 'My Settings', onClick: () => { setSettingsOpen(true); } },
-    { label: 'Log Out', onClick: () => { auth.logout(); setLocation('/login'); } },
-  ], [setLocation]);
+    { label: t('sidebar.mySpaces'), onClick: () => { setLocation('/my-spaces'); } },
+    { label: t('sidebar.mySettings'), onClick: () => { setSettingsOpen(true); } },
+    { label: t('sidebar.logOut'), onClick: () => { auth.logout(); setLocation('/login'); } },
+  ], [setLocation, t]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
@@ -87,7 +89,7 @@ export default function Sidebar() {
                 <div className="w-full flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
                   <div className="flex items-center gap-2 w-full">
                     <img src="/favicon.svg" alt="Talk" className="w-5 h-5" />
-                    <span className="text-base font-semibold">{currentSpace?.name || 'Select space'}</span>
+                    <span className="text-base font-semibold">{currentSpace?.name || t('sidebar.selectSpace')}</span>
                   </div>
                   <span className="text-xs text-gray-500">{auth.user?.name || auth.user?.email}</span>
                 </div>

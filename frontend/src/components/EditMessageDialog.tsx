@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, Button, Input } from '../ui';
 
 interface EditMessageDialogProps {
@@ -14,6 +15,7 @@ export default function EditMessageDialog({
   initialContent,
   onSave,
 }: EditMessageDialogProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState(initialContent);
 
   // Reset content when dialog opens with new message
@@ -39,15 +41,15 @@ export default function EditMessageDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Edit Message"
-      description="Make changes to your message"
+      title={t('editMessageDialog.title')}
+      description={t('editMessageDialog.description')}
       footer={
         <>
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={!content.trim()}>
-            Save
+            {t('common.save')}
           </Button>
         </>
       }
@@ -57,7 +59,7 @@ export default function EditMessageDialog({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={4}
-        placeholder="Enter your message..."
+        placeholder={t('messageInput.placeholder')}
         autoFocus
       />
     </Dialog>

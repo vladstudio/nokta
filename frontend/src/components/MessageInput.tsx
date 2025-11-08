@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
 
 interface MessageInputProps {
@@ -9,6 +10,7 @@ interface MessageInputProps {
 }
 
 export default function MessageInput({ onSend, onTyping, onAddClick, disabled = false }: MessageInputProps) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,13 +74,13 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
           value={message}
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder={t('messageInput.placeholder')}
           rows={2}
           className="flex-1 max-h-42 overflow-y-auto"
           disabled={disabled}
         />
         <Button type="submit" disabled={!message.trim() || sending || disabled}>
-          Send
+          {t('common.send')}
         </Button>
       </form>
     </div>

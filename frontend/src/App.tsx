@@ -11,10 +11,13 @@ import SpacePage from './pages/SpacePage';
 import MySpacesPage from './pages/MySpacesPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
+import './i18n/config';
+import { useTranslation } from 'react-i18next';
 
 function App() {
   const [location, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isValid);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     const unsubscribe = auth.onChange(() => {
@@ -22,6 +25,13 @@ function App() {
     });
     return unsubscribe;
   }, []);
+
+  // Sync user language preference with i18n
+  useEffect(() => {
+    if (auth.user?.language) {
+      i18n.changeLanguage(auth.user.language);
+    }
+  }, [auth.user?.language, i18n]);
 
   useEffect(() => {
     if (isAuthenticated && (location === '/' || location === '/spaces')) {

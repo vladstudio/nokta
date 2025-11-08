@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { auth } from '../services/pocketbase';
 import { Alert, Button, Input } from '../ui';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -40,7 +42,7 @@ export default function LoginPage() {
         setLocation('/');
       } else {
         if (password !== passwordConfirm) {
-          setError('Passwords do not match');
+          setError(t('loginPage.passwordsNoMatch'));
           setLoading(false);
           return;
         }
@@ -69,29 +71,29 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            {isLogin ? 'Sign in to your account' : 'Create new account'}
+            {isLogin ? t('loginPage.signInTitle') : t('loginPage.signUpTitle')}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="sr-only">Name</label>
-                <Input id="name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name (optional)" />
+                <label htmlFor="name" className="sr-only">{t('loginPage.nameOptional')}</label>
+                <Input id="name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('loginPage.nameOptional')} />
               </div>
             )}
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
-              <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" />
+              <label htmlFor="email" className="sr-only">{t('loginPage.emailAddress')}</label>
+              <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('loginPage.emailAddress')} />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <Input id="password" name="password" type="password" autoComplete={isLogin ? 'current-password' : 'new-password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+              <label htmlFor="password" className="sr-only">{t('loginPage.password')}</label>
+              <Input id="password" name="password" type="password" autoComplete={isLogin ? 'current-password' : 'new-password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('loginPage.password')} />
             </div>
             {!isLogin && (
               <div>
-                <label htmlFor="passwordConfirm" className="sr-only">Confirm Password</label>
-                <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} placeholder="Confirm password" />
+                <label htmlFor="passwordConfirm" className="sr-only">{t('loginPage.confirmPassword')}</label>
+                <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} placeholder={t('loginPage.confirmPassword')} />
               </div>
             )}
           </div>
@@ -102,13 +104,13 @@ export default function LoginPage() {
 
           <div>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Please wait...' : isLogin ? 'Sign in' : 'Sign up'}
+              {loading ? t('loginPage.pleaseWait') : isLogin ? t('loginPage.signIn') : t('loginPage.signUp')}
             </Button>
           </div>
 
           <div className="text-center">
             <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-sm text-blue-600 hover:text-blue-500">
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              {isLogin ? t('loginPage.noAccount') : t('loginPage.hasAccount')}
             </button>
           </div>
         </form>

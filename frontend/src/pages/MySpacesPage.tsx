@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { spaces } from '../services/pocketbase';
 import { LAST_SPACE_KEY } from '../components/Sidebar';
 import type { Space } from '../types';
 
 export default function MySpacesPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [spaceList, setSpaceList] = useState<Space[]>([]);
 
@@ -24,7 +26,7 @@ export default function MySpacesPage() {
   return (
     <div className="flex-1 flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md p-6">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6">My Spaces</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">{t('mySpacesPage.title')}</h1>
 
         {spaceList.length > 0 ? (
           <div className="space-y-2">
@@ -39,7 +41,7 @@ export default function MySpacesPage() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">No spaces available</p>
+          <p className="text-gray-600 text-center">{t('mySpacesPage.noSpaces')}</p>
         )}
       </div>
     </div>

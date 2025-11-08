@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Dialog, Button } from '../ui';
 
 interface DeleteMessageDialogProps {
@@ -11,6 +12,7 @@ export default function DeleteMessageDialog({
   onOpenChange,
   onConfirm,
 }: DeleteMessageDialogProps) {
+  const { t } = useTranslation();
   const handleDelete = () => {
     onConfirm();
     onOpenChange(false);
@@ -24,15 +26,15 @@ export default function DeleteMessageDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Delete Message"
-      description="Are you sure you want to delete this message? This action cannot be undone."
+      title={t('deleteMessageDialog.title')}
+      description={t('deleteMessageDialog.description')}
       footer={
         <>
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="primary" onClick={handleDelete}>
-            Delete
+            {t('common.delete')}
           </Button>
         </>
       }

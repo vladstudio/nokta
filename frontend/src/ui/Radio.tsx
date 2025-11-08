@@ -1,0 +1,31 @@
+import { Radio } from '@base-ui-components/react/radio';
+import { RadioGroup as BaseRadioGroup } from '@base-ui-components/react/radio-group';
+
+interface RadioOption<T = string> {
+  value: T;
+  label: string;
+}
+
+interface RadioGroupProps<T = string> {
+  value?: T;
+  onChange?: (value: T) => void;
+  options: RadioOption<T>[];
+  disabled?: boolean;
+}
+
+export function RadioGroup<T extends string = string>({ value, onChange, options, disabled }: RadioGroupProps<T>) {
+  return (
+    <BaseRadioGroup value={value} onValueChange={onChange}>
+      <div className="space-y-2">
+        {options.map((option) => (
+          <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+            <Radio.Root value={option.value} disabled={disabled} className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed data-checked:border-blue-600">
+              <Radio.Indicator className="w-2 h-2 rounded-full bg-blue-600" />
+            </Radio.Root>
+            <span className="text-gray-900">{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </BaseRadioGroup>
+  );
+}

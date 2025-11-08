@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import { useTranslation } from 'react-i18next';
 import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -28,6 +29,7 @@ interface DisplayMessage extends Message {
 }
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
+  const { t } = useTranslation();
   const toastManager = useToastManager();
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
@@ -185,7 +187,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       await messagesAPI.update(selectedMessageId, newContent);
       setSelectedMessageId(null);
       toastManager.add({
-        title: 'Message updated',
+        title: t('chatWindow.messageUpdated'),
         description: 'Your message has been updated successfully',
         data: { type: 'success' },
       });
@@ -210,7 +212,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       await messagesAPI.delete(selectedMessageId);
       setSelectedMessageId(null);
       toastManager.add({
-        title: 'Message deleted',
+        title: t('chatWindow.messageDeleted'),
         description: 'Your message has been deleted successfully',
         data: { type: 'success' },
       });
@@ -230,7 +232,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     try {
       if (selectedMessage.type === 'text') {
         await navigator.clipboard.writeText(selectedMessage.content);
-        toastManager.add({ title: 'Copied', data: { type: 'success' } });
+        toastManager.add({ title: t('chatWindow.copied'), data: { type: 'success' } });
       } else if (selectedMessage.type === 'image' && selectedMessage.file) {
         const imageUrl = messagesAPI.getFileURL(selectedMessage);
         const response = await fetch(imageUrl);
@@ -238,7 +240,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         await navigator.clipboard.write([
           new ClipboardItem({ [blob.type]: blob })
         ]);
-        toastManager.add({ title: 'Image copied', data: { type: 'success' } });
+        toastManager.add({ title: t('chatWindow.imageCopied'), data: { type: 'success' } });
       }
       setSelectedMessageId(null);
     } catch (err) {
@@ -300,7 +302,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
         <LoadingSpinner size="lg" />
-        <div className="text-gray-600">Loading messages...</div>
+        <div className="text-gray-600">{t('chatWindow.loadingMessages')}</div>
       </div>
     );
   }
@@ -317,7 +319,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             )}
             {allMessages.length === 0 ? (
               <div className="text-center text-gray-500 py-8">
-                No messages yet. Start the conversation!
+                {t('chatWindow.noMessages')}
               </div>
             ) : (
               allMessages.map((message) => (
@@ -341,10 +343,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {typingUsers.length > 0 && (
         <div className="px-6 py-2 text-sm text-gray-500 italic">
           {typingUsers.length === 1
-            ? `${typingUsers[0].userName} is typing...`
+            ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}`
             : typingUsers.length === 2
-              ? `${typingUsers[0].userName} and ${typingUsers[1].userName} are typing...`
-              : `${typingUsers.length} people are typing...`}
+              ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}`
+              : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
         </div>
       )}
 

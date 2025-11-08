@@ -4,6 +4,7 @@ export { Card } from './Card';
 export { Input } from './Input';
 export { FormLabel } from './FormLabel';
 export { Select } from './Select';
+export { RadioGroup } from './Radio';
 export { Menu } from './Menu';
 export { Popover } from './Popover';
 export { ScrollArea } from './ScrollArea';

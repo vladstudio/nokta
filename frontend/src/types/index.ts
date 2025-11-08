@@ -4,6 +4,7 @@ export interface User {
   name?: string;
   avatar?: string;
   last_seen?: string;
+  language?: 'en' | 'ru';
   created: string;
   updated: string;
 }

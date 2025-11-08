@@ -1,0 +1,96 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "delete": "Удалить",
+    "send": "Отправить",
+    "you": "Вы",
+    "unknown": "Неизвестно",
+    "uploading": "Загрузка",
+    "uploadFailed": "Ошибка загрузки"
+  },
+  "sidebar": {
+    "mySpaces": "Мои пространства",
+    "mySettings": "Мои настройки",
+    "logOut": "Выйти",
+    "selectSpace": "Выберите пространство"
+  },
+  "chatWindow": {
+    "loadingMessages": "Загрузка сообщений...",
+    "noMessages": "Пока нет сообщений. Начните разговор!",
+    "isTyping": "печатает...",
+    "areTyping": "печатают...",
+    "messageUpdated": "Сообщение обновлено",
+    "messageDeleted": "Сообщение удалено",
+    "copied": "Скопировано",
+    "imageCopied": "Изображение скопировано"
+  },
+  "messageInput": {
+    "placeholder": "Введите сообщение..."
+  },
+  "addActions": {
+    "image": "Изображение",
+    "file": "Файл"
+  },
+  "editMessageDialog": {
+    "title": "Редактировать сообщение",
+    "description": "Внесите изменения в ваше сообщение"
+  },
+  "deleteMessageDialog": {
+    "title": "Удалить сообщение",
+    "description": "Вы уверены, что хотите удалить это сообщение? Это действие нельзя отменить."
+  },
+  "userSettingsDialog": {
+    "title": "Мои настройки",
+    "description": "Обновите информацию вашего профиля",
+    "avatar": "Аватар",
+    "name": "Имя",
+    "email": "Email",
+    "password": "Пароль",
+    "language": "Язык",
+    "leaveBlankPassword": "Оставьте пустым, чтобы не менять",
+    "namePlaceholder": "Введите ваше имя",
+    "emailPlaceholder": "Введите ваш email",
+    "passwordPlaceholder": "Введите новый пароль",
+    "settingsSaved": "Настройки сохранены",
+    "settingsSavedDesc": "Ваш профиль успешно обновлен"
+  },
+  "chatList": {
+    "directMessage": "Личное сообщение",
+    "noChats": "Нет доступных чатов",
+    "publicChat": "Публичный чат",
+    "privateChat": "Приватный чат"
+  },
+  "connectionBanner": {
+    "offline": "Вы не в сети. Сообщения будут отправлены при восстановлении соединения."
+  },
+  "loginPage": {
+    "signInTitle": "Войдите в свой аккаунт",
+    "signUpTitle": "Создать новый аккаунт",
+    "nameOptional": "Имя (необязательно)",
+    "emailAddress": "Адрес электронной почты",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "pleaseWait": "Пожалуйста, подождите...",
+    "signIn": "Войти",
+    "signUp": "Зарегистрироваться",
+    "noAccount": "Нет аккаунта? Зарегистрируйтесь",
+    "hasAccount": "Уже есть аккаунт? Войдите",
+    "passwordTooShort": "Пароль должен содержать минимум 8 символов",
+    "passwordsNoMatch": "Пароли не совпадают"
+  },
+  "mySpacesPage": {
+    "title": "Мои пространства",
+    "noSpaces": "Нет доступных пространств"
+  },
+  "errorBoundary": {
+    "title": "Что-то пошло не так",
+    "tryAgain": "Попробовать снова",
+    "goHome": "На главную"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский"
+  }
+}

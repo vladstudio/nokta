@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Message } from '../types';
 import { messages as messagesAPI } from '../services/pocketbase';
 
@@ -12,14 +13,15 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRetry, onCancelUpload }: ChatMessageProps) {
-  const senderName = message.expand?.sender?.name || message.expand?.sender?.email || 'Unknown';
+  const { t } = useTranslation();
+  const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
 
   const renderContent = () => {
     // Uploading state (for image/file)
     if (message.isPending && (message.type === 'image' || message.type === 'file')) {
       return (
         <div className="space-y-2">
-          <p className="text-sm">Uploading {message.content}...</p>
+          <p className="text-sm">{t('common.uploading')} {message.content}...</p>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all"
@@ -30,7 +32,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
             onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
             className="text-xs text-gray-500 hover:text-gray-700 underline"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       );
@@ -40,12 +42,12 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
     if (message.isFailed && (message.type === 'image' || message.type === 'file')) {
       return (
         <div className="space-y-2">
-          <p className="text-sm text-red-700">Upload failed: {message.content}</p>
+          <p className="text-sm text-red-700">{t('common.uploadFailed')}: {message.content}</p>
           <button
             onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
             className="text-xs text-red-500 hover:text-red-700 underline"
           >
-            Retry
+            {t('common.send')}
           </button>
         </div>
       );
@@ -105,7 +107,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
       <div className={`max-w-xl p-2 ${isOwn ? 'order-2' : 'order-1'}`}>
         <div className="flex items-baseline space-x-2 mb-1">
           <span className="text-xs font-medium text-gray-700">
-            {isOwn ? 'You' : senderName}
+            {isOwn ? t('common.you') : senderName}
           </span>
           {message.created && !message.isPending && (
             <span className="text-xs text-gray-400">
@@ -113,14 +115,14 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
             </span>
           )}
           {message.isPending && message.type === 'text' && (
-            <span className="text-xs text-gray-400">Sending...</span>
+            <span className="text-xs text-gray-400">{t('common.uploading')}...</span>
           )}
           {message.isFailed && message.type === 'text' && (
             <button
               onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
               className="text-xs text-red-500 hover:text-red-700 underline"
             >
-              Failed - Retry
+              {t('common.uploadFailed')} - {t('common.send')}
             </button>
           )}
         </div>

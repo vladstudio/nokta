@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { auth } from '../services/pocketbase';
 import Sidebar from './Sidebar';
 
@@ -8,6 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { t } = useTranslation();
   const [location, setLocation] = useLocation();
   const [isChecking, setIsChecking] = useState(true);
 
@@ -30,7 +32,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isChecking) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">{t('common.loading')}</div>
       </div>
     );
   }
