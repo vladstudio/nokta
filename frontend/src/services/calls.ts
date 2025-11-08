@@ -61,24 +61,51 @@ export const callsAPI = {
   },
 
   async leave(callId: string) {
+    console.log('[LEAVE] Starting leave for call:', callId);
+
     const call = await pb.collection('calls').getOne<Call>(callId);
+    console.log('[LEAVE] Retrieved call:', call);
+
     const currentUserId = pb.authStore.model?.id;
+    console.log('[LEAVE] Current user ID:', currentUserId);
+
     const remainingParticipants = call.participants.filter(id => id !== currentUserId);
+    console.log('[LEAVE] Remaining participants:', remainingParticipants);
 
     if (remainingParticipants.length === 0) {
-      // Delete all pending invites
-      const invites = await pb.collection('call_invites').getFullList<CallInvite>({
-        filter: `call = "${callId}"`
-      });
-      for (const invite of invites) {
-        await pb.collection('call_invites').delete(invite.id);
+      console.log('[LEAVE] Last person leaving - deleting call');
+
+      // Delete call from PocketBase (invites will cascade delete automatically)
+      console.log('[LEAVE] Deleting call from database...');
+      try {
+        await pb.collection('calls').delete(callId);
+        console.log('[LEAVE] Call deleted successfully');
+      } catch (error: any) {
+        console.error('[LEAVE] Failed to delete call:', error);
+        console.error('[LEAVE] Error details:', {
+          status: error?.status,
+          message: error?.message,
+          data: error?.data,
+          isAbort: error?.isAbort
+        });
+        throw error;
       }
-      // Delete call and room
-      await dailyAPI.deleteRoom(call.daily_room_name);
-      await pb.collection('calls').delete(callId);
+
+      // Delete Daily.co room (non-blocking - don't fail if this errors)
+      try {
+        console.log('[LEAVE] Deleting Daily.co room:', call.daily_room_name);
+        await dailyAPI.deleteRoom(call.daily_room_name);
+        console.log('[LEAVE] Daily.co room deleted');
+      } catch (error) {
+        console.error('[LEAVE] Failed to delete Daily.co room:', error);
+      }
     } else {
+      console.log('[LEAVE] Updating call participants');
       await pb.collection('calls').update(callId, { participants: remainingParticipants });
+      console.log('[LEAVE] Call updated successfully');
     }
+
+    console.log('[LEAVE] Leave completed');
   },
 
   async getMyInvites(spaceId: string): Promise<CallInvite[]> {

@@ -46,18 +46,17 @@ export default function SpacePage() {
     if (!spaceId) return;
 
     const unsubscribe = callsAPI.subscribeToCalls((data) => {
-      if (data.record.space !== spaceId) return;
+      // Only process events for the current active call
+      if (!activeCall || data.record.id !== activeCall.id) return;
 
       if (data.action === 'delete') {
-        // Call ended
+        // Our active call was deleted
         setActiveCall(null);
         setShowCallView(false);
         setIsCallMinimized(false);
       } else if (data.action === 'update') {
-        // Update active call (e.g., participant changes)
-        if (activeCall?.id === data.record.id) {
-          setActiveCall(data.record);
-        }
+        // Our active call was updated (e.g., participant changes)
+        setActiveCall(data.record);
       }
     });
 

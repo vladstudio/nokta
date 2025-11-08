@@ -72,6 +72,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showAddActions, setShowAddActions] = useState(false);
+  const [isCreatingCall, setIsCreatingCall] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -289,7 +290,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const handleStartCall = async () => {
-    if (!chat) return;
+    if (!chat || activeCall || isCreatingCall) return; // Don't create if call already exists or is being created
+
+    setIsCreatingCall(true);
     try {
       const { call } = await callsAPI.create(chat.space, chat.participants);
       setActiveCall(call);
@@ -302,6 +305,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         description: 'Could not start the call. Please try again.',
         data: { type: 'error' }
       });
+    } finally {
+      setIsCreatingCall(false);
     }
   };
 
@@ -364,10 +369,18 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
         <h2 className="text-lg font-semibold">{chat?.name || 'Chat'}</h2>
-        <Button onClick={handleStartCall} variant="ghost" size="default" className="gap-2">
-          <Phone className="w-4 h-4" />
-          Call
-        </Button>
+        {!activeCall && (
+          <Button
+            onClick={handleStartCall}
+            variant="ghost"
+            size="default"
+            className="gap-2"
+            disabled={isCreatingCall}
+          >
+            <Phone className="w-4 h-4" />
+            {isCreatingCall ? 'Starting...' : 'Call'}
+          </Button>
+        )}
       </div>
 
       {/* Messages Area */}

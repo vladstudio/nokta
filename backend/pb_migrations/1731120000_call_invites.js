@@ -8,7 +8,7 @@ migrate((app) => {
   calls.createRule = '@request.auth.id != ""'
   // Allow participants to update, or anyone authenticated (invite acceptance handled by app logic)
   calls.updateRule = '@request.auth.id != ""'
-  calls.deleteRule = '@request.auth.id != "" && participants ?= @request.auth.id'
+  calls.deleteRule = '@request.auth.id != ""'
 
   // Remove initiator field if it exists
   const initiatorField = calls.fields.getByName("initiator")
