@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { User, Space, SpaceMember, Chat, Message, ChatReadStatus } from '../types';
+import type { User, Space, SpaceMember, Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
@@ -13,10 +13,13 @@ export const auth = {
   },
 
   async register(email: string, password: string, passwordConfirm: string, name?: string) {
-    const data: any = { email, password, passwordConfirm };
+    const data: { email: string; password: string; passwordConfirm: string; name?: string } = {
+      email,
+      password,
+      passwordConfirm,
+    };
     if (name) data.name = name;
-    const record = await pb.collection('users').create<User>(data);
-    return record;
+    return await pb.collection('users').create<User>(data);
   },
 
   logout() {
@@ -42,13 +45,11 @@ export const auth = {
 
 export const spaces = {
   async list() {
-    const records = await pb.collection('spaces').getFullList<Space>();
-    return records;
+    return await pb.collection('spaces').getFullList<Space>();
   },
 
   async getOne(id: string) {
-    const record = await pb.collection('spaces').getOne<Space>(id);
-    return record;
+    return await pb.collection('spaces').getOne<Space>(id);
   },
 };
 
@@ -79,7 +80,7 @@ export const chats = {
     return record;
   },
 
-  subscribe(callback: (data: any) => void) {
+  subscribe(callback: (data: PocketBaseEvent<Chat>) => void) {
     return pb.collection('chats').subscribe('*', callback);
   },
 
@@ -133,7 +134,7 @@ export const messages = {
     return result.totalItems;
   },
 
-  subscribe(chatId: string, callback: (data: any) => void) {
+  subscribe(chatId: string, callback: (data: PocketBaseEvent<Message>) => void) {
     return pb.collection('messages').subscribe('*', callback, {
       filter: `chat = "${chatId}"`,
     });
@@ -195,7 +196,7 @@ export const chatReadStatus = {
   /**
    * Subscribe to read status changes (for multi-device sync)
    */
-  subscribe(userId: string, callback: (data: any) => void) {
+  subscribe(userId: string, callback: (data: PocketBaseEvent<ChatReadStatus>) => void) {
     return pb.collection('chat_read_status').subscribe('*', callback, {
       filter: pb.filter('user = {:userId}', { userId }),
     });

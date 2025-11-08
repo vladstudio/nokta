@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { pb, auth } from '../services/pocketbase';
+import type { PocketBaseEvent, TypingEvent } from '../types';
 
 interface TypingUser {
   userId: string;
@@ -67,19 +68,24 @@ export function useTypingIndicator(
   useEffect(() => {
     if (!chatId) return;
 
+    const userTimeouts = new Map<string, NodeJS.Timeout>();
+
     const cleanup = () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       if (broadcastTimerRef.current) clearTimeout(broadcastTimerRef.current);
+      // Clear all user-specific timeouts
+      userTimeouts.forEach((timeout) => clearTimeout(timeout));
+      userTimeouts.clear();
     };
 
     // Try to subscribe to typing events
     let unsubscribe: (() => void) | undefined;
 
     pb.collection('typing_events')
-      .subscribe('*', (e) => {
+      .subscribe('*', (e: PocketBaseEvent<TypingEvent>) => {
         if (e.action !== 'create') return;
 
-        const record = e.record as any;
+        const record = e.record;
         if (record.chat !== chatId) return;
         if (record.user === auth.user?.id) return; // Ignore own typing
 
@@ -93,11 +99,20 @@ export function useTypingIndicator(
         typingUsersRef.current.set(record.user, typingUser);
         notifyChange();
 
+        // Clear existing timeout for this user
+        const existingTimeout = userTimeouts.get(record.user);
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+        }
+
         // Auto-remove after timeout
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           typingUsersRef.current.delete(record.user);
+          userTimeouts.delete(record.user);
           notifyChange();
         }, TYPING_TIMEOUT);
+
+        userTimeouts.set(record.user, timeout);
       })
       .then((unsub) => {
         unsubscribe = unsub;

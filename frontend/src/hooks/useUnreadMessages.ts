@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { chatReadStatus, messages, auth } from '../services/pocketbase';
 import { showMessageNotification } from '../utils/notifications';
-import type { Chat } from '../types';
+import type { Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
 
 /**
  * Manages unread message counts for all chats in a space
@@ -93,7 +93,7 @@ export function useUnreadMessages(
     let readStatusUnsubscribe: (() => void) | undefined;
 
     // Subscribe to new messages across all chats in this space
-    const handleNewMessage = async (data: any) => {
+    const handleNewMessage = async (data: PocketBaseEvent<Message>) => {
       if (data.action === 'create') {
         const message = data.record;
 
@@ -179,7 +179,7 @@ export function useUnreadMessages(
     };
 
     // Subscribe to read status changes (for multi-device sync)
-    const handleReadStatusUpdate = async (data: any) => {
+    const handleReadStatusUpdate = async (data: PocketBaseEvent<ChatReadStatus>) => {
       if (data.action === 'update' || data.action === 'create') {
         const status = data.record;
 

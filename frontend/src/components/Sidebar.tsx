@@ -6,7 +6,7 @@ import { useFavicon } from '../hooks/useFavicon';
 import { Menu, ScrollArea } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
-import type { Space, Chat } from '../types';
+import type { Space, Chat, PocketBaseEvent } from '../types';
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
@@ -42,7 +42,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (!spaceId) return;
-    const unsubscribe = chats.subscribe(async (data) => {
+    const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
       if (data.action === 'update' && data.record.space === spaceId) {
         const fullChat = await chats.getOne(data.record.id);
         setChatList(prev => prev

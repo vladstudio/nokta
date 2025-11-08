@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
+import type { PocketBaseEvent } from '../types';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { messageQueue, type PendingMessage } from '../utils/messageQueue';
@@ -79,7 +80,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     loadMessages();
 
     // Subscribe to real-time updates
-    const unsubscribe = messagesAPI.subscribe(chatId, async (data) => {
+    const unsubscribe = messagesAPI.subscribe(chatId, async (data: PocketBaseEvent<Message>) => {
       if (data.action === 'create') {
         // Clear typing indicator for this sender
         setTypingUsers((prev) => prev.filter((u) => u.userId !== data.record.sender));
@@ -164,6 +165,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       await messageCache.saveMessages(chatId, chronologicalMessages);
     } catch (err) {
       console.error('Failed to load messages:', err);
+      toastManager.add({
+        title: 'Failed to load messages',
+        description: 'Could not load messages. Please try again.',
+        data: { type: 'error' },
+      });
     } finally {
       setLoading(false);
       requestAnimationFrame(() => scrollToBottom());
@@ -197,10 +203,15 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       setHasMore(result.page < result.totalPages);
     } catch (err) {
       console.error('Failed to load older messages:', err);
+      toastManager.add({
+        title: 'Failed to load older messages',
+        description: 'Could not load older messages. Please try again.',
+        data: { type: 'error' },
+      });
     } finally {
       setLoadingOlder(false);
     }
-  }, [loadingOlder, hasMore, page, chatId]);
+  }, [loadingOlder, hasMore, page, chatId, toastManager]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
@@ -286,8 +297,18 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     try {
       await messagesAPI.update(selectedMessageId, newContent);
       setSelectedMessageId(null);
+      toastManager.add({
+        title: 'Message updated',
+        description: 'Your message has been updated successfully',
+        data: { type: 'success' },
+      });
     } catch (err) {
       console.error('Failed to update message:', err);
+      toastManager.add({
+        title: 'Failed to update message',
+        description: 'Could not update message. Please try again.',
+        data: { type: 'error' },
+      });
     }
   };
 
@@ -301,20 +322,26 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     try {
       await messagesAPI.delete(selectedMessageId);
       setSelectedMessageId(null);
+      toastManager.add({
+        title: 'Message deleted',
+        description: 'Your message has been deleted successfully',
+        data: { type: 'success' },
+      });
     } catch (err) {
       console.error('Failed to delete message:', err);
+      toastManager.add({
+        title: 'Failed to delete message',
+        description: 'Could not delete message. Please try again.',
+        data: { type: 'error' },
+      });
     }
   };
 
   const handleCopyMessage = async () => {
-    if (!selectedMessageId) return;
-
-    const message = messages.find(m => m.id === selectedMessageId) ||
-                    pendingMessages.find(m => m.tempId === selectedMessageId);
-    if (!message) return;
+    if (!selectedMessage) return;
 
     try {
-      await navigator.clipboard.writeText(message.content);
+      await navigator.clipboard.writeText(selectedMessage.content);
       setSelectedMessageId(null);
       toastManager.add({
         title: 'Message copied',
@@ -345,17 +372,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     (document.activeElement as HTMLElement)?.blur();
   });
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
-        <LoadingSpinner size="lg" />
-        <div className="text-gray-600">Loading messages...</div>
-      </div>
-    );
-  }
-
   // Combine real and pending messages for display
-  const allMessages: DisplayMessage[] = [
+  const allMessages: DisplayMessage[] = useMemo(() => [
     ...messages,
     ...pendingMessages.map((p) => ({
       id: p.tempId,
@@ -369,7 +387,27 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       isFailed: p.status === 'failed',
       tempId: p.tempId,
     })),
-  ];
+  ], [messages, pendingMessages, currentUser?.id]);
+
+  // Get selected message for action buttons
+  const selectedMessage = useMemo(
+    () => allMessages.find(m => m.id === selectedMessageId),
+    [allMessages, selectedMessageId]
+  );
+
+  const canEditOrDelete = useMemo(
+    () => selectedMessage?.sender === currentUser?.id && !selectedMessage?.isPending,
+    [selectedMessage, currentUser?.id]
+  );
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
+        <LoadingSpinner size="lg" />
+        <div className="text-gray-600">Loading messages...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col bg-white min-h-0">
@@ -418,16 +456,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         <MessageActions
           onCancel={() => setSelectedMessageId(null)}
           onCopy={handleCopyMessage}
-          onEdit={
-            allMessages.find(m => m.id === selectedMessageId)?.sender === currentUser?.id && !allMessages.find(m => m.id === selectedMessageId)?.isPending
-              ? handleEditMessage
-              : undefined
-          }
-          onDelete={
-            allMessages.find(m => m.id === selectedMessageId)?.sender === currentUser?.id && !allMessages.find(m => m.id === selectedMessageId)?.isPending
-              ? handleDeleteMessage
-              : undefined
-          }
+          onEdit={canEditOrDelete ? handleEditMessage : undefined}
+          onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
         />
       ) : (
         <div className="border-t border-gray-200 p-4">
@@ -444,7 +474,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       <EditMessageDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        initialContent={allMessages.find(m => m.id === selectedMessageId)?.content || ''}
+        initialContent={selectedMessage?.content || ''}
         onSave={handleSaveEdit}
       />
 

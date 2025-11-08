@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { pb, auth } from '../services/pocketbase';
+import type { UserPresenceData } from '../types';
 
 const HEARTBEAT_INTERVAL = 30000; // Update every 30 seconds
 const ONLINE_THRESHOLD = 120000; // Consider offline after 2 minutes
@@ -13,6 +14,9 @@ interface UserPresence {
 export function usePresence(userIds: string[]) {
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(new Map());
   const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Create stable reference for userIds to avoid unnecessary re-renders
+  const stableUserIds = useMemo(() => userIds.sort().join(','), [userIds]);
 
   // Send heartbeat to update own presence
   const sendHeartbeat = useCallback(async () => {
@@ -33,7 +37,7 @@ export function usePresence(userIds: string[]) {
 
     try {
       const filter = userIds.map((id) => `id="${id}"`).join(' || ');
-      const users = await pb.collection('users').getFullList({
+      const users = await pb.collection('users').getFullList<UserPresenceData>({
         filter,
         fields: 'id,last_seen',
       });
@@ -41,7 +45,7 @@ export function usePresence(userIds: string[]) {
       const newMap = new Map<string, UserPresence>();
       const now = Date.now();
 
-      users.forEach((user: any) => {
+      users.forEach((user) => {
         const lastSeen = user.last_seen ? new Date(user.last_seen) : new Date(0);
         const isOnline = now - lastSeen.getTime() < ONLINE_THRESHOLD;
 
@@ -56,7 +60,7 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to fetch presence:', err);
     }
-  }, [userIds]);
+  }, [stableUserIds]);
 
   // Start heartbeat
   useEffect(() => {
