@@ -34,7 +34,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       setAvatar(null);
       setAvatarPreview(
         currentUser.avatar
-          ? pb.files.getUrl(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
+          ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
           : null
       );
       setError(null);

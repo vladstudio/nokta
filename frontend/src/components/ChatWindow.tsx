@@ -9,6 +9,7 @@ import { messageCache } from '../utils/messageCache';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
 import MessageActions from './MessageActions';
+import AddActions from './AddActions';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
 import { Button, Input, ScrollArea, useToastManager } from '../ui';
@@ -22,6 +23,16 @@ interface DisplayMessage extends Message {
   isPending?: boolean;
   isFailed?: boolean;
   tempId?: string;
+  uploadProgress?: number;
+}
+
+interface UploadingFile {
+  tempId: string;
+  chatId: string;
+  type: 'image' | 'file';
+  file: File;
+  progress: number;
+  status: 'uploading' | 'failed';
 }
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
@@ -38,11 +49,16 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [showAddActions, setShowAddActions] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [fileInputType, setFileInputType] = useState<'image' | 'file'>('image');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
   const prevStateRef = useRef({ lastMsgId: '', pendingCount: 0 });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadAbortControllers = useRef<Map<string, AbortController>>(new Map());
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
@@ -341,16 +357,138 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     if (!selectedMessage) return;
 
     try {
-      await navigator.clipboard.writeText(selectedMessage.content);
+      if (selectedMessage.type === 'text') {
+        await navigator.clipboard.writeText(selectedMessage.content);
+        toastManager.add({ title: 'Copied', data: { type: 'success' } });
+      } else if (selectedMessage.type === 'image' && selectedMessage.file) {
+        const imageUrl = messagesAPI.getFileURL(selectedMessage);
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob })
+        ]);
+        toastManager.add({ title: 'Image copied', data: { type: 'success' } });
+      }
       setSelectedMessageId(null);
-      toastManager.add({
-        title: 'Message copied',
-        description: 'Message copied to clipboard',
-        data: { type: 'success' },
-      });
     } catch (err) {
-      console.error('Failed to copy message:', err);
+      console.error('Copy failed:', err);
+      toastManager.add({
+        title: 'Copy failed',
+        description: 'Could not copy to clipboard',
+        data: { type: 'error' },
+      });
     }
+  };
+
+  const handleFileSelect = (type: 'image' | 'file') => {
+    setFileInputType(type);
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = type === 'image' ? 'image/*' : '*/*';
+      fileInputRef.current.multiple = true;
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (!isOnline) {
+      toastManager.add({
+        title: 'No connection',
+        description: 'Cannot upload files while offline',
+        data: { type: 'error' },
+      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+    const validFiles = files.filter(f => {
+      if (f.size > MAX_SIZE) {
+        toastManager.add({
+          title: 'File too large',
+          description: `${f.name} exceeds 50MB limit`,
+          data: { type: 'error' },
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setNewMessage('');
+    setShowAddActions(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    const uploads: UploadingFile[] = validFiles.map(file => ({
+      tempId: `temp_${Date.now()}_${Math.random()}`,
+      chatId,
+      type: fileInputType,
+      file,
+      progress: 0,
+      status: 'uploading' as const,
+    }));
+
+    setUploadingFiles(prev => [...prev, ...uploads]);
+    uploads.forEach(upload => uploadFile(upload));
+  };
+
+  const uploadFile = async (upload: UploadingFile) => {
+    const abortController = new AbortController();
+    uploadAbortControllers.current.set(upload.tempId, abortController);
+
+    const progressInterval = setInterval(() => {
+      setUploadingFiles(prev =>
+        prev.map(u => u.tempId === upload.tempId
+          ? { ...u, progress: Math.min(u.progress + 10, 90) }
+          : u
+        )
+      );
+    }, 100);
+
+    try {
+      await messagesAPI.createWithFile(chatId, upload.type, upload.file);
+
+      clearInterval(progressInterval);
+      setUploadingFiles(prev =>
+        prev.map(u => u.tempId === upload.tempId ? { ...u, progress: 100 } : u)
+      );
+
+      setTimeout(() => {
+        setUploadingFiles(prev => prev.filter(u => u.tempId !== upload.tempId));
+        uploadAbortControllers.current.delete(upload.tempId);
+      }, 500);
+    } catch (err) {
+      clearInterval(progressInterval);
+      setUploadingFiles(prev =>
+        prev.map(u => u.tempId === upload.tempId
+          ? { ...u, status: 'failed' as const }
+          : u
+        )
+      );
+      uploadAbortControllers.current.delete(upload.tempId);
+    }
+  };
+
+  const handleCancelUpload = (tempId: string) => {
+    uploadAbortControllers.current.get(tempId)?.abort();
+    setUploadingFiles(prev => prev.filter(u => u.tempId !== tempId));
+    uploadAbortControllers.current.delete(tempId);
+  };
+
+  const handleRetryUpload = (tempId: string) => {
+    const upload = uploadingFiles.find(u => u.tempId === tempId);
+    if (!upload) return;
+
+    setUploadingFiles(prev =>
+      prev.map(u => u.tempId === tempId
+        ? { ...u, status: 'uploading' as const, progress: 0 }
+        : u
+      )
+    );
+    uploadFile(upload);
   };
 
   const autoResize = useCallback(() => {
@@ -387,7 +525,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       isFailed: p.status === 'failed',
       tempId: p.tempId,
     })),
-  ], [messages, pendingMessages, currentUser?.id]);
+    ...uploadingFiles.map(u => ({
+      id: u.tempId,
+      chat: u.chatId,
+      sender: currentUser?.id || '',
+      type: u.type,
+      content: u.file.name,
+      created: new Date().toISOString(),
+      isPending: u.status === 'uploading',
+      isFailed: u.status === 'failed',
+      tempId: u.tempId,
+      uploadProgress: u.progress,
+    })),
+  ], [messages, pendingMessages, uploadingFiles, currentUser?.id]);
 
   // Get selected message for action buttons
   const selectedMessage = useMemo(
@@ -432,7 +582,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                   currentUserId={currentUser?.id || ''}
                   isSelected={selectedMessageId === message.id}
                   onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
-                  onRetry={handleRetry}
+                  onRetry={message.type === 'text' ? handleRetry : handleRetryUpload}
+                  onCancelUpload={handleCancelUpload}
                 />
               ))
             )}
@@ -452,23 +603,45 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       )}
 
       {/* Message Input or Actions */}
-      {selectedMessageId ? (
+      {showAddActions ? (
+        <AddActions
+          onCancel={() => setShowAddActions(false)}
+          onImageSelect={() => handleFileSelect('image')}
+          onFileSelect={() => handleFileSelect('file')}
+        />
+      ) : selectedMessageId ? (
         <MessageActions
           onCancel={() => setSelectedMessageId(null)}
-          onCopy={handleCopyMessage}
-          onEdit={canEditOrDelete ? handleEditMessage : undefined}
+          onCopy={selectedMessage?.type !== 'file' ? handleCopyMessage : undefined}
+          onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
           onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
         />
       ) : (
         <div className="border-t border-gray-200 p-4">
-          <form onSubmit={handleSend} className="flex space-x-4">
-            <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message... (Enter to send, Shift+Enter for new line)" rows={2} className="flex-1 max-h-42 overflow-y-auto" />
-            <Button type="submit" disabled={!newMessage.trim() || sending} className="px-6">
-              {sending ? 'Sending...' : 'Send'}
+          <form onSubmit={handleSend} className="flex items-end gap-2">
+            <Button
+              type="button"
+              variant="default"
+              onClick={() => setShowAddActions(true)}
+              className="mb-2"
+            >
+              +
+            </Button>
+            <Input as="textarea" ref={textareaRef} value={newMessage} onChange={handleMessageChange} onKeyDown={handleKeyDown} placeholder="Type a message..." rows={2} className="flex-1 max-h-42 overflow-y-auto" />
+            <Button type="submit" disabled={!newMessage.trim() || sending}>
+              Send
             </Button>
           </form>
         </div>
       )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       {/* Edit Message Dialog */}
       <EditMessageDialog

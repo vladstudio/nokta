@@ -30,7 +30,7 @@ export function UserAvatar({ user, size = 40, className = '' }: UserAvatarProps)
   const displayName = user.name || user.email || 'User';
 
   if (user.avatar) {
-    const avatarUrl = pb.files.getUrl(user, user.avatar, { thumb: `${size}x${size}` });
+    const avatarUrl = pb.files.getURL(user, user.avatar, { thumb: `${size}x${size}` });
     return (
       <img
         src={avatarUrl}
@@ -60,7 +60,7 @@ export function ChatAvatar({ chat, size = 40, className = '' }: ChatAvatarProps)
   const displayName = chat.name || 'Chat';
 
   if (chat.avatar) {
-    const avatarUrl = pb.files.getUrl(chat, chat.avatar, { thumb: `${size}x${size}` });
+    const avatarUrl = pb.files.getURL(chat, chat.avatar, { thumb: `${size}x${size}` });
     return (
       <img
         src={avatarUrl}

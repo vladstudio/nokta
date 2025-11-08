@@ -49,8 +49,9 @@ export interface Message {
   id: string;
   chat: string;
   sender: string | null;
-  type: 'text';
+  type: 'text' | 'image' | 'file';
   content: string;
+  file?: string;
   created?: string;
   updated?: string;
   expand?: {

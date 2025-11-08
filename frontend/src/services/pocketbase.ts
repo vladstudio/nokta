@@ -127,6 +127,23 @@ export const messages = {
     await pb.collection('messages').delete(messageId);
   },
 
+  async createWithFile(chatId: string, type: 'image' | 'file', file: File, caption?: string) {
+    const formData = new FormData();
+    formData.append('chat', chatId);
+    formData.append('sender', auth.user?.id || '');
+    formData.append('type', type);
+    formData.append('content', caption || file.name);
+    formData.append('file', file);
+
+    const record = await pb.collection('messages').create<Message>(formData);
+    return record;
+  },
+
+  getFileURL(message: Message, thumb?: string): string {
+    if (!message.file) return '';
+    return pb.files.getURL(message, message.file, thumb ? { thumb } : {});
+  },
+
   async countUnread(chatId: string, afterTimestamp: string): Promise<number> {
     const result = await pb.collection('messages').getList(1, 1, {
       filter: `chat = "${chatId}" && created > "${afterTimestamp}"`,
