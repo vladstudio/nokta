@@ -4,3 +4,6 @@ export { Select } from './Select';
 export { Menu } from './Menu';
 export { Popover } from './Popover';
 export { ScrollArea } from './ScrollArea';
+export { Dialog } from './Dialog';
+export { Switch } from './Switch';
+export { Toast } from './Toast';
