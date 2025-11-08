@@ -2,6 +2,7 @@ import { Route, Switch, useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
 import { auth, spaces } from './services/pocketbase';
 import { requestNotificationPermission, getNotificationPermission } from './utils/notifications';
+import { ToastProvider } from './ui';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -63,31 +64,33 @@ function App() {
   }, [isAuthenticated]);
 
   return (
-    <ErrorBoundary>
-      <ConnectionBanner />
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        <Route path="/my-spaces">
-          <ProtectedRoute>
-            <MySpacesPage />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/spaces/:spaceId/chats/:chatId?">
-          <ProtectedRoute>
-            <SpacePage />
-          </ProtectedRoute>
-        </Route>
-        <Route>
-          {isAuthenticated ? (
-            <div className="flex-1 flex items-center justify-center">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : (
-            <LoginPage />
-          )}
-        </Route>
-      </Switch>
-    </ErrorBoundary>
+    <ToastProvider>
+      <ErrorBoundary>
+        <ConnectionBanner />
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/my-spaces">
+            <ProtectedRoute>
+              <MySpacesPage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/spaces/:spaceId/chats/:chatId?">
+            <ProtectedRoute>
+              <SpacePage />
+            </ProtectedRoute>
+          </Route>
+          <Route>
+            {isAuthenticated ? (
+              <div className="flex-1 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+              </div>
+            ) : (
+              <LoginPage />
+            )}
+          </Route>
+        </Switch>
+      </ErrorBoundary>
+    </ToastProvider>
   );
 }
 

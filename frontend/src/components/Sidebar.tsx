@@ -5,6 +5,7 @@ import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { Menu, ScrollArea } from '../ui';
 import ChatList from './ChatList';
+import UserSettingsDialog from './UserSettingsDialog';
 import type { Space, Chat } from '../types';
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
@@ -17,6 +18,7 @@ export default function Sidebar() {
 
   const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [chatList, setChatList] = useState<Chat[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
@@ -67,6 +69,7 @@ export default function Sidebar() {
 
   const menuItems = useMemo(() => [
     { label: 'My Spaces', onClick: () => { setLocation('/my-spaces'); } },
+    { label: 'My Settings', onClick: () => { setSettingsOpen(true); } },
     { label: 'Log Out', onClick: () => { auth.logout(); setLocation('/login'); } },
   ], [setLocation]);
 
@@ -75,30 +78,33 @@ export default function Sidebar() {
   }, [spaceId, setLocation]);
 
   return (
-    <div className="w-60 bg-white border-r border-gray-200 flex flex-col min-h-0">
-      <ScrollArea>
-        <div className="p-4">
-          <Menu
-            trigger={
-              <div className="w-full flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                <div className="flex items-center gap-2 w-full">
-                  <img src="/favicon.svg" alt="Talk" className="w-5 h-5" />
-                  <span className="text-base font-semibold">{currentSpace?.name || 'Select space'}</span>
+    <>
+      <div className="w-60 bg-white border-r border-gray-200 flex flex-col min-h-0">
+        <ScrollArea>
+          <div className="p-4">
+            <Menu
+              trigger={
+                <div className="w-full flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <div className="flex items-center gap-2 w-full">
+                    <img src="/favicon.svg" alt="Talk" className="w-5 h-5" />
+                    <span className="text-base font-semibold">{currentSpace?.name || 'Select space'}</span>
+                  </div>
+                  <span className="text-xs text-gray-500">{auth.user?.name || auth.user?.email}</span>
                 </div>
-                <span className="text-xs text-gray-500">{auth.user?.name || auth.user?.email}</span>
-              </div>
-            }
-            items={menuItems}
+              }
+              items={menuItems}
+            />
+          </div>
+          <ChatList
+            chats={chatList}
+            selectedChatId={chatId || null}
+            onSelectChat={handleSelectChat}
+            unreadCounts={unreadCounts}
           />
-        </div>
-        <ChatList
-          chats={chatList}
-          selectedChatId={chatId || null}
-          onSelectChat={handleSelectChat}
-          unreadCounts={unreadCounts}
-        />
-      </ScrollArea>
-    </div>
+        </ScrollArea>
+      </div>
+      <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
   );
 }
 

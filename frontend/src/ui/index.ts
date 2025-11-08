@@ -6,4 +6,6 @@ export { Popover } from './Popover';
 export { ScrollArea } from './ScrollArea';
 export { Dialog } from './Dialog';
 export { Switch } from './Switch';
-export { Toast } from './Toast';
+export { ToastProvider, useToastManager } from './Toast';
+export type { ToastType } from './Toast';
+export { FileUpload } from './FileUpload';

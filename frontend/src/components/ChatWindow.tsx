@@ -10,7 +10,7 @@ import ChatMessage from './ChatMessage';
 import MessageActions from './MessageActions';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
-import { Button, Input, ScrollArea } from '../ui';
+import { Button, Input, ScrollArea, useToastManager } from '../ui';
 import type { Message } from '../types';
 
 interface ChatWindowProps {
@@ -24,6 +24,7 @@ interface DisplayMessage extends Message {
 }
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
+  const toastManager = useToastManager();
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -36,7 +37,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastLoadTimeRef = useRef(0);
@@ -315,9 +315,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
     try {
       await navigator.clipboard.writeText(message.content);
-      setToastOpen(true);
       setSelectedMessageId(null);
-      setTimeout(() => setToastOpen(false), 2000);
+      toastManager.add({
+        title: 'Message copied',
+        description: 'Message copied to clipboard',
+        data: { type: 'success' },
+      });
     } catch (err) {
       console.error('Failed to copy message:', err);
     }
@@ -451,16 +454,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
-
-      {/* Copy Success Notification */}
-      {toastOpen && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-          <span>Message copied to clipboard</span>
-        </div>
-      )}
     </div>
   );
 }
