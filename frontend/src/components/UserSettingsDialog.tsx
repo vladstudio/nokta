@@ -104,82 +104,82 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
 
   return (
     <Dialog
-        open={open}
-        onOpenChange={onOpenChange}
-        title={t('userSettingsDialog.title')}
-        description={t('userSettingsDialog.description')}
-        footer={
-          <>
-            <Button variant="default" onClick={() => onOpenChange(false)} disabled={saving}>
-              {t('common.cancel')}
-            </Button>
-            <Button variant="primary" onClick={handleSave} disabled={saving}>
-              {saving ? t('common.loading') : t('common.save')}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          {error && <Alert variant="error">{error}</Alert>}
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('userSettingsDialog.title')}
+      description={t('userSettingsDialog.description')}
+      footer={
+        <>
+          <Button variant="default" onClick={() => onOpenChange(false)} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? t('common.loading') : t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && <Alert variant="error">{error}</Alert>}
 
-          <div>
-            <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0">
-                {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt={currentUser.name || currentUser.email}
-                    className="w-20 h-20 rounded-full object-cover"
-                  />
-                ) : (
-                  <UserAvatar user={currentUser} size={80} />
-                )}
-              </div>
-              <div className="flex-1">
-                <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
-              </div>
+        <div>
+          <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
+          <div className="flex items-center gap-4">
+            <div className="shrink-0">
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt={currentUser.name || currentUser.email}
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <UserAvatar user={currentUser} size={80} />
+              )}
+            </div>
+            <div className="flex-1">
+              <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
             </div>
           </div>
-
-          <div>
-            <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
-            <Input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('userSettingsDialog.namePlaceholder')}
-            />
-          </div>
-
-          <div>
-            <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('userSettingsDialog.emailPlaceholder')}
-            />
-          </div>
-
-          <div>
-            <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('userSettingsDialog.leaveBlankPassword')}
-            />
-          </div>
-
-          <div>
-            <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-            <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
-          </div>
         </div>
+
+        <div>
+          <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
+          <Input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t('userSettingsDialog.namePlaceholder')}
+          />
+        </div>
+
+        <div>
+          <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t('userSettingsDialog.emailPlaceholder')}
+          />
+        </div>
+
+        <div>
+          <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t('userSettingsDialog.leaveBlankPassword')}
+          />
+        </div>
+
+        <div>
+          <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
+          <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+        </div>
+      </div>
     </Dialog>
   );
 }
