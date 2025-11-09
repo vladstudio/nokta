@@ -12,7 +12,7 @@ export interface UploadingFile {
 
 export interface UseFileUploadReturn {
   uploadingFiles: UploadingFile[];
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   fileInputType: 'image' | 'file';
   handleFileSelect: (type: 'image' | 'file') => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;

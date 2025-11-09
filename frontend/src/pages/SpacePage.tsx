@@ -9,6 +9,7 @@ import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
 import { pb } from '../services/pocketbase';
+import type { Chat } from '../types';
 
 export default function SpacePage() {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ export default function SpacePage() {
         if (!currentUserId) return;
 
         // Verify chat still exists and user is still in participants
-        const chat = await pb.collection('chats').getOne(activeCallChat.id);
+        const chat = await pb.collection('chats').getOne<Chat>(activeCallChat.id);
         if (chat.is_active_call && chat.call_participants?.includes(currentUserId)) {
           setActiveCallChat(chat);
         } else {

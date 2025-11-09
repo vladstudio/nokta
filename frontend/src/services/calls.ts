@@ -97,7 +97,7 @@ export const callsAPI = {
           callback({ ...data, record: fullChat });
         } catch (error) {
           console.error('Failed to fetch full chat:', error);
-          callback(data);
+          callback({ ...data, record: data.record as unknown as Chat });
         }
       }
     });

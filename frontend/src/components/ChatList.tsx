@@ -38,7 +38,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       onClick={handleClick}
       className={`chat-list-item ${isSelected ? 'selected' : ''}`}
     >
-      <div className="relative flex-shrink-0">
+      <div className="relative shrink-0">
         {chat.type === 'private' ? (
           <UserAvatar user={getOtherParticipant(chat)} size={48} />
         ) : (
@@ -46,7 +46,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         )}
         {getOnlineStatus(chat) !== null && (
           <span
-            className={`badge online absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : '!bg-gray-400'}`}
+            className={`badge online absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : 'bg-gray-400!'}`}
             title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
           />
         )}
@@ -62,7 +62,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         </div>
       </div>
       {hasUnread && (
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <span className="badge unread">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>

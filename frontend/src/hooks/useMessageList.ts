@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { messages as messagesAPI, auth } from '../services/pocketbase';
+import { messages as messagesAPI } from '../services/pocketbase';
 import { messageQueue, type PendingMessage } from '../utils/messageQueue';
 import { messageCache } from '../utils/messageCache';
 import type { Message, PocketBaseEvent } from '../types';

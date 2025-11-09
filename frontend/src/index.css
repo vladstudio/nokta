@@ -134,8 +134,7 @@ body {
 
 /* Message bubble */
 .message-bubble {
-  @apply rounded-2xl px-4 py-2 max-w-lg;
-  @apply break-words;
+  @apply rounded-2xl px-4 py-2 max-w-lg wrap-break-word;
   box-shadow: var(--shadow-sm);
 }
 
@@ -254,7 +253,7 @@ body {
 .avatar {
   @apply rounded-full flex items-center justify-center;
   @apply font-semibold text-white;
-  @apply flex-shrink-0;
+  @apply shrink-0;
   background-color: var(--color-primary-500);
 }
 

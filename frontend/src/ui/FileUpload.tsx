@@ -8,7 +8,7 @@ interface FileUploadProps {
   className?: string;
 }
 
-export function FileUpload({ value, onChange, accept = 'image/*', preview, className = '' }: FileUploadProps) {
+export function FileUpload({ onChange, accept = 'image/*', preview, className = '' }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 

@@ -68,7 +68,7 @@ export function useTypingIndicator(
   useEffect(() => {
     if (!chatId) return;
 
-    const userTimeouts = new Map<string, NodeJS.Timeout>();
+    const userTimeouts = new Map<string, number>();
 
     const cleanup = () => {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);

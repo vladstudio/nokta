@@ -233,8 +233,7 @@ export default function Sidebar() {
                 onClick={() => handleJoinCall(call.id)}
                 disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
                 variant="default"
-                size="sm"
-                className="btn-primary !bg-green-600 hover:!bg-green-700 disabled:!bg-gray-400 text-xs px-3 py-1.5"
+                className="btn-primary bg-green-600! hover:bg-green-700! disabled:bg-gray-400! text-xs px-3 py-1.5"
               >
                 {activeCallChat?.id === call.id ? t('calls.inCall') : joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
               </Button>

@@ -39,7 +39,7 @@ export default function DeleteMessageDialog({
         </>
       }
     >
-      {/* No content needed for confirmation dialog */}
+      {null}
     </Dialog>
   );
 }

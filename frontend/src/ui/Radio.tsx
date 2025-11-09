@@ -14,8 +14,14 @@ interface RadioGroupProps<T = string> {
 }
 
 export function RadioGroup<T extends string = string>({ value, onChange, options, disabled }: RadioGroupProps<T>) {
+  const handleValueChange = (newValue: unknown) => {
+    if (onChange && typeof newValue === 'string') {
+      onChange(newValue as T);
+    }
+  };
+
   return (
-    <BaseRadioGroup value={value} onValueChange={onChange}>
+    <BaseRadioGroup value={value} onValueChange={handleValueChange}>
       <div className="space-y-2">
         {options.map((option) => (
           <label key={option.value} className="flex items-center gap-2 cursor-pointer">

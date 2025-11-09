@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
 import MyPage from './pages/MyPage';
+import UIPage from './pages/UIPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
 import './i18n/config';
@@ -78,6 +79,7 @@ function App() {
           <ConnectionBanner />
           <Switch>
             <Route path="/login" component={LoginPage} />
+            <Route path="/ui" component={UIPage} />
             <Route path="/my">
               <ProtectedRoute>
                 <MyPage />

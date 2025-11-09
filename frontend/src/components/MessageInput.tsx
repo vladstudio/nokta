@@ -63,7 +63,7 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
           type="button"
           variant="ghost"
           onClick={onAddClick}
-          className="btn-ghost flex-shrink-0 w-9 h-9 p-0 text-lg font-semibold rounded-full mb-1"
+          className="btn-ghost shrink-0 w-9 h-9 p-0 text-lg font-semibold rounded-full mb-1"
           disabled={disabled}
         >
           +
@@ -82,7 +82,7 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
         <Button
           type="submit"
           disabled={!message.trim() || sending || disabled}
-          className="btn-primary flex-shrink-0 px-5 mb-1"
+          className="btn-primary shrink-0 px-5 mb-1"
         >
           {t('common.send')}
         </Button>

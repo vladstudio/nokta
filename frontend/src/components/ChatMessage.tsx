@@ -126,7 +126,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
             </button>
           )}
         </div>
-        <div className={`message-bubble ${isOwn ? 'own' : 'other'} ${message.isFailed ? '!bg-red-100 !text-red-900 !border-red-300' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
+        <div className={`message-bubble ${isOwn ? 'own' : 'other'} ${message.isFailed ? 'bg-red-100! text-red-900! border-red-300!' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
           {renderContent()}
         </div>
       </div>

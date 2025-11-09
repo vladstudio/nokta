@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { pb, auth } from '../services/pocketbase';
 import type { UserPresenceData } from '../types';
 
-const HEARTBEAT_INTERVAL = 30000; // Update every 30 seconds
-const ONLINE_THRESHOLD = 120000; // Consider offline after 2 minutes
+const HEARTBEAT_INTERVAL = 20000; // Update every 20 seconds
+const ONLINE_THRESHOLD = 40000; // Consider offline after 40 seconds
 
 interface UserPresence {
   userId: string;
@@ -13,10 +13,7 @@ interface UserPresence {
 
 export function usePresence(userIds: string[]) {
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(new Map());
-  const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Create stable reference for userIds to avoid unnecessary re-renders
-  const stableUserIds = useMemo(() => userIds.sort().join(','), [userIds]);
+  const heartbeatTimerRef = useRef<number | null>(null);
 
   // Send heartbeat to update own presence
   const sendHeartbeat = useCallback(async () => {
@@ -60,7 +57,7 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to fetch presence:', err);
     }
-  }, [stableUserIds]);
+  }, [userIds]);
 
   // Start heartbeat
   useEffect(() => {
