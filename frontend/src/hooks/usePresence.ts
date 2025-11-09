@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { pb, auth } from '../services/pocketbase';
 import type { UserPresenceData } from '../types';
 
@@ -13,7 +13,10 @@ interface UserPresence {
 
 export function usePresence(userIds: string[]) {
   const [presenceMap, setPresenceMap] = useState<Map<string, UserPresence>>(new Map());
-  const heartbeatTimerRef = useRef<number | null>(null);
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Stabilize userIds dependency to prevent unnecessary re-fetches
+  const userIdsKey = useMemo(() => [...userIds].sort().join(','), [userIds]);
 
   // Send heartbeat to update own presence
   const sendHeartbeat = useCallback(async () => {
@@ -57,7 +60,7 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to fetch presence:', err);
     }
-  }, [userIds]);
+  }, [userIdsKey, userIds]);
 
   // Start heartbeat
   useEffect(() => {
@@ -83,15 +86,25 @@ export function usePresence(userIds: string[]) {
     // Initial fetch
     fetchPresence();
 
-    // Fetch every 30 seconds
+    // Fetch every 5 seconds
     const intervalId = setInterval(fetchPresence, HEARTBEAT_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [fetchPresence, userIds.length]);
+  }, [fetchPresence]);
+
+  const isUserOnline = useCallback(
+    (userId: string) => presenceMap.get(userId)?.isOnline ?? false,
+    [presenceMap]
+  );
+
+  const getUserLastSeen = useCallback(
+    (userId: string) => presenceMap.get(userId)?.lastSeen,
+    [presenceMap]
+  );
 
   return {
     presenceMap,
-    isUserOnline: (userId: string) => presenceMap.get(userId)?.isOnline ?? false,
-    getUserLastSeen: (userId: string) => presenceMap.get(userId)?.lastSeen,
+    isUserOnline,
+    getUserLastSeen,
   };
 }
