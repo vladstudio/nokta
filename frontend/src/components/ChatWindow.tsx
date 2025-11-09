@@ -366,7 +366,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Header */}
       <div className="header">
-        <h2 className="text-lg font-semibold text-gray-900">{chat?.name || t('chatWindow.defaultChatName')}</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">{chat?.name || t('chatWindow.defaultChatName')}</h2>
+          {typingUsers.length > 0 && (
+            <span className="text-xs text-gray-500 italic">
+              {typingUsers.length === 1 ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}` : typingUsers.length === 2 ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}` : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
+            </span>
+          )}
+        </div>
         <Button
           onClick={handleStartCall}
           variant="ghost"
@@ -409,17 +416,6 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             <div ref={messagesEndRef} />
           </div>
       </ScrollArea>
-
-      {/* Typing Indicator */}
-      {typingUsers.length > 0 && (
-        <div className="px-6 py-2 text-xs text-gray-500 italic border-t border-gray-100">
-          {typingUsers.length === 1
-            ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}`
-            : typingUsers.length === 2
-              ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}`
-              : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
-        </div>
-      )}
 
       {/* Message Input or Actions */}
       {showAddActions ? (
