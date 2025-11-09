@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
-import { auth, spaces, chats, pb } from '../services/pocketbase';
+import { auth, spaces, chats } from '../services/pocketbase';
 import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
@@ -11,9 +11,8 @@ import { Menu, ScrollArea, useToastManager } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
 import MinimizedCallWidget from './MinimizedCallWidget';
-import CallInviteWidget from './CallInviteWidget';
-import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
-import type { Space, Chat, PocketBaseEvent, CallInvite } from '../types';
+import { activeCallChatAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import type { Space, Chat, PocketBaseEvent } from '../types';
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
@@ -28,10 +27,9 @@ export default function Sidebar() {
   const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [callInvites, setCallInvites] = useState<CallInvite[]>([]);
-  const [acceptingInvites, setAcceptingInvites] = useState<Set<string>>(new Set());
-  const [decliningInvites, setDecliningInvites] = useState<Set<string>>(new Set());
-  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
+  const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
+  const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
   const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
 
@@ -52,21 +50,20 @@ export default function Sidebar() {
     }
   }, [spaceId, chatId, setLocation]);
 
-  const loadInvites = useCallback(async () => {
+  const loadActiveCalls = useCallback(async () => {
     if (!spaceId) return;
     try {
-      const invites = await callsAPI.getMyInvites(spaceId);
-      console.log('[Sidebar] loadInvites result:', invites);
-      setCallInvites(invites);
+      const calls = await callsAPI.getActiveCallsInSpace(spaceId);
+      setActiveCalls(calls);
     } catch (error) {
-      console.error('[Sidebar] loadInvites error:', error);
-      setCallInvites([]);
+      console.error('[Sidebar] loadActiveCalls error:', error);
+      setActiveCalls([]);
     }
   }, [spaceId]);
 
   useEffect(() => { loadSpaces(); }, [loadSpaces]);
   useEffect(() => { loadChats(); }, [loadChats]);
-  useEffect(() => { loadInvites(); }, [loadInvites]);
+  useEffect(() => { loadActiveCalls(); }, [loadActiveCalls]);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -101,105 +98,119 @@ export default function Sidebar() {
     { label: t('sidebar.logOut'), onClick: () => { auth.logout(); setLocation('/login'); } },
   ], [setLocation, t]);
 
-  // Subscribe to call invites
+  // Subscribe to active calls
   useEffect(() => {
     if (!spaceId) return;
-    const unsubscribe = callsAPI.subscribeToInvites(async (data) => {
-      console.log('[Sidebar] Invite subscription event:', data);
-      if (data.action === 'create' && data.record.invitee === auth.user?.id) {
-        console.log('[Sidebar] Processing invite for current user:', data.record.id);
-        loadInvites();
+    const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, async (data) => {
+      if (data.action === 'update') {
+        setActiveCalls(prev => {
+          const existingCall = prev.find(call => call.id === data.record.id);
 
-        // Show OS notification for incoming call
-        try {
-          // Fetch only the specific invite with expanded data
-          const newInvite = await pb.collection('call_invites').getOne<CallInvite>(
-            data.record.id,
-            { expand: 'call,inviter' }
-          );
+          // Check if call is active
+          if (data.record.is_active_call) {
+            if (!existingCall) {
+              // New active call started
+              // Show OS notification if user is not already in this call
+              if (activeCallChat?.id !== data.record.id) {
+                try {
+                  const space = spaceList.find(s => s.id === spaceId);
+                  const spaceName = space?.name || 'Unknown Space';
 
-          if (newInvite.expand?.inviter && newInvite.expand?.call) {
-            const inviterName = newInvite.expand.inviter.name || newInvite.expand.inviter.email;
-            const space = spaceList.find(s => s.id === newInvite.expand.call.space);
-            const spaceName = space?.name || 'Unknown Space';
+                  // Get chat name for notification
+                  let chatName = data.record.name || 'Call';
+                  if (data.record.type === 'private' && data.record.expand?.participants) {
+                    const otherParticipants = data.record.expand.participants.filter(
+                      (p) => p.id !== auth.user?.id
+                    );
+                    if (otherParticipants.length > 0) {
+                      chatName = otherParticipants.map((p) => p.name || p.email).join(', ');
+                    }
+                  }
 
-            const notification = showCallNotification(inviterName, spaceName, {
-              inviteId: newInvite.id,
-              spaceId: newInvite.expand.call.space,
-            });
+                  const notification = showCallNotification('Active Call', chatName, {
+                    spaceId: spaceId,
+                    tag: `active-call-${data.record.id}`,
+                  });
 
-            // Handle notification click
-            if (notification) {
-              notification.onclick = () => {
-                window.focus();
-                notification.close();
-              };
+                  if (notification) {
+                    notification.onclick = () => {
+                      window.focus();
+                      notification.close();
+                    };
+                  }
+                } catch (err) {
+                  console.error('Failed to show call notification:', err);
+                }
+              }
+
+              return [...prev, data.record];
+            } else {
+              // Call updated (e.g., participants changed)
+              return prev.map(call => call.id === data.record.id ? data.record : call);
             }
+          } else {
+            // Call ended (is_active_call is false)
+            if (existingCall) {
+              return prev.filter(call => call.id !== data.record.id);
+            }
+            return prev;
           }
-        } catch (err) {
-          console.error('Failed to show call notification:', err);
-        }
+        });
       } else if (data.action === 'delete') {
-        setCallInvites(prev => prev.filter(inv => inv.id !== data.record.id));
+        // Chat deleted
+        setActiveCalls(prev => prev.filter(call => call.id !== data.record.id));
       }
     });
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, loadInvites, spaceList]);
+  }, [spaceId, activeCallChat, spaceList]);
 
-  const handleAcceptInvite = useCallback(async (inviteId: string) => {
+  const handleJoinCall = useCallback(async (callChatId: string) => {
     // Prevent duplicate calls
-    if (acceptingInvites.has(inviteId)) return;
+    if (joiningCalls.has(callChatId)) return;
 
-    setAcceptingInvites(prev => new Set(prev).add(inviteId));
+    setJoiningCalls(prev => new Set(prev).add(callChatId));
     try {
-      const call = await callsAPI.acceptInvite(inviteId);
-      setActiveCall(call);
+      const chat = await callsAPI.startCall(callChatId);
+      setActiveCallChat(chat);
       setShowCallView(true);
-      setIsCallMinimized(false); // Show full screen
-      setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
+      setIsCallMinimized(false);
     } catch (error) {
-      console.error('Failed to accept invite:', error);
+      console.error('Failed to join call:', error);
       toastManager.add({
         title: 'Failed to join call',
-        description: 'Could not accept the invitation. Please try again.',
+        description: 'Could not join the call. Please try again.',
         data: { type: 'error' }
       });
     } finally {
-      setAcceptingInvites(prev => {
+      setJoiningCalls(prev => {
         const next = new Set(prev);
-        next.delete(inviteId);
+        next.delete(callChatId);
         return next;
       });
     }
-  }, [acceptingInvites, setActiveCall, setShowCallView, setIsCallMinimized, toastManager]);
-
-  const handleDeclineInvite = useCallback(async (inviteId: string) => {
-    // Prevent duplicate calls
-    if (decliningInvites.has(inviteId)) return;
-
-    setDecliningInvites(prev => new Set(prev).add(inviteId));
-    try {
-      await callsAPI.declineInvite(inviteId);
-      setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
-    } catch (error) {
-      console.error('Failed to decline invite:', error);
-      toastManager.add({
-        title: 'Failed to decline',
-        description: 'Could not decline the invitation. Please try again.',
-        data: { type: 'error' }
-      });
-    } finally {
-      setDecliningInvites(prev => {
-        const next = new Set(prev);
-        next.delete(inviteId);
-        return next;
-      });
-    }
-  }, [decliningInvites, toastManager]);
+  }, [joiningCalls, setActiveCallChat, setShowCallView, setIsCallMinimized, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
   }, [spaceId, setLocation]);
+
+  const getCallChatName = useCallback((chat: Chat) => {
+    if (chat.type === 'public') {
+      return chat.name || 'General';
+    }
+
+    // For private chats, show other participants' names
+    if (chat.expand?.participants) {
+      const otherParticipants = chat.expand.participants.filter(
+        (p) => p.id !== auth.user?.id
+      );
+      if (otherParticipants.length > 0) {
+        return otherParticipants.map((p) => p.name || p.email).join(', ');
+      }
+    }
+
+    return t('chatList.directMessage');
+  }, [t]);
 
   return (
     <>
@@ -226,17 +237,29 @@ export default function Sidebar() {
             unreadCounts={unreadCounts}
           />
         </ScrollArea>
-        {console.log('[Sidebar] Rendering invites:', callInvites)}
-        {callInvites.map(invite => (
-          <CallInviteWidget
-            key={invite.id}
-            invite={invite}
-            onAccept={handleAcceptInvite}
-            onDecline={handleDeclineInvite}
-            isAccepting={acceptingInvites.has(invite.id)}
-            isDeclining={decliningInvites.has(invite.id)}
-            isInCall={!!activeCall}
-          />
+        {activeCalls.map(call => (
+          <div
+            key={call.id}
+            className="p-3 bg-green-50 border-t border-green-200"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-green-900 truncate">
+                  {getCallChatName(call)}
+                </div>
+                <div className="text-xs text-green-700">
+                  Active call in progress
+                </div>
+              </div>
+              <button
+                onClick={() => handleJoinCall(call.id)}
+                disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded"
+              >
+                {activeCallChat?.id === call.id ? 'In Call' : joiningCalls.has(call.id) ? 'Joining...' : 'Join Call'}
+              </button>
+            </div>
+          </div>
         ))}
         <MinimizedCallWidget />
       </div>

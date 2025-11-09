@@ -1,9 +1,10 @@
 import { atom } from 'jotai';
-import type { Call } from '../types';
+import type { Chat } from '../types';
 
-export const activeCallAtom = atom<Call | null>(null);
+// Active call is now just a Chat with is_active_call=true
+export const activeCallChatAtom = atom<Chat | null>(null);
 export const showCallViewAtom = atom<boolean>(false);
 export const isCallMinimizedAtom = atom<boolean>(false);
 export const inCallAtom = atom(
-  (get) => get(activeCallAtom) !== null && get(showCallViewAtom)
+  (get) => get(activeCallChatAtom) !== null && get(showCallViewAtom)
 );

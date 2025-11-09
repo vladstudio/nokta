@@ -1,25 +1,46 @@
 import { useRef } from 'react';
-import { useAtom } from 'jotai';
-import DailyIframe from '@daily-co/daily-js';
+import { useSetAtom } from 'jotai';
 import { PhoneOff, Minimize2 } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { isCallMinimizedAtom } from '../store/callStore';
-import type { Call } from '../types';
+import { activeCallChatAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import { callsAPI } from '../services/calls';
+import { pb } from '../services/pocketbase';
+import type { Chat } from '../types';
 
 interface CallViewProps {
-  call: Call;
-  onLeaveCall: () => void;
+  chat: Chat;
 }
 
-export default function CallView({ call, onLeaveCall }: CallViewProps) {
+export default function CallView({ chat }: CallViewProps) {
   const callFrame = useRef<HTMLIFrameElement>(null);
-  const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
+  const setIsCallMinimized = useSetAtom(isCallMinimizedAtom);
+  const setActiveCallChat = useSetAtom(activeCallChatAtom);
+  const setShowCallView = useSetAtom(showCallViewAtom);
+
+  const handleLeaveCall = async () => {
+    const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) {
+      console.error('Cannot leave call: user not authenticated');
+      return;
+    }
+
+    try {
+      await callsAPI.leaveCall(chat.id, currentUserId);
+    } catch (error) {
+      console.error('Failed to leave call:', error);
+    } finally {
+      // Always clear local state, even if API call fails
+      setActiveCallChat(null);
+      setShowCallView(false);
+      setIsCallMinimized(false);
+    }
+  };
 
   return (
     <div className="relative w-full h-full bg-black">
       <iframe
         ref={callFrame}
-        src={call.daily_room_url}
+        src={chat.daily_room_url}
         allow="camera; microphone; fullscreen; display-capture"
         style={{
           position: 'absolute',
@@ -38,7 +59,7 @@ export default function CallView({ call, onLeaveCall }: CallViewProps) {
           Minimize
         </Button>
         <Button
-          onClick={onLeaveCall}
+          onClick={handleLeaveCall}
           variant="default"
           className="rounded-full bg-red-600 text-white hover:bg-red-700 px-6 py-3"
         >

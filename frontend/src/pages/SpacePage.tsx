@@ -4,9 +4,8 @@ import { useAtom } from 'jotai';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
-import { useCallHeartbeat } from '../hooks/useCallHeartbeat';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
-import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import { activeCallChatAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
 import { pb } from '../services/pocketbase';
 
 export default function SpacePage() {
@@ -14,13 +13,10 @@ export default function SpacePage() {
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
   const spaceId = params?.spaceId;
-  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
   const [isCallMinimized, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
   const { isOnline } = useConnectionStatus();
-
-  // Maintain call activity heartbeat
-  useCallHeartbeat(activeCall);
 
   useEffect(() => {
     const handleNotificationClick = (event: Event) => {
@@ -37,61 +33,82 @@ export default function SpacePage() {
   useEffect(() => {
     if (!spaceId) return;
 
-    callsAPI.getMyCall(spaceId).then(call => {
-      if (call) {
-        setActiveCall(call);
-        setShowCallView(true);
-        setIsCallMinimized(true); // Show minimized by default
-      }
-    }).catch(() => {
-      setActiveCall(null);
-    });
-  }, [spaceId, setActiveCall, setShowCallView, setIsCallMinimized]);
+    // Find chat where user is in call_participants and is_active_call is true
+    const loadActiveCall = async () => {
+      try {
+        const currentUserId = pb.authStore.model?.id;
+        if (!currentUserId) return;
 
-  // Subscribe to call updates
+        const activeCalls = await callsAPI.getActiveCallsInSpace(spaceId);
+        const myActiveCall = activeCalls.find(chat =>
+          chat.call_participants?.includes(currentUserId)
+        );
+
+        if (myActiveCall) {
+          setActiveCallChat(myActiveCall);
+          setShowCallView(true);
+          setIsCallMinimized(true); // Show minimized by default
+        }
+      } catch (error) {
+        console.error('Failed to load active call:', error);
+        setActiveCallChat(null);
+      }
+    };
+
+    loadActiveCall();
+  }, [spaceId, setActiveCallChat, setShowCallView, setIsCallMinimized]);
+
+  // Subscribe to chat updates for active calls
   useEffect(() => {
     if (!spaceId) return;
 
-    const unsubscribe = callsAPI.subscribeToCalls((data) => {
+    const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, (data) => {
       // Only process events for the current active call
-      if (!activeCall || data.record.id !== activeCall.id) return;
+      if (!activeCallChat || data.record.id !== activeCallChat.id) return;
 
-      if (data.action === 'delete') {
-        // Our active call was deleted
-        setActiveCall(null);
-        setShowCallView(false);
-        setIsCallMinimized(false);
-      } else if (data.action === 'update') {
-        // Our active call was updated (e.g., participant changes)
-        setActiveCall(data.record);
+      const currentUserId = pb.authStore.model?.id;
+      if (!currentUserId) return;
+
+      if (data.action === 'delete' || data.action === 'update') {
+        // Check if user is still in participants
+        if (data.record.call_participants?.includes(currentUserId) && data.record.is_active_call) {
+          // Still in call, update state
+          setActiveCallChat(data.record);
+        } else {
+          // User removed from call or call ended
+          setActiveCallChat(null);
+          setShowCallView(false);
+          setIsCallMinimized(false);
+        }
       }
     });
 
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, activeCall, setActiveCall, setShowCallView, setIsCallMinimized]);
+  }, [spaceId, activeCallChat, setActiveCallChat, setShowCallView, setIsCallMinimized]);
 
   // Offline reconciliation: verify call still exists when reconnecting
   useEffect(() => {
-    if (!activeCall || !spaceId || !isOnline) return;
+    if (!activeCallChat || !spaceId || !isOnline) return;
 
     const reconcileCall = async () => {
       try {
-        // Verify call still exists
-        await pb.collection('calls').getOne(activeCall.id);
-        // Call exists, refresh data to ensure we have latest participants
-        const freshCall = await callsAPI.getMyCall(spaceId);
-        if (freshCall?.id === activeCall.id) {
-          setActiveCall(freshCall);
+        const currentUserId = pb.authStore.model?.id;
+        if (!currentUserId) return;
+
+        // Verify chat still exists and user is still in participants
+        const chat = await pb.collection('chats').getOne(activeCallChat.id);
+        if (chat.is_active_call && chat.call_participants?.includes(currentUserId)) {
+          setActiveCallChat(chat);
         } else {
-          // User no longer in call
-          setActiveCall(null);
+          // User no longer in call or call ended
+          setActiveCallChat(null);
           setShowCallView(false);
           setIsCallMinimized(false);
         }
       } catch {
         // Call was deleted while offline
         console.log('[Reconciliation] Call no longer exists, clearing state');
-        setActiveCall(null);
+        setActiveCallChat(null);
         setShowCallView(false);
         setIsCallMinimized(false);
       }
@@ -104,24 +121,10 @@ export default function SpacePage() {
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [activeCall, spaceId, isOnline, setActiveCall, setShowCallView, setIsCallMinimized]);
+  }, [activeCallChat, spaceId, isOnline, setActiveCallChat, setShowCallView, setIsCallMinimized]);
 
-  const handleLeaveCall = async () => {
-    if (activeCall) {
-      try {
-        await callsAPI.leave(activeCall.id);
-      } catch (error) {
-        console.error('Failed to leave call:', error);
-      } finally {
-        setActiveCall(null);
-        setShowCallView(false);
-        setIsCallMinimized(false);
-      }
-    }
-  };
-
-  if (showCallView && activeCall && !isCallMinimized) {
-    return <CallView call={activeCall} onLeaveCall={handleLeaveCall} />;
+  if (showCallView && activeCallChat && !isCallMinimized) {
+    return <CallView chat={activeCallChat} />;
   }
 
   return (

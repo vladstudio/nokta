@@ -1,127 +1,105 @@
 import { pb } from './pocketbase';
 import { dailyAPI } from './daily';
-import type { Call, CallInvite } from '../types';
+import type { Chat } from '../types';
 import type { RecordSubscription } from 'pocketbase';
 
 export const callsAPI = {
-  async create(spaceId: string, inviteeIds: string[]): Promise<{ call: Call; invites: CallInvite[] }> {
+  /**
+   * Start or join a call in a chat
+   * - Creates Daily room if chat doesn't have one
+   * - Adds current user to call_participants
+   * - Sets is_active_call to true
+   */
+  async startCall(chatId: string): Promise<Chat> {
     const currentUserId = pb.authStore.model?.id;
     if (!currentUserId) throw new Error('User not authenticated');
 
-    const roomName = `talk-${spaceId}-${Date.now()}`;
-    const dailyRoom = await dailyAPI.createRoom(roomName);
+    const chat = await pb.collection('chats').getOne<Chat>(chatId);
+    let dailyRoomUrl = chat.daily_room_url;
 
-    const now = new Date().toISOString();
-
-    // Create call with only the creator as participant
-    const call = await pb.collection('calls').create<Call>({
-      space: spaceId,
-      daily_room_url: dailyRoom.url,
-      daily_room_name: dailyRoom.name,
-      participants: [currentUserId],
-      last_activity: now
-    });
-
-    // Create invites for other participants
-    const invites: CallInvite[] = [];
-
-    for (const inviteeId of inviteeIds) {
-      if (inviteeId !== currentUserId) {
-        const invite = await pb.collection('call_invites').create<CallInvite>({
-          call: call.id,
-          inviter: currentUserId,
-          invitee: inviteeId
-        });
-        invites.push(invite);
-      }
-    }
-
-    return { call, invites };
-  },
-
-  async acceptInvite(inviteId: string): Promise<Call> {
-    const currentUserId = pb.authStore.model?.id;
-    if (!currentUserId) throw new Error('User not authenticated');
-
-    const invite = await pb.collection('call_invites').getOne<CallInvite>(inviteId, {
-      expand: 'call'
-    });
-
-    // Use the expanded call data
-    const call = invite.expand?.call;
-    if (!call) {
-      throw new Error('Call not found or no longer available');
-    }
-
-    // Add user to call participants
-    const updatedCall = await pb.collection('calls').update<Call>(call.id, {
-      participants: [...call.participants, currentUserId]
-    });
-
-    // Delete the invite
-    await pb.collection('call_invites').delete(inviteId);
-
-    return updatedCall;
-  },
-
-  async declineInvite(inviteId: string) {
-    await pb.collection('call_invites').delete(inviteId);
-  },
-
-  async leave(callId: string) {
-    const currentUserId = pb.authStore.model?.id;
-    if (!currentUserId) throw new Error('User not authenticated');
-
-    const call = await pb.collection('calls').getOne<Call>(callId);
-    const remainingParticipants = call.participants.filter(id => id !== currentUserId);
-
-    if (remainingParticipants.length === 0) {
-      // Last person leaving - delete the call (invites cascade delete automatically)
-      await pb.collection('calls').delete(callId);
-
-      // Delete Daily.co room (non-blocking)
+    // Create room if it doesn't exist
+    if (!dailyRoomUrl) {
+      const roomName = `talk-${chatId}-${Date.now()}`;
       try {
-        await dailyAPI.deleteRoom(call.daily_room_name);
+        const dailyRoom = await dailyAPI.createRoom(roomName);
+        dailyRoomUrl = dailyRoom.url;
       } catch (error) {
-        console.error('Failed to delete Daily.co room:', error);
+        console.error('Failed to create Daily.co room:', error);
+        throw new Error('Failed to create call room');
       }
-    } else {
-      // Remove current user from participants
-      await pb.collection('calls').update(callId, { participants: remainingParticipants });
     }
-  },
 
-  async getMyInvites(spaceId: string): Promise<CallInvite[]> {
-    const currentUserId = pb.authStore.model?.id;
-    if (!currentUserId) throw new Error('User not authenticated');
+    // Add user to call_participants if not already there
+    const callParticipants = chat.call_participants || [];
+    const updatedParticipants = callParticipants.includes(currentUserId)
+      ? callParticipants
+      : [...callParticipants, currentUserId];
 
-    // Get all invites for current user
-    const allInvites = await pb.collection('call_invites').getFullList<CallInvite>({
-      filter: `invitee = "${currentUserId}"`,
-      expand: 'call,inviter',
-      sort: '-created'
+    // Update chat with room URL and active call status
+    const updatedChat = await pb.collection('chats').update<Chat>(chatId, {
+      daily_room_url: dailyRoomUrl,
+      is_active_call: true,
+      call_participants: updatedParticipants
     });
 
-    // Filter to only invites for calls in this space
-    return allInvites.filter(invite => invite.expand?.call?.space === spaceId);
+    return updatedChat;
   },
 
-  async getMyCall(spaceId: string): Promise<Call | null> {
-    const currentUserId = pb.authStore.model?.id;
-    if (!currentUserId) throw new Error('User not authenticated');
+  /**
+   * Leave a call
+   * - Removes user from call_participants
+   * - Sets is_active_call to false if no participants remain
+   */
+  async leaveCall(chatId: string, userId: string): Promise<Chat> {
+    const chat = await pb.collection('chats').getOne<Chat>(chatId);
+    const callParticipants = chat.call_participants || [];
 
-    const calls = await pb.collection('calls').getFullList<Call>({
-      filter: `space = "${spaceId}" && participants ?= "${currentUserId}"`,
-      sort: '-created'
+    // Remove user from participants
+    const updatedParticipants = callParticipants.filter(id => id !== userId);
+
+    // Update chat
+    const updatedChat = await pb.collection('chats').update<Chat>(chatId, {
+      call_participants: updatedParticipants,
+      is_active_call: updatedParticipants.length > 0
     });
-    return calls[0] || null;
+
+    return updatedChat;
   },
 
-  subscribeToInvites(callback: (data: RecordSubscription<CallInvite>) => void) {
-    return pb.collection('call_invites').subscribe('*', callback);
+  /**
+   * Get all chats with active calls in a space
+   */
+  async getActiveCallsInSpace(spaceId: string): Promise<Chat[]> {
+    const chats = await pb.collection('chats').getFullList<Chat>({
+      filter: `space = "${spaceId}" && is_active_call = true`,
+      sort: '-updated',
+      expand: 'participants'
+    });
+    return chats;
   },
 
-  subscribeToCalls(callback: (data: RecordSubscription<Call>) => void) {
-    return pb.collection('calls').subscribe('*', callback);
+  /**
+   * Subscribe to chat updates in a space
+   * Passes all chat update events to callback for active call tracking
+   */
+  subscribeToActiveCalls(
+    spaceId: string,
+    callback: (data: RecordSubscription<Chat>) => void
+  ) {
+    return pb.collection('chats').subscribe('*', async (data) => {
+      // Only trigger callback for chats in this space
+      if (data.record.space === spaceId && data.action === 'update') {
+        // Fetch full chat with expanded participants for proper display
+        try {
+          const fullChat = await pb.collection('chats').getOne<Chat>(data.record.id, {
+            expand: 'participants'
+          });
+          callback({ ...data, record: fullChat });
+        } catch (error) {
+          console.error('Failed to fetch full chat:', error);
+          callback(data);
+        }
+      }
+    });
   }
 };

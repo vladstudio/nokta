@@ -1,25 +1,26 @@
 import { useAtom } from 'jotai';
 import { Maximize2, PhoneOff } from 'lucide-react';
-import { activeCallAtom, isCallMinimizedAtom, showCallViewAtom } from '../store/callStore';
+import { activeCallChatAtom, isCallMinimizedAtom, showCallViewAtom } from '../store/callStore';
 import { callsAPI } from '../services/calls';
+import { auth } from '../services/pocketbase';
 import { Button } from '../ui';
 
 export default function MinimizedCallWidget() {
-  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [isCallMinimized, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
 
   // Only show minimized widget if user has actively joined the call
-  if (!activeCall || !showCallView || !isCallMinimized) return null;
+  if (!activeCallChat || !showCallView || !isCallMinimized) return null;
 
   const handleLeaveCall = async () => {
-    if (activeCall) {
+    if (activeCallChat && auth.user) {
       try {
-        await callsAPI.leave(activeCall.id);
+        await callsAPI.leaveCall(activeCallChat.id, auth.user.id);
       } catch (error) {
         console.error('Failed to leave call:', error);
       } finally {
-        setActiveCall(null);
+        setActiveCallChat(null);
         setShowCallView(false);
         setIsCallMinimized(false);
       }

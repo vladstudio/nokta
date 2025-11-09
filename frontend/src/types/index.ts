@@ -37,6 +37,9 @@ export interface Chat {
   last_message_at?: string;
   last_message_content?: string;
   last_message_sender?: string;
+  daily_room_url?: string;
+  is_active_call?: boolean;
+  call_participants?: string[];
   created?: string;
   updated?: string;
   unreadCount?: number; // Computed client-side, not from DB
@@ -86,30 +89,4 @@ export interface TypingEvent {
 export interface UserPresenceData {
   id: string;
   last_seen: string;
-}
-
-export interface Call {
-  id: string;
-  space: string;
-  participants: string[];
-  daily_room_url: string;
-  daily_room_name: string;
-  last_activity: string;
-  created?: string;
-  expand?: {
-    participants?: User[];
-  };
-}
-
-export interface CallInvite {
-  id: string;
-  call: string;
-  inviter: string;
-  invitee: string;
-  created?: string;
-  expand?: {
-    call?: Call;
-    inviter?: User;
-    invitee?: User;
-  };
 }

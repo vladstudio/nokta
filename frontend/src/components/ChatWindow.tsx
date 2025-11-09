@@ -18,8 +18,8 @@ import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
 import { ScrollArea, useToastManager, Button } from '../ui';
 import { callsAPI } from '../services/calls';
-import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
-import type { Message, Chat, Call } from '../types';
+import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
+import type { Message, Chat } from '../types';
 
 interface ChatWindowProps {
   chatId: string;
@@ -38,9 +38,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const [chat, setChat] = useState<Chat | null>(null);
-  const [activeCall, setActiveCall] = useAtom(activeCallAtom);
+  const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
-  const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
 
   // Use custom hooks
   const {
@@ -290,14 +289,13 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const handleStartCall = async () => {
-    if (!chat || activeCall || isCreatingCall) return; // Don't create if call already exists or is being created
+    if (!chat || activeCallChat || isCreatingCall) return;
 
     setIsCreatingCall(true);
     try {
-      const { call } = await callsAPI.create(chat.space, chat.participants);
-      setActiveCall(call);
+      const callChat = await callsAPI.startCall(chat.id);
+      setActiveCallChat(callChat);
       setShowCallView(true);
-      setIsCallMinimized(false);
     } catch (error) {
       console.error('Failed to start call:', error);
       toastManager.add({
@@ -374,11 +372,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
           variant="ghost"
           size="default"
           className="gap-2"
-          disabled={isCreatingCall || !!activeCall}
-          title={activeCall ? 'Leave current call first' : 'Start a call'}
+          disabled={isCreatingCall || !!activeCallChat}
+          title={activeCallChat ? 'Leave current call first' : 'Start a call'}
         >
           <Phone className="w-4 h-4" />
-          {isCreatingCall ? 'Starting...' : activeCall ? 'In call' : 'Call'}
+          {isCreatingCall ? 'Starting...' : activeCallChat ? 'In call' : 'Call'}
         </Button>
       </div>
 
