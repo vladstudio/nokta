@@ -203,7 +203,7 @@ export default function Sidebar() {
           >
             <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
             <div className="grid flex-1"><span className="text-sm font-semibold truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span></div>
-            <span className="text-xs text-gray-500 truncate w-full text-right">{auth.user?.name || auth.user?.email}</span>
+            <span className="text-xs text-light truncate w-full text-right">{auth.user?.name || auth.user?.email}</span>
           </Button>
         </div>
         {isVideoCallsEnabled && activeCalls.map(call => (
@@ -227,16 +227,14 @@ export default function Sidebar() {
             </div>
           </div>
         ))}
-        <div className="flex-1">
-          <ScrollArea>
-            <ChatList
-              chats={chatList}
-              selectedChatId={chatId || null}
-              onSelectChat={handleSelectChat}
-              unreadCounts={unreadCounts}
-            />
-          </ScrollArea>
-        </div>
+        <ScrollArea>
+          <ChatList
+            chats={chatList}
+            selectedChatId={chatId || null}
+            onSelectChat={handleSelectChat}
+            unreadCounts={unreadCounts}
+          />
+        </ScrollArea>
       </div>
     </>
   );

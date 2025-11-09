@@ -85,18 +85,13 @@ body {
   box-shadow: 0 0 0 3px var(--color-primary-100);
 }
 
+.text-light {
+  color: var(--color-text-secondary);
+}
+
 /* ===================================
    UTILITY CLASSES
    =================================== */
-
-/* Header */
-.header {
-  @apply flex items-center justify-between;
-  @apply px-6 py-4;
-  @apply border-b;
-  background-color: var(--color-bg-primary);
-  border-color: var(--color-border-default);
-}
 
 /* Sidebar */
 .sidebar {

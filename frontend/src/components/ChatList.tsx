@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
-import { Button, Badge } from '../ui';
+import { Button, Badge, OnlineIndicator } from '../ui';
 import { UserAvatar, ChatAvatar } from './Avatar';
 
 interface ChatListProps {
@@ -48,9 +48,9 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           <ChatAvatar chat={chat} size={48} />
         )}
         {getOnlineStatus(chat) !== null && (
-          <Badge
-            variant="online"
-            className={`absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : 'bg-gray-400!'}`}
+          <OnlineIndicator
+            isOnline={getOnlineStatus(chat)!}
+            className="absolute! -bottom-0.5 -right-0.5"
             title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
           />
         )}
@@ -59,7 +59,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-800'}`}>
           {getChatName(chat)}
         </div>
-        <div className="text-xs text-gray-500 truncate mt-0.5">
+        <div className="text-xs text-light truncate mt-0.5">
           {chat.last_message_content && chat.expand?.last_message_sender ?
             `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
             (chat.type === 'public' ? t('chatList.publicChat') : t('chatList.privateChat'))}

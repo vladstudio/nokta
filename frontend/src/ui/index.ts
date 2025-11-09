@@ -1,6 +1,7 @@
 export { Alert } from './Alert';
 export { default as Avatar } from './Avatar';
 export { default as Badge } from './Badge';
+export { default as OnlineIndicator } from './OnlineIndicator';
 export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';

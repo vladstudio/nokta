@@ -23,7 +23,7 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
           <Card shadow="lg" padding="lg" className="grid gap-4">
             <BaseDialog.Title className="text-lg font-semibold text-gray-900">{title}</BaseDialog.Title>
             {description && (
-              <BaseDialog.Description className="mt-2 text-sm text-gray-500">
+              <BaseDialog.Description className="mt-2 text-sm text-light">
                 {description}
               </BaseDialog.Description>
             )}

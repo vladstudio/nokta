@@ -35,10 +35,10 @@ export function Select<T extends string = string>({
         ref={ref}
         className={`w-full px-4 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between ${className}`}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={selectedOption ? 'text-gray-900' : 'text-light'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <BaseSelect.Icon className="ml-2 text-gray-500">▼</BaseSelect.Icon>
+        <BaseSelect.Icon className="ml-2 text-light">▼</BaseSelect.Icon>
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner sideOffset={4}>

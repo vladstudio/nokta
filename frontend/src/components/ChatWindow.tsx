@@ -364,13 +364,13 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-zinc-50 min-h-0">
+    <div className="flex-1 flex flex-col bg-(--color-bg-secondary) min-h-0">
       {/* Header */}
-      <div className="header">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">{chat?.name || t('chatWindow.defaultChatName')}</h2>
+      <div className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold flex-1">{chat?.name || t('chatWindow.defaultChatName')}</h2>
           {typingUsers.length > 0 && (
-            <span className="text-xs text-gray-500 italic">
+            <span className="text-xs text-light">
               {typingUsers.length === 1 ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}` : typingUsers.length === 2 ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}` : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
             </span>
           )}
@@ -380,11 +380,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             onClick={handleStartCall}
             variant="ghost"
             size="default"
-            className="gap-2"
+            className="flex items-center gap-2"
             disabled={isCreatingCall || !!activeCallChat}
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
           >
-            <PhoneIcon className="w-5 h-5" />
+            <PhoneIcon />
             <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
         )}

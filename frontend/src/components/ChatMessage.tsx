@@ -30,7 +30,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
-            className="text-xs text-gray-500 hover:text-gray-700 underline"
+            className="text-xs text-light hover:text-gray-700 underline"
           >
             {t('common.cancel')}
           </button>
@@ -126,11 +126,10 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
             </button>
           )}
         </div>
-        <div className={`rounded-2xl px-4 py-2 max-w-lg wrap-break-word shadow-[var(--shadow-sm)] ${
-          isOwn
-            ? 'bg-[var(--color-primary-500)] text-white rounded-br-md'
-            : 'bg-white text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-bl-md'
-        } ${message.isFailed ? 'bg-red-100! text-red-900! border-red-300!' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
+        <div className={`rounded-2xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-sm) ${isOwn
+          ? 'bg-(--color-primary-500) text-white rounded-br-md'
+          : 'bg-white text-(--color-text-primary) border border-(--color-border-default) rounded-bl-md'
+          } ${message.isFailed ? 'bg-red-100! text-red-900! border-red-300!' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
           {renderContent()}
         </div>
       </div>
