@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Chat } from '../types';
 import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
-import { Button } from '../ui';
+import { Button, Badge } from '../ui';
 import { UserAvatar, ChatAvatar } from './Avatar';
 
 interface ChatListProps {
@@ -45,8 +45,9 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           <ChatAvatar chat={chat} size={48} />
         )}
         {getOnlineStatus(chat) !== null && (
-          <span
-            className={`badge online absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : 'bg-gray-400!'}`}
+          <Badge
+            variant="online"
+            className={`absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : 'bg-gray-400!'}`}
             title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
           />
         )}
@@ -63,9 +64,9 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       </div>
       {hasUnread && (
         <div className="shrink-0">
-          <span className="badge unread">
+          <Badge variant="unread">
             {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
+          </Badge>
         </div>
       )}
     </Button>

@@ -1,4 +1,6 @@
 export { Alert } from './Alert';
+export { default as Avatar } from './Avatar';
+export { default as Badge } from './Badge';
 export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';

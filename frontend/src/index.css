@@ -107,9 +107,8 @@ body {
   flex-direction: column;
 }
 
-:focus {
-  @apply outline-none;
-  /* border-color: var(--color-primary-500); */
+:focus-visible {
+  border-color: var(--color-primary-500);
   box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
 }
 
@@ -171,34 +170,6 @@ body {
   background-color: var(--color-bg-primary);
   border-right: 1px solid var(--color-border-default);
   width: 280px;
-}
-
-/* Badge */
-.badge {
-  @apply inline-flex items-center justify-center;
-  @apply px-2 py-1 rounded-full;
-  @apply text-xs font-semibold;
-  min-width: 1.5rem;
-  height: 1.5rem;
-}
-
-.badge.unread {
-  background-color: var(--color-error-500);
-  color: white;
-}
-
-.badge.online {
-  background-color: var(--color-accent-500);
-  @apply w-3 h-3;
-  border: 2px solid white;
-}
-
-/* Avatar */
-.avatar {
-  @apply rounded-full flex items-center justify-center;
-  @apply font-semibold text-white;
-  @apply shrink-0;
-  background-color: var(--color-primary-500);
 }
 
 /* Empty state */

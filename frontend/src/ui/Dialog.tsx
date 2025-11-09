@@ -20,7 +20,7 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
       <BaseDialog.Portal>
         <BaseDialog.Backdrop className="fixed inset-0 bg-black/50 z-50" />
         <BaseDialog.Popup className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md">
-          <Card shadow="lg" padding="lg">
+          <Card shadow="lg" padding="lg" className="grid gap-4">
             <BaseDialog.Title className="text-lg font-semibold text-gray-900">{title}</BaseDialog.Title>
             {description && (
               <BaseDialog.Description className="mt-2 text-sm text-gray-500">
