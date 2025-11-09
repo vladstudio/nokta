@@ -17,6 +17,18 @@ export default function CallView({ chat }: CallViewProps) {
   const setActiveCallChat = useSetAtom(activeCallChatAtom);
   const setShowCallView = useSetAtom(showCallViewAtom);
 
+  // Guard: ensure daily_room_url exists
+  if (!chat.daily_room_url) {
+    return (
+      <div className="flex items-center justify-center h-full bg-black text-white">
+        <div className="text-center">
+          <p className="text-xl mb-2">Call room not available</p>
+          <p className="text-sm text-gray-400">Please try starting the call again</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleLeaveCall = async () => {
     const currentUserId = pb.authStore.model?.id;
     if (!currentUserId) {

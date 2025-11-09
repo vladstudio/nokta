@@ -121,7 +121,7 @@ export default function SpacePage() {
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [activeCallChat, spaceId, isOnline, setActiveCallChat, setShowCallView, setIsCallMinimized]);
+  }, [activeCallChat, spaceId, setActiveCallChat, setShowCallView, setIsCallMinimized]);
 
   if (showCallView && activeCallChat && !isCallMinimized) {
     return <CallView chat={activeCallChat} />;

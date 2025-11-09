@@ -7,7 +7,7 @@ import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { showCallNotification } from '../utils/notifications';
-import { Menu, ScrollArea, useToastManager } from '../ui';
+import { Menu, ScrollArea, useToastManager, Button } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
 import MinimizedCallWidget from './MinimizedCallWidget';
@@ -98,71 +98,79 @@ export default function Sidebar() {
     { label: t('sidebar.logOut'), onClick: () => { auth.logout(); setLocation('/login'); } },
   ], [setLocation, t]);
 
+  const getCallChatName = useCallback((chat: Chat) => {
+    if (chat.type === 'public') {
+      return chat.name || 'General';
+    }
+
+    // For private chats, show other participants' names
+    if (chat.expand?.participants) {
+      const otherParticipants = chat.expand.participants.filter(
+        (p) => p.id !== auth.user?.id
+      );
+      if (otherParticipants.length > 0) {
+        return otherParticipants.map((p) => p.name || p.email).join(', ');
+      }
+    }
+
+    return t('chatList.directMessage');
+  }, [t]);
+
+  // Handle active call subscription events
+  const handleActiveCallEvent = useCallback((data: any) => {
+    if (data.action === 'update') {
+      setActiveCalls(prev => {
+        const existingCall = prev.find(call => call.id === data.record.id);
+
+        // Check if call is active
+        if (data.record.is_active_call) {
+          if (!existingCall) {
+            // New active call started
+            // Show OS notification only if current user is NOT in call_participants
+            const currentUserId = auth.user?.id;
+            const isUserInCall = currentUserId && data.record.call_participants?.includes(currentUserId);
+
+            if (!isUserInCall) {
+              try {
+                const chatName = getCallChatName(data.record);
+                const notification = showCallNotification('Active Call', chatName, {
+                  spaceId: spaceId,
+                  tag: `active-call-${data.record.id}`,
+                });
+
+                if (notification) {
+                  notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                  };
+                }
+              } catch (err) {
+                console.error('Failed to show call notification:', err);
+              }
+            }
+
+            return [...prev, data.record];
+          } else {
+            // Call updated (e.g., participants changed)
+            return prev.map(call => call.id === data.record.id ? data.record : call);
+          }
+        } else {
+          // Call ended (is_active_call is false)
+          return existingCall ? prev.filter(call => call.id !== data.record.id) : prev;
+        }
+      });
+    } else if (data.action === 'delete') {
+      // Chat deleted
+      setActiveCalls(prev => prev.filter(call => call.id !== data.record.id));
+    }
+  }, [spaceId, getCallChatName]);
+
   // Subscribe to active calls
   useEffect(() => {
     if (!spaceId) return;
-    const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, async (data) => {
-      if (data.action === 'update') {
-        setActiveCalls(prev => {
-          const existingCall = prev.find(call => call.id === data.record.id);
-
-          // Check if call is active
-          if (data.record.is_active_call) {
-            if (!existingCall) {
-              // New active call started
-              // Show OS notification if user is not already in this call
-              if (activeCallChat?.id !== data.record.id) {
-                try {
-                  const space = spaceList.find(s => s.id === spaceId);
-                  const spaceName = space?.name || 'Unknown Space';
-
-                  // Get chat name for notification
-                  let chatName = data.record.name || 'Call';
-                  if (data.record.type === 'private' && data.record.expand?.participants) {
-                    const otherParticipants = data.record.expand.participants.filter(
-                      (p) => p.id !== auth.user?.id
-                    );
-                    if (otherParticipants.length > 0) {
-                      chatName = otherParticipants.map((p) => p.name || p.email).join(', ');
-                    }
-                  }
-
-                  const notification = showCallNotification('Active Call', chatName, {
-                    spaceId: spaceId,
-                    tag: `active-call-${data.record.id}`,
-                  });
-
-                  if (notification) {
-                    notification.onclick = () => {
-                      window.focus();
-                      notification.close();
-                    };
-                  }
-                } catch (err) {
-                  console.error('Failed to show call notification:', err);
-                }
-              }
-
-              return [...prev, data.record];
-            } else {
-              // Call updated (e.g., participants changed)
-              return prev.map(call => call.id === data.record.id ? data.record : call);
-            }
-          } else {
-            // Call ended (is_active_call is false)
-            if (existingCall) {
-              return prev.filter(call => call.id !== data.record.id);
-            }
-            return prev;
-          }
-        });
-      } else if (data.action === 'delete') {
-        // Chat deleted
-        setActiveCalls(prev => prev.filter(call => call.id !== data.record.id));
-      }
-    });
+    const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, handleActiveCallEvent);
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, activeCallChat, spaceList]);
+  }, [spaceId, handleActiveCallEvent]);
 
   const handleJoinCall = useCallback(async (callChatId: string) => {
     // Prevent duplicate calls
@@ -193,24 +201,6 @@ export default function Sidebar() {
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
   }, [spaceId, setLocation]);
-
-  const getCallChatName = useCallback((chat: Chat) => {
-    if (chat.type === 'public') {
-      return chat.name || 'General';
-    }
-
-    // For private chats, show other participants' names
-    if (chat.expand?.participants) {
-      const otherParticipants = chat.expand.participants.filter(
-        (p) => p.id !== auth.user?.id
-      );
-      if (otherParticipants.length > 0) {
-        return otherParticipants.map((p) => p.name || p.email).join(', ');
-      }
-    }
-
-    return t('chatList.directMessage');
-  }, [t]);
 
   return (
     <>
@@ -251,13 +241,15 @@ export default function Sidebar() {
                   Active call in progress
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => handleJoinCall(call.id)}
                 disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded"
+                variant="default"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
               >
                 {activeCallChat?.id === call.id ? 'In Call' : joiningCalls.has(call.id) ? 'Joining...' : 'Join Call'}
-              </button>
+              </Button>
             </div>
           </div>
         ))}
