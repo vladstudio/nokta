@@ -1,0 +1,43 @@
+/* ===================================
+   WOODEN THEME - COLOR VARIABLES
+   =================================== */
+:root {
+  /* Colors - Warm wooden palette */
+  --color-bg-primary: #fdfbf7;
+  --color-bg-secondary: #f5f1e8;
+  --color-bg-tertiary: #ebe5d6;
+  --color-bg-hover: #ebe5d6;
+  --color-bg-active: #ddd5c3;
+
+  /* Text colors */
+  --color-text-primary: #2d2416;
+  --color-text-secondary: #6b5d47;
+  --color-text-tertiary: #9b8b6f;
+
+  /* Border colors */
+  --color-border-light: #ebe5d6;
+  --color-border-default: #ddd5c3;
+  --color-border-medium: #c9bda5;
+
+  /* Primary brand color - Warm brown */
+  --color-primary-50: #faf6f0;
+  --color-primary-100: #f0e6d4;
+  --color-primary-500: #a67c52;
+  --color-primary-600: #8b6642;
+  --color-primary-700: #6f5234;
+
+  /* Accent color - Forest green */
+  --color-accent-50: #f4f7f0;
+  --color-accent-500: #6b8e4e;
+  --color-accent-600: #567339;
+
+  /* Success color - Earthy green */
+  --color-success-50: #f0f5ed;
+  --color-success-500: #5a9367;
+  --color-success-600: #487850;
+
+  /* Error color - Terra cotta */
+  --color-error-50: #fdf5f3;
+  --color-error-500: #c86555;
+  --color-error-600: #a84f3f;
+}

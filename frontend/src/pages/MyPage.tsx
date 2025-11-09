@@ -24,6 +24,7 @@ export default function MyPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [language, setLanguage] = useState<'en' | 'ru'>('en');
+  const [theme, setTheme] = useState<'default' | 'wooden'>('default');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -35,17 +36,23 @@ export default function MyPage() {
 
   useEffect(() => {
     loadSpaces();
+  }, [loadSpaces]);
+
+  useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || '');
       setEmail(currentUser.email);
       setLanguage(currentUser.language || 'en');
+      setTheme(currentUser.theme || 'default');
       setAvatarPreview(
         currentUser.avatar
           ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
           : null
       );
     }
-  }, [loadSpaces, currentUser]);
+    // Only run on mount - don't reset form when currentUser changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSpaceClick = useCallback((space: Space) => {
     localStorage.setItem(LAST_SPACE_KEY, space.id);
@@ -74,6 +81,7 @@ export default function MyPage() {
         formData.append('passwordConfirm', password);
       }
       if (language !== currentUser.language) formData.append('language', language);
+      if (theme !== currentUser.theme) formData.append('theme', theme);
       if (avatar) formData.append('avatar', avatar);
       await pb.collection('users').update(currentUser.id, formData);
       await pb.collection('users').authRefresh();
@@ -98,6 +106,11 @@ export default function MyPage() {
   const languageOptions = useMemo(() => [
     { value: 'en' as const, label: t('languages.en') },
     { value: 'ru' as const, label: t('languages.ru') },
+  ], [t]);
+
+  const themeOptions = useMemo(() => [
+    { value: 'default' as const, label: t('themes.default') },
+    { value: 'wooden' as const, label: t('themes.wooden') },
   ], [t]);
 
   if (!currentUser) return null;
@@ -160,6 +173,10 @@ export default function MyPage() {
             <div>
               <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
               <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+            </div>
+            <div>
+              <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
+              <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
             </div>
             <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
               {saving ? t('common.loading') : t('common.save')}

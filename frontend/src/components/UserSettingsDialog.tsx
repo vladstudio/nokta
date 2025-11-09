@@ -24,6 +24,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [language, setLanguage] = useState<'en' | 'ru'>('en');
+  const [theme, setTheme] = useState<'default' | 'wooden'>('default');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -35,6 +36,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       setEmail(currentUser.email);
       setPassword('');
       setLanguage(currentUser.language || 'en');
+      setTheme(currentUser.theme || 'default');
       setAvatar(null);
       setAvatarPreview(
         currentUser.avatar
@@ -71,6 +73,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         formData.append('passwordConfirm', password);
       }
       if (language !== currentUser.language) formData.append('language', language);
+      if (theme !== currentUser.theme) formData.append('theme', theme);
       if (avatar) formData.append('avatar', avatar);
 
       await pb.collection('users').update(currentUser.id, formData);
@@ -99,6 +102,11 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
   const languageOptions = useMemo(() => [
     { value: 'en' as const, label: t('languages.en') },
     { value: 'ru' as const, label: t('languages.ru') },
+  ], [t]);
+
+  const themeOptions = useMemo(() => [
+    { value: 'default' as const, label: t('themes.default') },
+    { value: 'wooden' as const, label: t('themes.wooden') },
   ], [t]);
 
 
@@ -178,6 +186,11 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         <div>
           <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
           <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+        </div>
+
+        <div>
+          <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
+          <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
         </div>
       </div>
     </Dialog>

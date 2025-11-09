@@ -15,11 +15,13 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from './hooks/useTheme';
 
 function App() {
   const [location, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isValid);
   const { i18n } = useTranslation();
+  useTheme(); // Load and apply user's theme preference
 
   useEffect(() => {
     const unsubscribe = auth.onChange(() => {

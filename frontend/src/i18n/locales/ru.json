@@ -52,6 +52,7 @@
     "email": "Email",
     "password": "Пароль",
     "language": "Язык",
+    "theme": "Тема",
     "leaveBlankPassword": "Оставьте пустым, чтобы не менять",
     "namePlaceholder": "Введите ваше имя",
     "emailPlaceholder": "Введите ваш email",
@@ -95,6 +96,10 @@
   "languages": {
     "en": "English",
     "ru": "Русский"
+  },
+  "themes": {
+    "default": "По умолчанию",
+    "wooden": "Деревянная"
   },
   "calls": {
     "general": "Общий",

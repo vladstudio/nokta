@@ -5,6 +5,7 @@ export interface User {
   avatar?: string;
   last_seen?: string;
   language?: 'en' | 'ru';
+  theme?: 'default' | 'wooden';
   created: string;
   updated: string;
 }
