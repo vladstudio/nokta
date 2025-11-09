@@ -2,171 +2,174 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Tech Stack
 
-Talk is a real-time chat application built with PocketBase (backend) and React (frontend, admin). The architecture consists of three separate applications:
-- **Backend**: PocketBase server with custom hooks for auto-generating chats
-- **Frontend**: User-facing React SPA for messaging
-- **Admin**: React SPA for space and member management
+**Frontend (React SPA - Port 3000)**
+- React 19.1.1 + TypeScript 5.7
+- Vite 7.0 (build tool)
+- Tailwind CSS 4 (no CSS-in-JS)
+- wouter (lightweight routing, NOT React Router)
+- PocketBase SDK 0.26.3
+- i18next (internationalization: en, ru)
+- @daily-co/daily-react (video calling)
+- @base-ui-components/react (headless UI)
+- Jotai (minimal state management)
+
+**Backend (PocketBase - Port 8090)**
+- PocketBase 0.26.3 (standalone binary, no npm)
+- SQLite (embedded database)
+- JavaScript hooks (pb_hooks/*.pb.js)
+
+**Package Manager**: Use `bun` for all package operations (project.md requirement)
 
 ## Development Commands
 
-Never run dev servers; user does it in separate terminals.
-
-### Building
+### Frontend
 ```bash
-# Frontend
-cd frontend && npm run build
-
-# Admin
-cd admin && npm run build
-cd admin && npm run lint  # Run ESLint
+cd frontend
+bun install          # Install dependencies
+bun run dev          # Start dev server (http://localhost:3000)
+bun run build        # Production build
+bun run preview      # Preview production build
 ```
 
-### Access URLs
-- Frontend: http://localhost:3000
-- Admin: http://localhost:5173
-- PocketBase API: http://127.0.0.1:8090/api/
-- PocketBase Dashboard: http://127.0.0.1:8090/_/
+### Backend
+```bash
+cd backend
+./pocketbase serve   # Start PocketBase (http://127.0.0.1:8090)
 
-### Test Credentials
-- **Admin (PocketBase Dashboard)**: vlad@vlad.studio / 1234567890
-- **Test Users (Frontend App)**:
-  - a@test.com / 1234567890 (Alice)
-  - b@test.com / 1234567890 (Bob)
-
-## Architecture
-
-### Backend (PocketBase)
-- **Location**: `/backend`
-- **Database**: SQLite stored in `pb_data/`
-- **Migrations**: `pb_migrations/` - auto-generated schema migrations
-- **Hooks**: `pb_hooks/auto_create_chats.pb.js` - critical business logic for auto-generating chats
-
-### Collections Schema
-- **users**: Auth collection with `last_seen` field for presence tracking
-- **spaces**: Base collection for workspaces/groups
-- **space_members**: Junction table linking users to spaces with role (admin/member)
-- **chats**: Conversations with `type` (public/private) and `participants` array
-- **messages**: Chat messages with `sender`, `content`, and `type` fields
-- **typing_events**: Ephemeral typing indicator events
-
-### Auto-Chat Creation Logic
-The `auto_create_chats.pb.js` hook automatically:
-1. Creates a "General" public chat when a space is created
-2. Creates DM (private) chats between all members when a user joins a space
-3. Uses sorted participant IDs to prevent duplicates
-4. Includes comprehensive error handling and logging
-
-### Frontend Architecture
-
-#### Frontend App (`/frontend`)
-- **Router**: wouter (lightweight React router)
-- **Styling**: Tailwind CSS 4
-- **State**: React hooks + PocketBase real-time subscriptions
-- **Key Features**:
-  - Real-time messaging via PocketBase SSE
-  - IndexedDB caching (`messageCache.ts`)
-  - Offline message queue with retry (`messageQueue.ts`)
-  - Optimistic UI updates
-  - Connection status monitoring
-  - Typing indicators
-  - User presence/online status
-
-#### Admin App (`/admin`)
-- **Purpose**: Space and member management (admin-only)
-- **Tech**: Same stack as frontend (React + wouter + Tailwind)
-- **Features**: CRUD for spaces, member management, role assignment
-
-### PocketBase Integration Pattern
-
-Both frontend and admin use a service layer pattern (`services/pocketbase.ts`):
-```typescript
-// API modules
-auth      // login, register, logout, user state
-spaces    // list, getOne
-chats     // list, getOne, subscribe/unsubscribe
-messages  // list, create, subscribe/unsubscribe
+# Database reset + test data setup
+rm -rf pb_data
+./pocketbase serve   # Create admin at http://127.0.0.1:8090/_/ first
+npm run setup        # Creates test users/spaces/messages
 ```
 
-Real-time subscriptions use PocketBase SSE:
-```typescript
-pb.collection('messages').subscribe('*', callback, { filter })
+**Test Credentials**:
+- Admin: vlad@vlad.studio / 1234567890 (PocketBase dashboard)
+- Alice: a@test.com / 1234567890 (frontend app)
+- Bob: b@test.com / 1234567890 (frontend app)
+
+## Architecture Principles
+
+### State Management Pattern
+- **NO** Redux, Zustand, or Recoil for most state
+- Pure React hooks (useState/useEffect) + PocketBase real-time subscriptions
+- Jotai ONLY for minimal global state (e.g., video call state)
+- Custom hooks in `src/hooks/` encapsulate complex real-time logic
+
+### Service Layer Pattern
+- Single `src/services/pocketbase.ts` file (6.4KB)
+- Namespace-based API: `auth.login()`, `spaces.list()`, `messages.send()`, `calls.*`
+- NO class-based services, NO Redux thunks
+
+### Real-Time Protocol
+- **SSE (Server-Sent Events)**, NOT WebSockets
+- ~30 second latency for message delivery (acceptable for chat, NOT real-time gaming)
+- Subscriptions in custom hooks (useMessageList, usePresence, useTypingIndicator)
+- PocketBase SDK handles reconnection automatically
+
+### Optimistic UI + Offline Support
+- Messages appear instantly with `tempId` before server confirmation
+- IndexedDB cache (`utils/messageCache.ts`) for offline message viewing
+- Message queue (`utils/messageQueue.ts`) retries failed sends on reconnect
+- `useConnectionStatus` hook monitors online/offline state
+
+### PocketBase Hooks (Server-Side Logic)
+- `pb_hooks/auto_create_chats.pb.js` - Auto-creates General chat + DM chats
+- Hooks use PocketBase's JavaScript runtime (NOT Node.js)
+- Use `onRecordAfterCreateSuccess`, `onRecordAfterUpdateSuccess` events
+- Always add error handling and logging
+
+## Key Custom Hooks
+
+Located in `src/hooks/`:
+
+- `useMessageList` - Fetch messages with pagination, real-time updates via SSE
+- `usePresence` - Heartbeat every 30s, tracks user online status
+- `useTypingIndicator` - Broadcasts/listens to typing events (debounced 500ms)
+- `useUnreadMessages` - Tracks unread count per chat
+- `useConnectionStatus` - Browser online/offline + PocketBase health check
+- `useFileUpload` - File upload with progress tracking
+- `useFavicon` - Updates favicon badge for unread messages
+
+## Database Schema (PocketBase Collections)
+
+- **users** (auth) - id, email, name, avatar, last_seen, language
+- **spaces** - id, name
+- **space_members** - space, user, role (admin|member)
+- **chats** - space, type (public|private), participants[], name, last_message_at
+- **messages** - chat, sender, type (text|image|file), content, file
+- **chat_read_status** - user, chat, last_read_at
+- **typing_events** (ephemeral) - chat, user, userName, timestamp
+
+## Environment Variables
+
+Create `frontend/.env`:
+```
+VITE_POCKETBASE_URL=http://127.0.0.1:8090
 ```
 
-### Key React Hooks
-- `usePresence`: Tracks user online/offline status via heartbeat
-- `useConnectionStatus`: Monitors PocketBase connection health
-- `useTypingIndicator`: Manages typing event broadcast/display
+## Important Patterns & Conventions
 
-### State Management Strategy
-- No external state library (Zustand, Redux, etc.)
-- Local React state + PocketBase real-time sync
-- IndexedDB for offline cache
-- Message queue for failed sends
+### Message Flow
+1. User sends message → Create optimistic message with `tempId`
+2. Add to state + IndexedDB + message queue → POST to API
+3. Success → Replace `tempId` with real ID, remove from queue
+4. Failure → Keep in queue, show retry button
 
-## Important Implementation Details
+### File Uploads
+- Images (JPEG, PNG) generate thumbnails
+- PDFs and documents supported
+- Progress tracking via `useFileUpload`
+- Queued if offline
 
-### Message Handling Flow
-1. User sends message → Optimistic UI update
-2. Message added to retry queue
-3. API call to PocketBase
-4. On success: remove from queue, update cache
-5. On failure: keep in queue for retry on reconnect
+### Routing (wouter)
+- `/login` - LoginPage (public)
+- `/my-spaces` - MySpacesPage (list of spaces)
+- `/spaces/:spaceId/chats/:chatId?` - SpacePage (main chat UI)
 
-### Chat Name Display Logic
-- **Public chats**: Use `chat.name` field (e.g., "General")
-- **Private (DM) chats**: Generate name from participants excluding current user
+### Video Calling
+- Daily.co SDK integration (`@daily-co/daily-react`)
+- Service layer: `src/services/daily.ts` and `src/services/calls.ts`
+- Video features conditionally rendered based on Daily.co configuration
+- See `docs/daily-react.md` for comprehensive Daily.co documentation
 
-### Access Control
-PocketBase rules enforce that users can only:
-- See messages in chats where they're participants
-- View space members for spaces they belong to
-- Access chats within their spaces
+### TypeScript
+- Strict mode enabled
+- Types in `src/types/` (User, Space, Chat, Message, etc.)
+- No `any` types allowed (noUnusedLocals, noUnusedParameters enabled)
 
-### Presence System
-- Users update `last_seen` every 30 seconds
-- Considered online if `last_seen` < 2 minutes old
-- Heartbeat sent even when idle to maintain presence
+### UI Components
+- Base components in `src/ui/` (Button, Input, Dialog, etc.)
+- Built with @base-ui-components/react (headless)
+- Styled with Tailwind CSS 4 classes
+- See `docs/base-ui.md` for component documentation
 
-## Common Development Patterns
+### Internationalization
+- `src/i18n/` contains translations (en.json, ru.json)
+- User language stored in `users.language` field
+- Use `useTranslation()` hook from react-i18next
 
-### Adding a new message type
-1. Update `messages.type` enum in PocketBase schema
-2. Add type to TypeScript types (`types/index.ts`)
-3. Update message rendering in `ChatWindow` component
-4. Add send logic in message input handler
+## Deployment Constraints
 
-### Adding real-time features
-1. Check if collection exists or create migration
-2. Add subscribe/unsubscribe methods to `services/pocketbase.ts`
-3. Create React hook for subscription lifecycle
-4. Use hook in component with cleanup
+- **Backend**: Single PocketBase binary, NOT horizontally scalable
+- SQLite database in `pb_data/` (backup this directory)
+- **Frontend**: Static SPA, deploy to CDN/Vercel/Netlify
 
-### Modifying auto-chat logic
-- Edit `backend/pb_hooks/auto_create_chats.pb.js`
-- PocketBase auto-reloads hooks on file change
-- Check logs in terminal where PocketBase is running
-- Test by creating spaces/adding members via admin
+## Notable Architectural Decisions
 
-## Testing
-- Test users and data available via PocketBase dashboard
-- Use admin app to create test spaces and members
-- Monitor PocketBase logs for hook execution
-- Check browser DevTools for real-time subscription events
+1. **No external state management library** - React hooks + PocketBase SSE is sufficient
+2. **Single service file** - Keeps API layer simple and discoverable
+3. **Custom hooks over Context** - Better performance, easier testing
+4. **SSE over WebSocket** - PocketBase limitation, but simpler infrastructure
+5. **Optimistic UI everywhere** - Better perceived performance
+6. **IndexedDB cache** - Enables offline message viewing
 
-## Build & Deployment Notes
-- Frontend/admin build to static files (`npm run build`)
-- PocketBase is a single binary (`./pocketbase`)
-- `pb_data/` contains all database and uploaded files
-- Migrations are version-controlled in `pb_migrations/`
-- Environment variables: Set `VITE_POCKETBASE_URL` for production builds
+## Documentation
 
-## Key Files Reference
-- `backend/pb_hooks/auto_create_chats.pb.js`: Auto-chat creation logic
-- `frontend/src/services/pocketbase.ts`: API client and real-time subscriptions
-- `frontend/src/utils/messageCache.ts`: IndexedDB caching layer
-- `frontend/src/utils/messageQueue.ts`: Offline message retry queue
-- `frontend/src/hooks/usePresence.ts`: User online/offline tracking
-- `project.md`: Full technical specification and UI/UX design
-- `plan.md`: Implementation progress checklist
+- `docs/pocketbase/` - PocketBase API documentation
+- `docs/wouter.md` - Router documentation
+- `docs/base-ui.md` - UI component documentation
+- `docs/daily-react.md` - Daily.co video call documentation
+- `project.md` - Original project specification
+- `ARCHITECTURE_SUMMARY.txt` - Detailed architecture overview
