@@ -66,7 +66,7 @@ export default function UIPage() {
           <Button variant="ghost">Ghost Button</Button>
           <Button variant="primary" disabled>Disabled Button</Button>
           <Button variant="primary" size="icon">
-            <PlusIcon className="w-5 h-5" />
+            <PlusIcon size={20} />
           </Button>
         </div>
 

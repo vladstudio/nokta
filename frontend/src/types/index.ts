@@ -33,6 +33,7 @@ export interface Chat {
   space: string;
   type: 'public' | 'private';
   participants: string[];
+  created_by?: string;
   name?: string;
   avatar?: string;
   last_message_at?: string;

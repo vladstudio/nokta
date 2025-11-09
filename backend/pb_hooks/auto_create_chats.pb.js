@@ -30,6 +30,7 @@ onRecordAfterCreateSuccess((e) => {
  * FIX #3: Added input validation
  * FIX #4: Fixed race condition with better duplicate detection
  * FIX #5: Added proper error handling and logging
+ * FIX #6: Add user to public chats in the space
  */
 onRecordAfterCreateSuccess((e) => {
   const newUserId = e.record.get("user")
@@ -59,6 +60,30 @@ onRecordAfterCreateSuccess((e) => {
       console.error(`[auto_create_chats] User ${newUserId} not found`)
       e.next()
       return
+    }
+
+    // Add user to all public chats in this space
+    try {
+      const publicChats = $app.findRecordsByFilter(
+        "chats",
+        `space = {:spaceId} && type = "public"`,
+        "",
+        0,
+        0,
+        { spaceId }
+      )
+
+      arrayOf(publicChats).forEach((chat) => {
+        const participants = chat.get("participants") || []
+        if (!participants.includes(newUserId)) {
+          participants.push(newUserId)
+          chat.set("participants", participants)
+          e.app.save(chat)
+          console.log(`[auto_create_chats] Added user ${newUserId} to public chat ${chat.id}`)
+        }
+      })
+    } catch (err) {
+      console.error(`[auto_create_chats] Failed to add user to public chats:`, err.message)
     }
 
     // Get all existing members in this space (excluding the new member)

@@ -98,11 +98,12 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   const { isUserOnline } = usePresence(participantIds);
 
   const getChatName = useCallback((chat: Chat) => {
-    if (chat.type === 'public') {
-      return chat.name || t('calls.general');
+    // Use explicit name if provided
+    if (chat.name) {
+      return chat.name;
     }
 
-    // For private chats, show other participants' names
+    // Fallback: show other participants' names
     if (chat.expand?.participants) {
       const otherParticipants = chat.expand.participants.filter(
         (p) => p.id !== currentUser?.id
@@ -112,7 +113,8 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
       }
     }
 
-    return t('chatList.directMessage');
+    // Default fallback
+    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
   }, [currentUser?.id, t]);
 
   const getOtherParticipant = useCallback((chat: Chat) => {

@@ -3,7 +3,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useRoute } from 'wouter';
 import { useAtom } from 'jotai';
-import { PhoneIcon, ArrowLeft } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeft, DotsThreeVertical } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -18,7 +18,8 @@ import AddActions from './AddActions';
 import MessageInput from './MessageInput';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
-import { ScrollArea, useToastManager, Button } from '../ui';
+import { UserAvatar } from './Avatar';
+import { ScrollArea, useToastManager, Button, Menu, Dialog } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
@@ -51,11 +52,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const getChatName = (chat: Chat | null) => {
     if (!chat) return t('chatWindow.defaultChatName');
 
-    if (chat.type === 'public') {
-      return chat.name || t('calls.general');
+    // Use explicit name if provided
+    if (chat.name) {
+      return chat.name;
     }
 
-    // For private chats, show other participants' names
+    // Fallback: show other participants' names
     if (chat.expand?.participants) {
       const otherParticipants = chat.expand.participants.filter(
         (p) => p.id !== currentUser?.id
@@ -65,7 +67,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       }
     }
 
-    return t('chatList.directMessage');
+    // Default fallback
+    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
   };
 
   // Use custom hooks
@@ -99,6 +102,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showAddActions, setShowAddActions] = useState(false);
   const [isCreatingCall, setIsCreatingCall] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [deleteChatDialogOpen, setDeleteChatDialogOpen] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -339,6 +344,42 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     setLocation(`/spaces/${params?.spaceId}/chats`);
   };
 
+  const handleLeaveGroup = async () => {
+    if (!chat || !currentUser) return;
+    try {
+      await chats.removeParticipant(chat.id, chat, currentUser.id);
+      setLocation(`/spaces/${params?.spaceId}`);
+      toastManager.add({
+        title: t('chats.leftChat'),
+        data: { type: 'success' }
+      });
+    } catch (error) {
+      console.error('Failed to leave chat:', error);
+      toastManager.add({
+        title: t('chats.failedToLeave'),
+        data: { type: 'error' }
+      });
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!chat) return;
+    try {
+      await chats.delete(chat.id);
+      setLocation(`/spaces/${params?.spaceId}`);
+      toastManager.add({
+        title: t('chats.chatDeleted'),
+        data: { type: 'success' }
+      });
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
+      toastManager.add({
+        title: t('chats.failedToDelete'),
+        data: { type: 'error' }
+      });
+    }
+  };
+
   useHotkeys('esc', () => {
     setSelectedMessageId(null);
     (document.activeElement as HTMLElement)?.blur();
@@ -410,19 +451,56 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             </span>
           )}
         </div>
-        {isVideoCallsEnabled && (
-          <Button
-            onClick={handleStartCall}
-            variant="ghost"
-            size="default"
-            className="flex items-center gap-2 text-accent"
-            disabled={isCreatingCall || !!activeCallChat}
-            title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
-          >
-            <PhoneIcon size={20} className="text-accent" />
-            <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Participant avatars for group chats */}
+          {chat && (chat.type === 'public' || (chat.participants?.length || 0) > 2) && chat.expand?.participants && (
+            <div className="flex items-center -space-x-2">
+              {chat.expand.participants.slice(0, 5).map((participant) => (
+                <UserAvatar
+                  key={participant.id}
+                  user={participant}
+                  size={24}
+                  className="border-2 rounded-full border-(--color-bg-primary)/90"
+                />
+              ))}
+              {chat.expand.participants.length > 5 && (
+                <div
+                  className="rounded-full flex items-center justify-center text-xs font-semibold border-2 border-(--color-bg-primary) bg-(--color-bg-secondary)"
+                  style={{ width: 24, height: 24 }}
+                >
+                  +{chat.expand.participants.length - 5}
+                </div>
+              )}
+            </div>
+          )}
+          {isVideoCallsEnabled && (
+            <Button
+              onClick={handleStartCall}
+              variant="ghost"
+              size="default"
+              className="flex items-center gap-2 text-accent"
+              disabled={isCreatingCall || !!activeCallChat}
+              title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
+            >
+              <PhoneIcon size={20} className="text-accent" />
+              <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
+            </Button>
+          )}
+          {chat && chat.type === 'private' && chat.participants.length > 2 && (
+            <Menu
+              trigger={
+                <Button variant="ghost" size="icon">
+                  <DotsThreeVertical size={20} />
+                </Button>
+              }
+              items={
+                chat.created_by === currentUser?.id
+                  ? [{ label: t('chats.deleteChat'), onClick: () => setDeleteChatDialogOpen(true) }]
+                  : [{ label: t('chats.leaveGroup'), onClick: () => setLeaveDialogOpen(true) }]
+              }
+            />
+          )}
+        </div>
       </div>
 
       {/* Messages Area */}
@@ -504,6 +582,38 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* Leave Group Dialog */}
+      <Dialog
+        open={leaveDialogOpen}
+        onOpenChange={setLeaveDialogOpen}
+        title={t('chats.leaveGroup')}
+        description={t('chats.confirmLeave')}
+        footer={
+          <>
+            <Button variant="default" onClick={() => setLeaveDialogOpen(false)}>{t('common.cancel')}</Button>
+            <Button variant="primary" onClick={() => { handleLeaveGroup(); setLeaveDialogOpen(false); }}>{t('common.leave')}</Button>
+          </>
+        }
+      >
+        <div />
+      </Dialog>
+
+      {/* Delete Chat Dialog */}
+      <Dialog
+        open={deleteChatDialogOpen}
+        onOpenChange={setDeleteChatDialogOpen}
+        title={t('chats.deleteChat')}
+        description={t('chats.confirmDelete')}
+        footer={
+          <>
+            <Button variant="default" onClick={() => setDeleteChatDialogOpen(false)}>{t('common.cancel')}</Button>
+            <Button variant="primary" onClick={() => { handleDeleteChat(); setDeleteChatDialogOpen(false); }}>{t('common.delete')}</Button>
+          </>
+        }
+      >
+        <div />
+      </Dialog>
     </div>
   );
 }

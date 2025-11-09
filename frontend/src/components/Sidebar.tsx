@@ -8,11 +8,12 @@ import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { showCallNotification } from '../utils/notifications';
 import { isVideoCallsEnabled } from '../config/features';
-import { ScrollArea, useToastManager, Button } from '../ui';
+import { ScrollArea, useToastManager, Button, Menu } from '../ui';
 import ChatList from './ChatList';
+import CreateGroupChatDialog from './CreateGroupChatDialog';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
-import { PhoneIcon } from "@phosphor-icons/react";
+import { PhoneIcon, PlusIcon } from "@phosphor-icons/react";
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
@@ -30,6 +31,7 @@ export default function Sidebar() {
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
@@ -91,11 +93,12 @@ export default function Sidebar() {
   useFavicon(hasUnread);
 
   const getCallChatName = useCallback((chat: Chat) => {
-    if (chat.type === 'public') {
-      return chat.name || t('calls.general');
+    // Use explicit name if provided
+    if (chat.name) {
+      return chat.name;
     }
 
-    // For private chats, show other participants' names
+    // Fallback: show other participants' names
     if (chat.expand?.participants) {
       const otherParticipants = chat.expand.participants.filter(
         (p) => p.id !== auth.user?.id
@@ -105,7 +108,8 @@ export default function Sidebar() {
       }
     }
 
-    return t('chatList.directMessage');
+    // Default fallback
+    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
   }, [t]);
 
   // Handle active call subscription events
@@ -196,15 +200,24 @@ export default function Sidebar() {
   return (
     <>
       <div className="sidebar">
-        <div className="w-full p-2">
+        <div className="w-full p-2 flex items-center g-2">
           <Button variant="ghost"
             onClick={() => setLocation('/my')}
-            className="w-full flex items-center gap-2"
+            className="flex-1 flex items-center gap-2"
           >
             <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
-            <div className="grid flex-1"><span className="text-sm font-semibold truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span></div>
-            <span className="text-xs text-light truncate w-full text-right">{auth.user?.name || auth.user?.email}</span>
+            <span className="text-xs text-light truncate text-right">{auth.user?.name || auth.user?.email}</span>
           </Button>
+          <Menu
+            trigger={
+              <Button variant="ghost" size="icon">
+                <PlusIcon size={20} className="text-accent" />
+              </Button>
+            }
+            items={[
+              { label: t('chats.createGroup'), onClick: () => setShowCreateDialog(true) }
+            ]}
+          />
         </div>
         {isVideoCallsEnabled && activeCalls.map(call => (
           <div
@@ -236,6 +249,14 @@ export default function Sidebar() {
           />
         </ScrollArea>
       </div>
+      {spaceId && (
+        <CreateGroupChatDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          spaceId={spaceId}
+          onChatCreated={loadChats}
+        />
+      )}
     </>
   );
 }

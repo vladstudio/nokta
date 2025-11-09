@@ -80,6 +80,27 @@ export const chats = {
     return record;
   },
 
+  async create(spaceId: string, type: 'public' | 'private', participants: string[], name?: string) {
+    return await pb.collection('chats').create<Chat>({
+      space: spaceId,
+      type,
+      participants,
+      name,
+      created_by: auth.user?.id,
+    });
+  },
+
+  async delete(chatId: string) {
+    await pb.collection('chats').delete(chatId);
+  },
+
+  async removeParticipant(chatId: string, chat: Chat, userId: string) {
+    const updatedParticipants = chat.participants.filter(id => id !== userId);
+    return await pb.collection('chats').update<Chat>(chatId, {
+      participants: updatedParticipants,
+    });
+  },
+
   subscribe(callback: (data: PocketBaseEvent<Chat>) => void) {
     return pb.collection('chats').subscribe('*', callback);
   },

@@ -4,6 +4,7 @@ export { default as Badge } from './Badge';
 export { default as OnlineIndicator } from './OnlineIndicator';
 export { Button } from './Button';
 export { Card } from './Card';
+export { Checkbox } from './Checkbox';
 export { Input } from './Input';
 export { FormLabel } from './FormLabel';
 export { Select } from './Select';
