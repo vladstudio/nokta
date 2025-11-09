@@ -55,7 +55,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
           />
         )}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 grid min-w-0">
         <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-(--color-text-primary)' : 'font-medium text-(--color-text-primary)'}`}>
           {getChatName(chat)}
         </div>

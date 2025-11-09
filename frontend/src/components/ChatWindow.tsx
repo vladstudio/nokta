@@ -380,11 +380,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             onClick={handleStartCall}
             variant="ghost"
             size="default"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-accent"
             disabled={isCreatingCall || !!activeCallChat}
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
           >
-            <PhoneIcon />
+            <PhoneIcon size={20} className="text-accent" />
             <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
         )}
@@ -417,34 +417,35 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
-
-      {/* Message Input or Actions */}
-      {showAddActions ? (
-        <AddActions
-          onCancel={() => setShowAddActions(false)}
-          onImageSelect={() => {
-            handleFileSelect('image');
-            setShowAddActions(false);
-          }}
-          onFileSelect={() => {
-            handleFileSelect('file');
-            setShowAddActions(false);
-          }}
-        />
-      ) : selectedMessageId ? (
-        <MessageActions
-          onCancel={() => setSelectedMessageId(null)}
-          onCopy={selectedMessage?.type !== 'file' ? handleCopyMessage : undefined}
-          onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
-          onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
-        />
-      ) : (
-        <MessageInput
-          onSend={handleSend}
-          onTyping={onTyping}
-          onAddClick={() => setShowAddActions(true)}
-        />
-      )}
+      <div className="w-full bg-(--color-bg-primary) border-t border-(--color-border-default) flex items-stretch p-2">
+        {/* Message Input or Actions */}
+        {showAddActions ? (
+          <AddActions
+            onCancel={() => setShowAddActions(false)}
+            onImageSelect={() => {
+              handleFileSelect('image');
+              setShowAddActions(false);
+            }}
+            onFileSelect={() => {
+              handleFileSelect('file');
+              setShowAddActions(false);
+            }}
+          />
+        ) : selectedMessageId ? (
+          <MessageActions
+            onCancel={() => setSelectedMessageId(null)}
+            onCopy={selectedMessage?.type !== 'file' ? handleCopyMessage : undefined}
+            onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
+            onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
+          />
+        ) : (
+          <MessageInput
+            onSend={handleSend}
+            onTyping={onTyping}
+            onAddClick={() => setShowAddActions(true)}
+          />
+        )}
+      </div>
 
       {/* Hidden file input */}
       <input

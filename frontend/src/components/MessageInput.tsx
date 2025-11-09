@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
+import { PaperPlaneIcon, PaperPlaneTiltIcon, PlusIcon } from "@phosphor-icons/react";
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
@@ -57,36 +58,35 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
   };
 
   return (
-    <div className="border-t border-(--color-border-default) px-4 py-3 bg-(--color-bg-primary)">
-      <form onSubmit={handleSend} className="flex items-end gap-3">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onAddClick}
-          className="shrink-0 w-9 h-9 p-0 text-lg font-semibold rounded-full mb-1"
-          disabled={disabled}
-        >
-          +
-        </Button>
-        <Input
-          as="textarea"
-          ref={textareaRef}
-          value={message}
-          onChange={handleMessageChange}
-          onKeyDown={handleKeyDown}
-          placeholder={t('messageInput.placeholder')}
-          rows={1}
-          className="flex-1 max-h-32 overflow-y-auto resize-none py-2.5"
-          disabled={disabled}
-        />
-        <Button
-          type="submit"
-          disabled={!message.trim() || sending || disabled}
-          className="shrink-0 px-5 mb-1"
-        >
-          {t('common.send')}
-        </Button>
-      </form>
-    </div>
+    <form onSubmit={handleSend} className="w-full min-h-12! flex items-stretch gap-2">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onAddClick}
+        className="shrink-0"
+        disabled={disabled}
+      >
+        <PlusIcon size={20} className="text-accent" />
+      </Button>
+      <Input
+        as="textarea"
+        ref={textareaRef}
+        value={message}
+        onChange={handleMessageChange}
+        onKeyDown={handleKeyDown}
+        placeholder={t('messageInput.placeholder')}
+        rows={1}
+        className="flex-1 max-h-32! overflow-y-auto resize-none "
+        disabled={disabled}
+      />
+      <Button
+        type="submit"
+        variant="ghost"
+        disabled={!message.trim() || sending || disabled}
+        className="shrink-0"
+      >
+        <PaperPlaneTiltIcon size={20} weight="duotone" className="text-accent" />
+      </Button>
+    </form>
   );
 }

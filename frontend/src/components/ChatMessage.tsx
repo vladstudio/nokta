@@ -148,7 +148,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
         <div className={clsx(
           'rounded-xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
           isOwn
-            ? 'bg-(--color-bg-primary)/10'
+            ? 'bg-(--color-bg-primary)/40 backdrop-blur-lg'
             : 'bg-(--color-bg-primary)',
           message.isFailed && 'bg-(--color-error-50)! text-(--color-error-600)! border-(--color-error-500)!',
           message.isPending && 'opacity-70'
