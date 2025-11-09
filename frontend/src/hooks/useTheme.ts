@@ -43,8 +43,15 @@ export function useTheme() {
  * Apply theme by loading the corresponding CSS file
  */
 function applyTheme(theme: Theme) {
+  const existingThemeLink = document.getElementById('theme-css') as HTMLLinkElement | null;
+  const newThemeHref = THEMES[theme];
+
+  // If theme link already exists with the correct href, no need to reload
+  if (existingThemeLink && existingThemeLink.href.endsWith(newThemeHref)) {
+    return;
+  }
+
   // Remove existing theme link if any
-  const existingThemeLink = document.getElementById('theme-css');
   if (existingThemeLink) {
     existingThemeLink.remove();
   }
@@ -53,6 +60,6 @@ function applyTheme(theme: Theme) {
   const link = document.createElement('link');
   link.id = 'theme-css';
   link.rel = 'stylesheet';
-  link.href = THEMES[theme];
+  link.href = newThemeHref;
   document.head.appendChild(link);
 }
