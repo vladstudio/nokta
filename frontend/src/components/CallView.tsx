@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useSetAtom } from 'jotai';
-import { useCallFrame, useDailyEvent } from '@daily-co/daily-react';
+import { DailyProvider, useCallFrame, useDailyEvent } from '@daily-co/daily-react';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { callsAPI } from '../services/calls';
 import { pb } from '../services/pocketbase';
@@ -10,8 +10,8 @@ interface CallViewProps {
   chat: Chat;
 }
 
-export default function CallView({ chat }: CallViewProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+// Inner component that uses useDailyEvent
+function CallContent({ chat }: CallViewProps) {
   const setActiveCallChat = useSetAtom(activeCallChatAtom);
   const setShowCallView = useSetAtom(showCallViewAtom);
 
@@ -21,27 +21,24 @@ export default function CallView({ chat }: CallViewProps) {
 
     try {
       await callsAPI.leaveCall(chat.id, currentUserId);
+      // Only clear state if successfully left
+      setActiveCallChat(null);
+      setShowCallView(false);
     } catch (error) {
       console.error('Failed to leave call:', error);
-    } finally {
+      // Clear state anyway to prevent stuck UI
       setActiveCallChat(null);
       setShowCallView(false);
     }
-  }, [setActiveCallChat, setShowCallView]);
+  }, [chat.id, setActiveCallChat, setShowCallView]);
 
   useDailyEvent('left-meeting', handleLeaveCall);
 
-  useCallFrame({
-    parentElRef: containerRef,
-    url: chat.daily_room_url,
-    showLeaveButton: true,
-    iframeStyle: {
-      width: '100%',
-      height: '100%',
-      border: 'none',
-    },
-  });
+  return null;
+}
 
+export default function CallView({ chat }: CallViewProps) {
+  // Check for required data BEFORE calling any hooks
   if (!chat.daily_room_url) {
     return (
       <div className="flex items-center justify-center h-full bg-black text-white">
@@ -53,5 +50,25 @@ export default function CallView({ chat }: CallViewProps) {
     );
   }
 
-  return <div ref={containerRef} className="relative w-full h-full bg-black" />;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const callFrame = useCallFrame({
+    parentElRef: containerRef,
+    options: {
+      url: chat.daily_room_url,
+      showLeaveButton: true,
+      iframeStyle: {
+        width: '100%',
+        height: '100%',
+        border: 'none',
+      },
+    },
+  });
+
+  return (
+    <DailyProvider callObject={callFrame}>
+      <div ref={containerRef} className="relative w-full h-full bg-black" />
+      <CallContent chat={chat} />
+    </DailyProvider>
+  );
 }
