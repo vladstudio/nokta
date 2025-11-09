@@ -25,7 +25,7 @@ export function Button({ variant = 'primary', size = 'default', className = '', 
     <button
       ref={ref}
       disabled={disabled}
-      className={`${sizes[size]} rounded font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
       {...props}
     />
   );

@@ -12,6 +12,7 @@ import { ScrollArea, useToastManager, Button } from '../ui';
 import ChatList from './ChatList';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
+import { PhoneIcon } from "@phosphor-icons/react";
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
@@ -208,22 +209,18 @@ export default function Sidebar() {
         {isVideoCallsEnabled && activeCalls.map(call => (
           <div
             key={call.id}
-            className="p-2 active-call"
+            className="p-2"
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate">
-                  {getCallChatName(call)}
-                </div>
-                <div className="text-xs text-green-700 mt-0.5">
-                  {t('calls.activeCall')}
-                </div>
+            <div className="active-call p-2 flex items-center gap-2">
+              <PhoneIcon />
+              <div className="text-sm font-semibold grid flex-1">
+                <div className="truncate">{getCallChatName(call)}</div>
               </div>
               <Button
                 onClick={() => handleJoinCall(call.id)}
                 disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
                 variant="primary"
-                className="bg-green-600! hover:bg-green-700! disabled:bg-gray-400! text-xs px-3 py-1.5"
+                className="text-xs"
               >
                 {activeCallChat?.id === call.id ? t('calls.inCall') : joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
               </Button>

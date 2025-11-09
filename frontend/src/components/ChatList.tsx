@@ -34,13 +34,12 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
   return (
     <Button
       key={chat.id}
-      variant="default"
+      variant="ghost"
       onClick={handleClick}
-      className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors duration-100 border-0 rounded-none border-b border-b-[var(--color-border-light)] hover:bg-[var(--color-bg-hover)] ${
-        isSelected
-          ? 'bg-[var(--color-primary-50)] border-l-[3px] border-l-[var(--color-primary-500)] pl-[calc(1rem-3px)]'
-          : 'bg-[var(--color-bg-primary)]'
-      }`}
+      className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
+        ? 'bg-(--color-primary-50)'
+        : 'bg-(--color-bg-primary)'
+        }`}
     >
       <div className="relative shrink-0">
         {chat.type === 'private' ? (
@@ -144,11 +143,11 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   }, [currentUser?.id, isUserOnline]);
 
   return chats.length === 0 ? (
-    <div className="flex flex-col items-center justify-center py-8 px-6 text-center text-[var(--color-text-secondary)]">
+    <div className="flex flex-col items-center justify-center py-8 px-6 text-center text-(--color-text-secondary)">
       <p className="text-sm">{t('chatList.noChats')}</p>
     </div>
   ) : (
-    <div>
+    <div className="p-2 grid gap-1">
       {chats.map((chat) => (
         <ChatListItem
           key={chat.id}
