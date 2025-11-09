@@ -36,40 +36,38 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       key={chat.id}
       variant="default"
       onClick={handleClick}
-      className={`w-full px-4 py-3 text-left rounded-none border-0 hover:bg-gray-50 ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+      className={`chat-list-item ${isSelected ? 'selected' : ''}`}
     >
-      <div className="flex items-center space-x-3">
-        <div className="relative">
-          {chat.type === 'private' ? (
-            <UserAvatar user={getOtherParticipant(chat)} size={40} />
-          ) : (
-            <ChatAvatar chat={chat} size={40} />
-          )}
-          {getOnlineStatus(chat) !== null && (
-            <span
-              className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getOnlineStatus(chat) ? 'bg-green-500' : 'bg-gray-400'}`}
-              title={getOnlineStatus(chat) ? 'Online' : 'Offline'}
-            />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className={`text-sm text-gray-900 truncate ${hasUnread ? 'font-semibold' : 'font-medium'}`}>
-            {getChatName(chat)}
-          </div>
-          <div className="text-xs text-gray-500 truncate">
-            {chat.last_message_content && chat.expand?.last_message_sender ?
-              `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
-              (chat.type === 'public' ? t('chatList.publicChat') : t('chatList.privateChat'))}
-          </div>
-        </div>
-        {hasUnread && (
-          <div className="shrink-0">
-            <span className="inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          </div>
+      <div className="relative flex-shrink-0">
+        {chat.type === 'private' ? (
+          <UserAvatar user={getOtherParticipant(chat)} size={48} />
+        ) : (
+          <ChatAvatar chat={chat} size={48} />
+        )}
+        {getOnlineStatus(chat) !== null && (
+          <span
+            className={`badge online absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : '!bg-gray-400'}`}
+            title={getOnlineStatus(chat) ? 'Online' : 'Offline'}
+          />
         )}
       </div>
+      <div className="flex-1 min-w-0">
+        <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-800'}`}>
+          {getChatName(chat)}
+        </div>
+        <div className="text-xs text-gray-500 truncate mt-0.5">
+          {chat.last_message_content && chat.expand?.last_message_sender ?
+            `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
+            (chat.type === 'public' ? t('chatList.publicChat') : t('chatList.privateChat'))}
+        </div>
+      </div>
+      {hasUnread && (
+        <div className="flex-shrink-0">
+          <span className="badge unread">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        </div>
+      )}
     </Button>
   );
 });
@@ -141,9 +139,11 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   }, [currentUser?.id, isUserOnline]);
 
   return chats.length === 0 ? (
-    <div className="p-4 text-center text-gray-500 text-sm">{t('chatList.noChats')}</div>
+    <div className="empty-state py-8">
+      <p className="text-sm">{t('chatList.noChats')}</p>
+    </div>
   ) : (
-    <div className="divide-y divide-gray-100">
+    <div>
       {chats.map((chat) => (
         <ChatListItem
           key={chat.id}

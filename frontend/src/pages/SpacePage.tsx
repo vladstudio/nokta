@@ -123,12 +123,12 @@ export default function SpacePage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+    <div className="flex-1 flex flex-col overflow-hidden bg-white">
       {chatId ? (
         <ChatWindow chatId={chatId} />
       ) : (
-        <div className="flex-1 flex items-center justify-center text-gray-500">
-          Select a chat to start messaging
+        <div className="empty-state flex-1">
+          <p className="text-sm">Select a chat to start messaging</p>
         </div>
       )}
     </div>

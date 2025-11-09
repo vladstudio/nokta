@@ -57,13 +57,13 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
   };
 
   return (
-    <div className="border-t border-gray-200 p-4">
-      <form onSubmit={handleSend} className="flex items-end gap-2">
+    <div className="border-t border-gray-200 px-4 py-3 bg-white">
+      <form onSubmit={handleSend} className="flex items-end gap-3">
         <Button
           type="button"
-          variant="default"
+          variant="ghost"
           onClick={onAddClick}
-          className="mb-2"
+          className="btn-ghost flex-shrink-0 w-9 h-9 p-0 text-lg font-semibold rounded-full mb-1"
           disabled={disabled}
         >
           +
@@ -75,11 +75,15 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
           placeholder={t('messageInput.placeholder')}
-          rows={2}
-          className="flex-1 max-h-42 overflow-y-auto"
+          rows={1}
+          className="input-field flex-1 max-h-32 overflow-y-auto resize-none py-2.5"
           disabled={disabled}
         />
-        <Button type="submit" disabled={!message.trim() || sending || disabled}>
+        <Button
+          type="submit"
+          disabled={!message.trim() || sending || disabled}
+          className="btn-primary flex-shrink-0 px-5 mb-1"
+        >
           {t('common.send')}
         </Button>
       </form>

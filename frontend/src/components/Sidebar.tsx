@@ -201,17 +201,17 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="w-60 bg-white border-r border-gray-200 flex flex-col min-h-0">
+      <div className="sidebar">
         <ScrollArea>
-          <div className="p-4">
+          <div className="p-4 border-b border-gray-100">
             <Menu
               trigger={
-                <div className="w-full flex flex-col items-start gap-2 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="w-full flex flex-col items-start gap-1.5 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                   <div className="flex items-center gap-2 w-full">
                     <img src="/favicon.svg" alt="Talk" className="w-5 h-5" />
-                    <span className="text-base font-semibold">{currentSpace?.name || t('sidebar.selectSpace')}</span>
+                    <span className="text-sm font-semibold text-gray-900 truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span>
                   </div>
-                  <span className="text-xs text-gray-500">{auth.user?.name || auth.user?.email}</span>
+                  <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
                 </div>
               }
               items={menuItems}
@@ -227,14 +227,14 @@ export default function Sidebar() {
         {activeCalls.map(call => (
           <div
             key={call.id}
-            className="p-3 bg-green-50 border-t border-green-200"
+            className="p-4 bg-green-50 border-t border-green-200"
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-green-900 truncate">
+                <div className="text-sm font-semibold text-green-900 truncate">
                   {getCallChatName(call)}
                 </div>
-                <div className="text-xs text-green-700">
+                <div className="text-xs text-green-700 mt-0.5">
                   Active call in progress
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function Sidebar() {
                 disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
                 variant="default"
                 size="sm"
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                className="btn-primary !bg-green-600 hover:!bg-green-700 disabled:!bg-gray-400 text-xs px-3 py-1.5"
               >
                 {activeCallChat?.id === call.id ? 'In Call' : joiningCalls.has(call.id) ? 'Joining...' : 'Join Call'}
               </Button>

@@ -102,11 +102,11 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
     <div
       id={`msg-${message.id}`}
       onClick={onSelect}
-      className={`flex cursor-pointer rounded-lg transition-colors ${isOwn ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+      className={`flex cursor-pointer transition-all ${isOwn ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-50 -mx-2 px-2 py-1 rounded-lg' : ''}`}
     >
-      <div className={`max-w-xl p-2 ${isOwn ? 'order-2' : 'order-1'}`}>
-        <div className="flex items-baseline space-x-2 mb-1">
-          <span className="text-xs font-medium text-gray-700">
+      <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
+        <div className="flex items-baseline gap-2 px-1">
+          <span className="text-xs font-medium text-gray-600">
             {isOwn ? t('common.you') : senderName}
           </span>
           {message.created && !message.isPending && (
@@ -126,7 +126,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
             </button>
           )}
         </div>
-        <div className={`rounded-lg px-4 py-2 ${isOwn ? message.isFailed ? 'bg-red-100 text-red-900 border border-red-300' : message.isPending ? 'bg-blue-400 text-white opacity-70' : 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
+        <div className={`message-bubble ${isOwn ? 'own' : 'other'} ${message.isFailed ? '!bg-red-100 !text-red-900 !border-red-300' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
           {renderContent()}
         </div>
       </div>

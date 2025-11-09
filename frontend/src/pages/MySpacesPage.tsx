@@ -24,24 +24,26 @@ export default function MySpacesPage() {
   }, [setLocation]);
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md p-6">
+    <div className="flex-1 flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-md">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">{t('mySpacesPage.title')}</h1>
 
         {spaceList.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {spaceList.map((space) => (
               <button
                 key={space.id}
                 onClick={() => handleSpaceClick(space)}
-                className="w-full p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                className="card w-full p-5 text-left"
               >
-                <div className="font-medium text-gray-900">{space.name}</div>
+                <div className="font-semibold text-gray-900 text-base">{space.name}</div>
               </button>
             ))}
           </div>
         ) : (
-          <p className="text-gray-600 text-center">{t('mySpacesPage.noSpaces')}</p>
+          <div className="empty-state card py-12">
+            <p className="text-sm">{t('mySpacesPage.noSpaces')}</p>
+          </div>
         )}
       </div>
     </div>

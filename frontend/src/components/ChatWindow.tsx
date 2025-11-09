@@ -357,7 +357,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
         <LoadingSpinner size="lg" />
-        <div className="text-gray-600">{t('chatWindow.loadingMessages')}</div>
+        <div className="text-gray-600 text-sm">{t('chatWindow.loadingMessages')}</div>
       </div>
     );
   }
@@ -365,32 +365,32 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   return (
     <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
-        <h2 className="text-lg font-semibold">{chat?.name || 'Chat'}</h2>
+      <div className="header">
+        <h2 className="text-lg font-semibold text-gray-900">{chat?.name || 'Chat'}</h2>
         <Button
           onClick={handleStartCall}
           variant="ghost"
           size="default"
-          className="gap-2"
+          className="gap-2 btn-ghost"
           disabled={isCreatingCall || !!activeCallChat}
           title={activeCallChat ? 'Leave current call first' : 'Start a call'}
         >
-          <Phone className="w-4 h-4" />
-          {isCreatingCall ? 'Starting...' : activeCallChat ? 'In call' : 'Call'}
+          <Phone className="w-5 h-5" />
+          <span className="text-sm">{isCreatingCall ? 'Starting...' : activeCallChat ? 'In call' : 'Call'}</span>
         </Button>
       </div>
 
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
-          <div className="p-6 space-y-4">
+          <div className="px-6 py-4 space-y-3">
             {loadingOlder && (
               <div className="flex justify-center py-2">
                 <LoadingSpinner size="sm" />
               </div>
             )}
             {allMessages.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                {t('chatWindow.noMessages')}
+              <div className="empty-state">
+                <p className="text-sm">{t('chatWindow.noMessages')}</p>
               </div>
             ) : (
               allMessages.map((message) => (
@@ -412,7 +412,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Typing Indicator */}
       {typingUsers.length > 0 && (
-        <div className="px-6 py-2 text-sm text-gray-500 italic">
+        <div className="px-6 py-2 text-xs text-gray-500 italic border-t border-gray-100">
           {typingUsers.length === 1
             ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}`
             : typingUsers.length === 2

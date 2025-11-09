@@ -1,5 +1,85 @@
 @import "tailwindcss";
 
+/* ===================================
+   DESIGN TOKENS & CSS VARIABLES
+   =================================== */
+:root {
+  /* Colors - Neutral palette */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-active: #e5e7eb;
+
+  /* Text colors */
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+
+  /* Border colors */
+  --color-border-light: #f3f4f6;
+  --color-border-default: #e5e7eb;
+  --color-border-medium: #d1d5db;
+
+  /* Primary brand color */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+
+  /* Accent/Success color */
+  --color-accent-50: #f0fdf4;
+  --color-accent-500: #10b981;
+  --color-accent-600: #059669;
+
+  /* Error color */
+  --color-error-50: #fef2f2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+
+  /* Spacing scale (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===================================
+   BASE STYLES
+   =================================== */
 * {
   margin: 0;
   padding: 0;
@@ -12,9 +92,13 @@ html, body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
 }
 
 #root {
@@ -24,8 +108,177 @@ body {
   flex-direction: column;
 }
 
-/* Mobile responsive improvements */
+/* ===================================
+   UTILITY CLASSES
+   =================================== */
+
+/* Chat list item */
+.chat-list-item {
+  @apply w-full px-4 py-3 text-left;
+  @apply flex items-center gap-3;
+  @apply transition-colors duration-200;
+  @apply border-0 rounded-none;
+  background-color: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.chat-list-item:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.chat-list-item.selected {
+  background-color: var(--color-primary-50);
+  border-left: 3px solid var(--color-primary-500);
+  padding-left: calc(1rem - 3px);
+}
+
+/* Message bubble */
+.message-bubble {
+  @apply rounded-2xl px-4 py-2 max-w-lg;
+  @apply break-words;
+  box-shadow: var(--shadow-sm);
+}
+
+.message-bubble.own {
+  background-color: var(--color-primary-500);
+  color: white;
+  @apply rounded-br-md;
+}
+
+.message-bubble.other {
+  background-color: white;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  @apply rounded-bl-md;
+}
+
+/* Input field */
+.input-field {
+  @apply w-full px-4 py-3 rounded-lg;
+  @apply border border-gray-300;
+  @apply transition-all duration-200;
+  background-color: var(--color-bg-primary);
+  font-size: var(--font-size-base);
+}
+
+.input-field:focus {
+  @apply outline-none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+}
+
+/* Card */
+.card {
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  @apply transition-shadow duration-200;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Header */
+.header {
+  @apply flex items-center justify-between;
+  @apply px-6 py-4;
+  @apply border-b;
+  background-color: var(--color-bg-primary);
+  border-color: var(--color-border-default);
+}
+
+/* Sidebar */
+.sidebar {
+  @apply flex flex-col;
+  background-color: var(--color-bg-primary);
+  border-right: 1px solid var(--color-border-default);
+  width: 280px;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center justify-center;
+  @apply px-2 py-1 rounded-full;
+  @apply text-xs font-semibold;
+  min-width: 1.5rem;
+  height: 1.5rem;
+}
+
+.badge.unread {
+  background-color: var(--color-error-500);
+  color: white;
+}
+
+.badge.online {
+  background-color: var(--color-accent-500);
+  @apply w-3 h-3;
+  border: 2px solid white;
+}
+
+/* Button variants */
+.btn {
+  @apply inline-flex items-center justify-center;
+  @apply px-4 py-2 rounded-lg;
+  @apply font-medium;
+  @apply transition-all duration-200;
+  @apply cursor-pointer;
+  font-size: var(--font-size-sm);
+}
+
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-primary-500);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-600);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* Avatar */
+.avatar {
+  @apply rounded-full flex items-center justify-center;
+  @apply font-semibold text-white;
+  @apply flex-shrink-0;
+  background-color: var(--color-primary-500);
+}
+
+/* Empty state */
+.empty-state {
+  @apply flex flex-col items-center justify-center;
+  @apply py-12 px-6;
+  @apply text-center;
+  color: var(--color-text-secondary);
+}
+
+/* Divider */
+.divider {
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* ===================================
+   MOBILE RESPONSIVE
+   =================================== */
 @media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+  }
+
   .chat-list {
     position: absolute;
     z-index: 10;
