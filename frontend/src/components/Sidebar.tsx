@@ -10,8 +10,7 @@ import { showCallNotification } from '../utils/notifications';
 import { Menu, ScrollArea, useToastManager, Button } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
-import MinimizedCallWidget from './MinimizedCallWidget';
-import { activeCallChatAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
 
 const LAST_SPACE_KEY = 'talk:lastSpaceId';
@@ -31,7 +30,6 @@ export default function Sidebar() {
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
-  const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
@@ -181,7 +179,6 @@ export default function Sidebar() {
       const chat = await callsAPI.startCall(callChatId);
       setActiveCallChat(chat);
       setShowCallView(true);
-      setIsCallMinimized(false);
     } catch (error) {
       console.error('Failed to join call:', error);
       toastManager.add({
@@ -196,7 +193,7 @@ export default function Sidebar() {
         return next;
       });
     }
-  }, [joiningCalls, setActiveCallChat, setShowCallView, setIsCallMinimized, toastManager]);
+  }, [joiningCalls, setActiveCallChat, setShowCallView, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
@@ -253,7 +250,6 @@ export default function Sidebar() {
             </div>
           </div>
         ))}
-        <MinimizedCallWidget />
       </div>
       <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>

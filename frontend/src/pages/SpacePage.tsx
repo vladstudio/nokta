@@ -5,7 +5,7 @@ import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
-import { activeCallChatAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { pb } from '../services/pocketbase';
 
 export default function SpacePage() {
@@ -15,7 +15,6 @@ export default function SpacePage() {
   const spaceId = params?.spaceId;
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
-  const [isCallMinimized, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
   const { isOnline } = useConnectionStatus();
 
   useEffect(() => {
@@ -47,7 +46,6 @@ export default function SpacePage() {
         if (myActiveCall) {
           setActiveCallChat(myActiveCall);
           setShowCallView(true);
-          setIsCallMinimized(true); // Show minimized by default
         }
       } catch (error) {
         console.error('Failed to load active call:', error);
@@ -56,7 +54,7 @@ export default function SpacePage() {
     };
 
     loadActiveCall();
-  }, [spaceId, setActiveCallChat, setShowCallView, setIsCallMinimized]);
+  }, [spaceId, setActiveCallChat, setShowCallView]);
 
   // Subscribe to chat updates for active calls
   useEffect(() => {
@@ -78,13 +76,12 @@ export default function SpacePage() {
           // User removed from call or call ended
           setActiveCallChat(null);
           setShowCallView(false);
-          setIsCallMinimized(false);
         }
       }
     });
 
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, activeCallChat, setActiveCallChat, setShowCallView, setIsCallMinimized]);
+  }, [spaceId, activeCallChat, setActiveCallChat, setShowCallView]);
 
   // Offline reconciliation: verify call still exists when reconnecting
   useEffect(() => {
@@ -103,14 +100,12 @@ export default function SpacePage() {
           // User no longer in call or call ended
           setActiveCallChat(null);
           setShowCallView(false);
-          setIsCallMinimized(false);
         }
       } catch {
         // Call was deleted while offline
         console.log('[Reconciliation] Call no longer exists, clearing state');
         setActiveCallChat(null);
         setShowCallView(false);
-        setIsCallMinimized(false);
       }
     };
 
@@ -121,9 +116,9 @@ export default function SpacePage() {
 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [activeCallChat, spaceId, setActiveCallChat, setShowCallView, setIsCallMinimized]);
+  }, [activeCallChat, spaceId, setActiveCallChat, setShowCallView]);
 
-  if (showCallView && activeCallChat && !isCallMinimized) {
+  if (showCallView && activeCallChat) {
     return <CallView chat={activeCallChat} />;
   }
 
