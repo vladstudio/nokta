@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
-import { auth, spaces, chats } from '../services/pocketbase';
+import { auth, spaces, chats, pb } from '../services/pocketbase';
 import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
@@ -105,12 +105,15 @@ export default function Sidebar() {
 
         // Show OS notification for incoming call
         try {
-          const invite = await callsAPI.getMyInvites(spaceId);
-          const newInvite = invite.find(inv => inv.id === data.record.id);
+          // Fetch only the specific invite with expanded data
+          const newInvite = await pb.collection('call_invites').getOne<CallInvite>(
+            data.record.id,
+            { expand: 'call,inviter' }
+          );
 
-          if (newInvite?.expand?.inviter && newInvite.expand?.call) {
+          if (newInvite.expand?.inviter && newInvite.expand?.call) {
             const inviterName = newInvite.expand.inviter.name || newInvite.expand.inviter.email;
-            const space = spaceList.find(s => s.id === newInvite.expand?.call?.space);
+            const space = spaceList.find(s => s.id === newInvite.expand.call.space);
             const spaceName = space?.name || 'Unknown Space';
 
             const notification = showCallNotification(inviterName, spaceName, {

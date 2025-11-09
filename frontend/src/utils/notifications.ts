@@ -54,6 +54,27 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 /**
+ * Internal helper to create a notification with common logic
+ */
+function createNotification(
+  title: string,
+  notificationOptions: NotificationOptions
+): Notification | null {
+  const permission = getNotificationPermission();
+
+  if (!permission.granted) {
+    return null;
+  }
+
+  try {
+    return new Notification(title, notificationOptions);
+  } catch (err) {
+    console.error('Failed to show notification:', err);
+    return null;
+  }
+}
+
+/**
  * Show a notification for a new message
  *
  * @param title - Chat name or sender name
@@ -70,37 +91,24 @@ export function showMessageNotification(
     tag?: string;
   }
 ): Notification | null {
-  const permission = getNotificationPermission();
+  // Truncate body if too long
+  const truncatedBody = body.length > 100
+    ? body.substring(0, 100) + '...'
+    : body;
 
-  if (!permission.granted) {
-    return null;
-  }
-
-  try {
-    // Truncate body if too long
-    const truncatedBody = body.length > 100
-      ? body.substring(0, 100) + '...'
-      : body;
-
-    const notification = new Notification(title, {
-      body: truncatedBody,
-      icon: options?.icon || '/logo.png', // App logo
-      tag: options?.tag || `chat-${options?.chatId}`, // Prevent duplicates
-      badge: '/logo-badge.png', // Small icon for mobile
-      requireInteraction: false, // Auto-dismiss after timeout
-      silent: false, // Play sound
-      data: {
-        chatId: options?.chatId,
-        spaceId: options?.spaceId,
-        timestamp: Date.now(),
-      },
-    });
-
-    return notification;
-  } catch (err) {
-    console.error('Failed to show notification:', err);
-    return null;
-  }
+  return createNotification(title, {
+    body: truncatedBody,
+    icon: options?.icon || '/logo.png',
+    tag: options?.tag || `chat-${options?.chatId}`,
+    badge: '/logo-badge.png',
+    requireInteraction: false,
+    silent: false,
+    data: {
+      chatId: options?.chatId,
+      spaceId: options?.spaceId,
+      timestamp: Date.now(),
+    },
+  });
 }
 
 /**
@@ -120,33 +128,20 @@ export function showCallNotification(
     tag?: string;
   }
 ): Notification | null {
-  const permission = getNotificationPermission();
-
-  if (!permission.granted) {
-    return null;
-  }
-
-  try {
-    const notification = new Notification(`Incoming call from ${callerName}`, {
-      body: `In ${spaceName}`,
-      icon: options?.icon || '/logo.png',
-      tag: options?.tag || `call-invite-${options?.inviteId}`,
-      badge: '/logo-badge.png',
-      requireInteraction: true, // Requires user action (accept/decline)
-      silent: false,
-      data: {
-        inviteId: options?.inviteId,
-        spaceId: options?.spaceId,
-        timestamp: Date.now(),
-        type: 'call-invite',
-      },
-    });
-
-    return notification;
-  } catch (err) {
-    console.error('Failed to show call notification:', err);
-    return null;
-  }
+  return createNotification(`Incoming call from ${callerName}`, {
+    body: `In ${spaceName}`,
+    icon: options?.icon || '/logo.png',
+    tag: options?.tag || `call-invite-${options?.inviteId}`,
+    badge: '/logo-badge.png',
+    requireInteraction: true,
+    silent: false,
+    data: {
+      inviteId: options?.inviteId,
+      spaceId: options?.spaceId,
+      timestamp: Date.now(),
+      type: 'call-invite',
+    },
+  });
 }
 
 /**
