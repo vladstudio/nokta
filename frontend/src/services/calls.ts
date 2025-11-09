@@ -5,9 +5,11 @@ import type { RecordSubscription } from 'pocketbase';
 
 export const callsAPI = {
   async create(spaceId: string, inviteeIds: string[]): Promise<{ call: Call; invites: CallInvite[] }> {
+    const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) throw new Error('User not authenticated');
+
     const roomName = `talk-${spaceId}-${Date.now()}`;
     const dailyRoom = await dailyAPI.createRoom(roomName);
-    const currentUserId = pb.authStore.model?.id;
 
     // Create call with only the creator as participant
     const call = await pb.collection('calls').create<Call>({
@@ -34,10 +36,12 @@ export const callsAPI = {
   },
 
   async acceptInvite(inviteId: string): Promise<Call> {
+    const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) throw new Error('User not authenticated');
+
     const invite = await pb.collection('call_invites').getOne<CallInvite>(inviteId, {
       expand: 'call'
     });
-    const currentUserId = pb.authStore.model?.id;
 
     // Use the expanded call data
     const call = invite.expand?.call;
@@ -61,55 +65,32 @@ export const callsAPI = {
   },
 
   async leave(callId: string) {
-    console.log('[LEAVE] Starting leave for call:', callId);
+    const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) throw new Error('User not authenticated');
 
     const call = await pb.collection('calls').getOne<Call>(callId);
-    console.log('[LEAVE] Retrieved call:', call);
-
-    const currentUserId = pb.authStore.model?.id;
-    console.log('[LEAVE] Current user ID:', currentUserId);
-
     const remainingParticipants = call.participants.filter(id => id !== currentUserId);
-    console.log('[LEAVE] Remaining participants:', remainingParticipants);
 
     if (remainingParticipants.length === 0) {
-      console.log('[LEAVE] Last person leaving - deleting call');
+      // Last person leaving - delete the call (invites cascade delete automatically)
+      await pb.collection('calls').delete(callId);
 
-      // Delete call from PocketBase (invites will cascade delete automatically)
-      console.log('[LEAVE] Deleting call from database...');
+      // Delete Daily.co room (non-blocking)
       try {
-        await pb.collection('calls').delete(callId);
-        console.log('[LEAVE] Call deleted successfully');
-      } catch (error: any) {
-        console.error('[LEAVE] Failed to delete call:', error);
-        console.error('[LEAVE] Error details:', {
-          status: error?.status,
-          message: error?.message,
-          data: error?.data,
-          isAbort: error?.isAbort
-        });
-        throw error;
-      }
-
-      // Delete Daily.co room (non-blocking - don't fail if this errors)
-      try {
-        console.log('[LEAVE] Deleting Daily.co room:', call.daily_room_name);
         await dailyAPI.deleteRoom(call.daily_room_name);
-        console.log('[LEAVE] Daily.co room deleted');
       } catch (error) {
-        console.error('[LEAVE] Failed to delete Daily.co room:', error);
+        console.error('Failed to delete Daily.co room:', error);
       }
     } else {
-      console.log('[LEAVE] Updating call participants');
+      // Remove current user from participants
       await pb.collection('calls').update(callId, { participants: remainingParticipants });
-      console.log('[LEAVE] Call updated successfully');
     }
-
-    console.log('[LEAVE] Leave completed');
   },
 
   async getMyInvites(spaceId: string): Promise<CallInvite[]> {
     const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) throw new Error('User not authenticated');
+
     // Get all invites for current user, then filter by space client-side
     const allInvites = await pb.collection('call_invites').getFullList<CallInvite>({
       filter: `invitee = "${currentUserId}"`,
@@ -122,6 +103,8 @@ export const callsAPI = {
 
   async getMyCall(spaceId: string): Promise<Call | null> {
     const currentUserId = pb.authStore.model?.id;
+    if (!currentUserId) throw new Error('User not authenticated');
+
     const calls = await pb.collection('calls').getFullList<Call>({
       filter: `space = "${spaceId}" && participants ?= "${currentUserId}"`,
       sort: '-created'
