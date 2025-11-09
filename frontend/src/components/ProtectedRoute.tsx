@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (isChecking) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="text-gray-600">{t('common.loading')}</div>
+        <div className="text-light">{t('common.loading')}</div>
       </div>
     );
   }

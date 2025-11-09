@@ -57,7 +57,7 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
   };
 
   return (
-    <div className="border-t border-gray-200 px-4 py-3 bg-white">
+    <div className="border-t border-(--color-border-default) px-4 py-3 bg-(--color-bg-primary)">
       <form onSubmit={handleSend} className="flex items-end gap-3">
         <Button
           type="button"

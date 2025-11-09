@@ -37,7 +37,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       variant="ghost"
       onClick={handleClick}
       className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
-        ? 'bg-(--color-primary-50)'
+        ? 'bg-(--color-bg-active)'
         : 'bg-(--color-bg-primary)'
         }`}
     >
@@ -56,7 +56,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-800'}`}>
+        <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-(--color-text-primary)' : 'font-medium text-(--color-text-primary)'}`}>
           {getChatName(chat)}
         </div>
         <div className="text-xs text-light truncate mt-0.5">

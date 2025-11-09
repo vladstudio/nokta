@@ -356,9 +356,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-white">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-primary)">
         <LoadingSpinner size="lg" />
-        <div className="text-gray-600 text-sm">{t('chatWindow.loadingMessages')}</div>
+        <div className="text-light text-sm">{t('chatWindow.loadingMessages')}</div>
       </div>
     );
   }
@@ -392,14 +392,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
-        <div className="p-2 sm:p-4 grid gap-2 auto-rows-min">
+        <div className="p-1 grid auto-rows-min">
           {loadingOlder && (
             <div className="flex justify-center p-2">
               <LoadingSpinner size="sm" />
             </div>
           )}
           {allMessages.length === 0 ? (
-            <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('chatWindow.noMessages')}</p>
+            <p className="text-sm text-light font-medium text-center p-1">{t('chatWindow.noMessages')}</p>
           ) : (
             allMessages.map((message) => (
               <ChatMessage

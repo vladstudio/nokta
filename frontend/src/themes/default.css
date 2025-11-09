@@ -5,8 +5,8 @@
   /* Colors - Neutral palette */
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f9fafb;
-  --color-bg-hover: #f3f4f6;
-  --color-bg-active: #e5e7eb;
+  --color-bg-hover: #e5e7eb33;
+  --color-bg-active: #dbeafe88;
 
   /* Text colors */
   --color-text-primary: #111827;

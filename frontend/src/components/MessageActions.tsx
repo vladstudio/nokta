@@ -12,7 +12,7 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy }: M
   const { t } = useTranslation();
 
   return (
-    <div className="border-t border-gray-200 p-4">
+    <div className="border-t border-(--color-border-default) p-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           {onCopy && (

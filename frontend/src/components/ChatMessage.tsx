@@ -118,9 +118,9 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
       id={`msg-${message.id}`}
       onClick={onSelect}
       className={clsx(
-        'flex cursor-pointer transition-all',
+        'p-2 flex cursor-pointer transition-colors hover:bg-(--color-bg-hover) rounded',
         isOwn ? 'justify-end' : 'justify-start',
-        isSelected && 'bg-(--color-primary-50) -mx-2 px-2 py-1 rounded'
+        isSelected && 'bg-(--color-bg-active)'
       )}
     >
       <div className={clsx('flex flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>

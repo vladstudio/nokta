@@ -69,7 +69,7 @@ export default function CallView({ chat }: CallViewProps) {
       <div className="flex items-center justify-center h-full bg-black text-white">
         <div className="text-center">
           <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
-          <p className="text-sm text-gray-400">{t('calls.tryStartingCallAgain')}</p>
+          <p className="text-sm text-light">{t('calls.tryStartingCallAgain')}</p>
         </div>
       </div>
     );
@@ -142,11 +142,11 @@ export default function CallView({ chat }: CallViewProps) {
         {joinError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black text-white z-10">
             <div className="text-center">
-              <p className="text-xl mb-2 text-red-400">{t('calls.failedToJoinCall')}</p>
-              <p className="text-sm text-gray-400 mb-4">{joinError}</p>
+              <p className="text-xl mb-2 text-(--color-error-500)">{t('calls.failedToJoinCall')}</p>
+              <p className="text-sm text-light mb-4">{joinError}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
+                className="px-4 py-2 bg-(--color-bg-primary) text-black rounded hover:bg-(--color-bg-active)"
               >
                 {t('calls.reloadAndTryAgain')}
               </button>
