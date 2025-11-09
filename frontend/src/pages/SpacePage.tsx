@@ -7,6 +7,7 @@ import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
+import { isVideoCallsEnabled } from '../config/features';
 import { pb } from '../services/pocketbase';
 
 export default function SpacePage() {
@@ -32,7 +33,7 @@ export default function SpacePage() {
 
   // Load user's active call on mount
   useEffect(() => {
-    if (!spaceId) return;
+    if (!isVideoCallsEnabled || !spaceId) return;
 
     // Find chat where user is in call_participants and is_active_call is true
     const loadActiveCall = async () => {
@@ -60,7 +61,7 @@ export default function SpacePage() {
 
   // Subscribe to chat updates for active calls
   useEffect(() => {
-    if (!spaceId) return;
+    if (!isVideoCallsEnabled || !spaceId) return;
 
     const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, (data) => {
       // Only process events for the current active call
@@ -87,7 +88,7 @@ export default function SpacePage() {
 
   // Offline reconciliation: verify call still exists when reconnecting
   useEffect(() => {
-    if (!activeCallChat || !spaceId || !isOnline) return;
+    if (!isVideoCallsEnabled || !activeCallChat || !spaceId || !isOnline) return;
 
     const reconcileCall = async () => {
       try {
@@ -120,7 +121,7 @@ export default function SpacePage() {
     return () => window.removeEventListener('online', handleOnline);
   }, [activeCallChat, spaceId, setActiveCallChat, setShowCallView]);
 
-  if (showCallView && activeCallChat) {
+  if (isVideoCallsEnabled && showCallView && activeCallChat) {
     return <CallView chat={activeCallChat} />;
   }
 

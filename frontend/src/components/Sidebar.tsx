@@ -7,6 +7,7 @@ import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { showCallNotification } from '../utils/notifications';
+import { isVideoCallsEnabled } from '../config/features';
 import { Menu, ScrollArea, useToastManager, Button } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
@@ -61,7 +62,7 @@ export default function Sidebar() {
 
   useEffect(() => { loadSpaces(); }, [loadSpaces]);
   useEffect(() => { loadChats(); }, [loadChats]);
-  useEffect(() => { loadActiveCalls(); }, [loadActiveCalls]);
+  useEffect(() => { if (isVideoCallsEnabled) loadActiveCalls(); }, [loadActiveCalls]);
 
   useEffect(() => {
     if (!spaceId) return;
@@ -165,7 +166,7 @@ export default function Sidebar() {
 
   // Subscribe to active calls
   useEffect(() => {
-    if (!spaceId) return;
+    if (!isVideoCallsEnabled || !spaceId) return;
     const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, handleActiveCallEvent);
     return () => { unsubscribe.then(fn => fn?.()); };
   }, [spaceId, handleActiveCallEvent]);
@@ -224,7 +225,7 @@ export default function Sidebar() {
             unreadCounts={unreadCounts}
           />
         </ScrollArea>
-        {activeCalls.map(call => (
+        {isVideoCallsEnabled && activeCalls.map(call => (
           <div
             key={call.id}
             className="p-4 bg-green-50 border-t border-green-200"

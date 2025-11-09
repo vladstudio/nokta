@@ -19,6 +19,7 @@ import DeleteMessageDialog from './DeleteMessageDialog';
 import { ScrollArea, useToastManager, Button } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
+import { isVideoCallsEnabled } from '../config/features';
 import type { Message, Chat } from '../types';
 
 interface ChatWindowProps {
@@ -374,17 +375,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             </span>
           )}
         </div>
-        <Button
-          onClick={handleStartCall}
-          variant="ghost"
-          size="default"
-          className="gap-2 btn-ghost"
-          disabled={isCreatingCall || !!activeCallChat}
-          title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
-        >
-          <Phone className="w-5 h-5" />
-          <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
-        </Button>
+        {isVideoCallsEnabled && (
+          <Button
+            onClick={handleStartCall}
+            variant="ghost"
+            size="default"
+            className="gap-2 btn-ghost"
+            disabled={isCreatingCall || !!activeCallChat}
+            title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
+          >
+            <Phone className="w-5 h-5" />
+            <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
+          </Button>
+        )}
       </div>
 
       {/* Messages Area */}
