@@ -68,35 +68,33 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-2">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full grid gap-4">
         <div>
           <h2>
             {isLogin ? t('loginPage.signInTitle') : t('loginPage.signUpTitle')}
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            {!isLogin && (
-              <div>
-                <label htmlFor="name" className="sr-only">{t('loginPage.nameOptional')}</label>
-                <Input id="name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('loginPage.nameOptional')} />
-              </div>
-            )}
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          {!isLogin && (
             <div>
-              <label htmlFor="email" className="sr-only">{t('loginPage.emailAddress')}</label>
-              <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('loginPage.emailAddress')} />
+              <label htmlFor="name" className="sr-only">{t('loginPage.nameOptional')}</label>
+              <Input id="name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('loginPage.nameOptional')} />
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">{t('loginPage.password')}</label>
-              <Input id="password" name="password" type="password" autoComplete={isLogin ? 'current-password' : 'new-password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('loginPage.password')} />
-            </div>
-            {!isLogin && (
-              <div>
-                <label htmlFor="passwordConfirm" className="sr-only">{t('loginPage.confirmPassword')}</label>
-                <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} placeholder={t('loginPage.confirmPassword')} />
-              </div>
-            )}
+          )}
+          <div>
+            <label htmlFor="email" className="sr-only">{t('loginPage.emailAddress')}</label>
+            <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('loginPage.emailAddress')} />
           </div>
+          <div>
+            <label htmlFor="password" className="sr-only">{t('loginPage.password')}</label>
+            <Input id="password" name="password" type="password" autoComplete={isLogin ? 'current-password' : 'new-password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('loginPage.password')} />
+          </div>
+          {!isLogin && (
+            <div>
+              <label htmlFor="passwordConfirm" className="sr-only">{t('loginPage.confirmPassword')}</label>
+              <Input id="passwordConfirm" name="passwordConfirm" type="password" autoComplete="new-password" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} placeholder={t('loginPage.confirmPassword')} />
+            </div>
+          )}
 
           {error && (
             <Alert variant="error" className="mt-4">{error}</Alert>
@@ -109,9 +107,9 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center">
-            <button type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-sm text-blue-600 hover:text-blue-500">
+            <Button variant="ghost" type="button" onClick={() => { setIsLogin(!isLogin); setError(''); }}>
               {isLogin ? t('loginPage.noAccount') : t('loginPage.hasAccount')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

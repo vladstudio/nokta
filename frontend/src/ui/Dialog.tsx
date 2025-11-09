@@ -1,4 +1,5 @@
 import { Dialog as BaseDialog } from '@base-ui-components/react/dialog';
+import { XIcon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { Card } from './Card';
 
@@ -30,9 +31,7 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
             {footer && <div className="mt-6 flex justify-end gap-3">{footer}</div>}
           </Card>
           <BaseDialog.Close className="absolute top-4 right-4 text-gray-400 hover:text-gray-600" aria-label="Close">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XIcon className="w-5 h-5" />
           </BaseDialog.Close>
         </BaseDialog.Popup>
       </BaseDialog.Portal>

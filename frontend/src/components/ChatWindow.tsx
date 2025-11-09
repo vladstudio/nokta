@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
-import { Phone } from 'lucide-react';
+import { PhoneIcon } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -384,7 +384,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             disabled={isCreatingCall || !!activeCallChat}
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
           >
-            <Phone className="w-5 h-5" />
+            <PhoneIcon className="w-5 h-5" />
             <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
         )}

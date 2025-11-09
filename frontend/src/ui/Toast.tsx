@@ -1,4 +1,5 @@
 import { Toast as BaseToast } from '@base-ui-components/react/toast';
+import { XIcon } from '@phosphor-icons/react';
 import { Card } from './Card';
 
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
@@ -25,9 +26,7 @@ function ToastList() {
               )}
             </div>
             <BaseToast.Close className="text-gray-400 hover:text-gray-600" aria-label="Close">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="w-4 h-4" />
             </BaseToast.Close>
           </div>
         </Card>

@@ -109,7 +109,7 @@ body {
 
 :focus {
   @apply outline-none;
-  border-color: var(--color-primary-500);
+  /* border-color: var(--color-primary-500); */
   box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
 }
 
@@ -121,7 +121,7 @@ body {
 .chat-list-item {
   @apply w-full px-4 py-3 text-left;
   @apply flex items-center gap-3;
-  @apply transition-colors duration-200;
+  @apply transition-colors duration-100;
   @apply border-0 rounded-none;
   background-color: var(--color-bg-primary);
   border-bottom: 1px solid var(--color-border-light);
@@ -160,7 +160,7 @@ body {
 .input-field {
   @apply w-full px-4 py-3 rounded;
   @apply border border-gray-300;
-  @apply transition-all duration-200;
+  @apply transition-all duration-100;
   background-color: var(--color-bg-primary);
   font-size: var(--font-size-base);
 }
@@ -171,7 +171,7 @@ body {
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  @apply transition-shadow duration-200;
+  @apply transition-shadow duration-100;
 }
 
 .card:hover {
@@ -220,7 +220,7 @@ body {
   @apply inline-flex items-center justify-center;
   @apply px-4 py-2 rounded;
   @apply font-medium;
-  @apply transition-all duration-200;
+  @apply transition-all duration-100;
   @apply cursor-pointer;
   font-size: var(--font-size-sm);
 }
