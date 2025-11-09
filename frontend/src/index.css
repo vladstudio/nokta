@@ -82,7 +82,6 @@
    =================================== */
 * {
   margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -106,6 +105,12 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+:focus {
+  @apply outline-none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
 }
 
 /* ===================================
@@ -153,17 +158,11 @@ body {
 
 /* Input field */
 .input-field {
-  @apply w-full px-4 py-3 rounded-lg;
+  @apply w-full px-4 py-3 rounded;
   @apply border border-gray-300;
   @apply transition-all duration-200;
   background-color: var(--color-bg-primary);
   font-size: var(--font-size-base);
-}
-
-.input-field:focus {
-  @apply outline-none;
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
 }
 
 /* Card */
@@ -219,7 +218,7 @@ body {
 /* Button variants */
 .btn {
   @apply inline-flex items-center justify-center;
-  @apply px-4 py-2 rounded-lg;
+  @apply px-4 py-2 rounded;
   @apply font-medium;
   @apply transition-all duration-200;
   @apply cursor-pointer;

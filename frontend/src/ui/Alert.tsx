@@ -20,7 +20,7 @@ export const Alert: React.FC<AlertProps> = ({
 }) => {
   return (
     <div
-      className={`p-3 border rounded-lg text-sm ${variantStyles[variant]} ${className}`}
+      className={`p-3 border rounded text-sm ${variantStyles[variant]} ${className}`}
     >
       {children}
     </div>

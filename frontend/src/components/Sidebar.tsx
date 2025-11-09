@@ -199,7 +199,7 @@ export default function Sidebar() {
           <div className="p-4 border-b border-gray-100">
             <div
               onClick={() => setLocation('/my')}
-              className="w-full flex flex-col items-start gap-1.5 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              className="w-full flex flex-col items-start gap-1.5 p-3 rounded hover:bg-gray-50 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-2 w-full">
                 <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />

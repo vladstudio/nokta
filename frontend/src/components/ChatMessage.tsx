@@ -102,7 +102,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
     <div
       id={`msg-${message.id}`}
       onClick={onSelect}
-      className={`flex cursor-pointer transition-all ${isOwn ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-50 -mx-2 px-2 py-1 rounded-lg' : ''}`}
+      className={`flex cursor-pointer transition-all ${isOwn ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-50 -mx-2 px-2 py-1 rounded' : ''}`}
     >
       <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
         <div className="flex items-baseline gap-2 px-1">

@@ -34,9 +34,8 @@ export function FileUpload({ onChange, accept = 'image/*', preview, className = 
       onDragOver={handleDragOver}
       onDragLeave={() => setIsDragging(false)}
       onClick={() => inputRef.current?.click()}
-      className={`relative border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
-        isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-      } ${className}`}
+      className={`relative border-2 border-dashed rounded p-6 cursor-pointer transition-colors ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+        } ${className}`}
     >
       <input
         ref={inputRef}

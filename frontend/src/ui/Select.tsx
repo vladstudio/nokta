@@ -33,7 +33,7 @@ export function Select<T extends string = string>({
     <BaseSelect.Root value={value} defaultValue={defaultValue} onValueChange={onChange} disabled={disabled}>
       <BaseSelect.Trigger
         ref={ref}
-        className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between ${className}`}
+        className={`w-full px-4 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between ${className}`}
       >
         <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -42,7 +42,7 @@ export function Select<T extends string = string>({
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner sideOffset={4}>
-          <BaseSelect.Popup className="max-h-60 overflow-auto z-[100] min-w-[200px]">
+          <BaseSelect.Popup className="max-h-60 overflow-auto z-100 min-w-[200px]">
             <Card shadow="lg" border>
               <BaseSelect.List className="py-1">
                 {options.map((option) => (
