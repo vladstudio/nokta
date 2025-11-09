@@ -1,5 +1,6 @@
 import { Component, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../ui';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -24,18 +25,20 @@ function ErrorBoundaryContent({ hasError, error, onReset }: { hasError: boolean;
             {error?.message || t('errors.unexpectedError')}
           </p>
           <div className="space-y-3">
-            <button
+            <Button
               onClick={onReset}
-              className="w-full px-4 py-2 bg-(--color-primary-600) text-white rounded hover:bg-(--color-primary-700) focus:outline-none focus:ring-2 focus:ring-(--color-primary-500)"
+              variant="primary"
+              className="w-full"
             >
               {t('errorBoundary.tryAgain')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => window.location.href = '/'}
-              className="w-full px-4 py-2 border border-(--color-border-default) text-(--color-text-primary) rounded hover:bg-(--color-bg-secondary) focus:outline-none focus:ring-2 focus:ring-(--color-border-medium)"
+              variant="default"
+              className="w-full"
             >
               {t('errorBoundary.goHome')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

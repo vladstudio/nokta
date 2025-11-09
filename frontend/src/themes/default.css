@@ -1,6 +1,8 @@
 /* ===================================
    DEFAULT THEME - COLOR VARIABLES
    =================================== */
+
+/* Light mode (default) */
 :root {
   /* Colors - Neutral palette */
   --color-bg-primary: #ffffff;
@@ -38,4 +40,46 @@
   --color-error-50: #fef2f2;
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
+}
+
+/* Dark mode - Auto-switches based on OS preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Colors - Dark neutral palette */
+    --color-bg-primary: #1f2937;
+    --color-bg-secondary: #111827;
+    --color-bg-hover: #374151;
+    --color-bg-active: #1e40af88;
+
+    /* Text colors */
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #9ca3af;
+
+    /* Border colors */
+    --color-border-light: #374151;
+    --color-border-default: #4b5563;
+    --color-border-medium: #6b7280;
+
+    /* Primary brand color - Brighter for dark backgrounds */
+    --color-primary-50: #1e3a8a;
+    --color-primary-100: #1e40af;
+    --color-primary-500: #60a5fa;
+    --color-primary-600: #3b82f6;
+    --color-primary-700: #2563eb;
+
+    /* Accent color - Brighter for dark backgrounds */
+    --color-accent-50: #5b21b6;
+    --color-accent-500: #a78bfa;
+    --color-accent-600: #8b5cf6;
+
+    /* Success color - Brighter for dark backgrounds */
+    --color-success-50: #065f46;
+    --color-success-500: #34d399;
+    --color-success-600: #10b981;
+
+    /* Error color - Brighter for dark backgrounds */
+    --color-error-50: #991b1b;
+    --color-error-500: #f87171;
+    --color-error-600: #ef4444;
+  }
 }
