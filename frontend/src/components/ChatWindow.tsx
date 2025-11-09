@@ -380,7 +380,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             onClick={handleStartCall}
             variant="ghost"
             size="default"
-            className="gap-2 btn-ghost"
+            className="gap-2"
             disabled={isCreatingCall || !!activeCallChat}
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
           >

@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth, spaces, pb } from '../services/pocketbase';
 import { LAST_SPACE_KEY } from '../components/Sidebar';
-import { Alert, Button, FormLabel, Input, FileUpload, RadioGroup, useToastManager } from '../ui';
+import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, useToastManager } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import type { Space } from '../types';
 
@@ -113,14 +113,14 @@ export default function MyPage() {
                 <button
                   key={space.id}
                   onClick={() => handleSpaceClick(space)}
-                  className="card w-full p-5 text-left"
+                  className="w-full p-5 text-left bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="font-semibold text-gray-900 text-base">{space.name}</div>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="empty-state card py-12">
+            <div className="empty-state bg-white border border-gray-200 rounded shadow-sm py-12">
               <p className="text-sm">{t('mySpacesPage.noSpaces')}</p>
             </div>
           )}
@@ -128,7 +128,7 @@ export default function MyPage() {
 
         <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">{t('userSettingsDialog.title')}</h2>
-          <div className="card p-6 space-y-4">
+          <Card border shadow="sm" padding="lg" className="space-y-4">
             {error && <Alert variant="error">{error}</Alert>}
             <div>
               <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
@@ -164,7 +164,7 @@ export default function MyPage() {
             <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
               {saving ? t('common.loading') : t('common.save')}
             </Button>
-          </div>
+          </Card>
         </div>
 
         <div>

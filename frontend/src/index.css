@@ -156,28 +156,6 @@ body {
   @apply rounded-bl-md;
 }
 
-/* Input field */
-.input-field {
-  @apply w-full px-4 py-3 rounded;
-  @apply border border-gray-300;
-  @apply transition-all duration-100;
-  background-color: var(--color-bg-primary);
-  font-size: var(--font-size-base);
-}
-
-/* Card */
-.card {
-  background-color: var(--color-bg-primary);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  @apply transition-shadow duration-100;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-}
-
 /* Header */
 .header {
   @apply flex items-center justify-between;
@@ -213,39 +191,6 @@ body {
   background-color: var(--color-accent-500);
   @apply w-3 h-3;
   border: 2px solid white;
-}
-
-/* Button variants */
-.btn {
-  @apply inline-flex items-center justify-center;
-  @apply px-4 py-2 rounded;
-  @apply font-medium;
-  @apply transition-all duration-100;
-  @apply cursor-pointer;
-  font-size: var(--font-size-sm);
-}
-
-.btn:disabled {
-  @apply opacity-50 cursor-not-allowed;
-}
-
-.btn-primary {
-  background-color: var(--color-primary-500);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-600);
-}
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background-color: var(--color-bg-hover);
-  color: var(--color-text-primary);
 }
 
 /* Avatar */

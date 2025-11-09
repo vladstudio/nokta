@@ -196,17 +196,15 @@ export default function Sidebar() {
     <>
       <div className="sidebar">
         <ScrollArea>
-          <div className="p-4 border-b border-gray-100">
-            <div
+          <div className="p-2">
+            <Button variant="ghost"
               onClick={() => setLocation('/my')}
-              className="w-full flex flex-col items-start gap-1.5 p-3 rounded hover:bg-gray-50 cursor-pointer transition-colors"
+              className="flex items-center gap-2"
             >
-              <div className="flex items-center gap-2 w-full">
-                <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
-                <span className="text-sm font-semibold text-gray-900 truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span>
-              </div>
+              <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
+              <div className="grid flex-1"><span className="text-sm font-semibold truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span></div>
               <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
-            </div>
+            </Button>
           </div>
           <ChatList
             chats={chatList}
@@ -232,8 +230,8 @@ export default function Sidebar() {
               <Button
                 onClick={() => handleJoinCall(call.id)}
                 disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
-                variant="default"
-                className="btn-primary bg-green-600! hover:bg-green-700! disabled:bg-gray-400! text-xs px-3 py-1.5"
+                variant="primary"
+                className="bg-green-600! hover:bg-green-700! disabled:bg-gray-400! text-xs px-3 py-1.5"
               >
                 {activeCallChat?.id === call.id ? t('calls.inCall') : joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
               </Button>
