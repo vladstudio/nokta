@@ -11,16 +11,20 @@ export const callsAPI = {
     const roomName = `talk-${spaceId}-${Date.now()}`;
     const dailyRoom = await dailyAPI.createRoom(roomName);
 
+    const now = new Date().toISOString();
+
     // Create call with only the creator as participant
     const call = await pb.collection('calls').create<Call>({
       space: spaceId,
       daily_room_url: dailyRoom.url,
       daily_room_name: dailyRoom.name,
-      participants: [currentUserId]
+      participants: [currentUserId],
+      last_activity: now
     });
 
     // Create invites for other participants
     const invites: CallInvite[] = [];
+
     for (const inviteeId of inviteeIds) {
       if (inviteeId !== currentUserId) {
         const invite = await pb.collection('call_invites').create<CallInvite>({
@@ -91,12 +95,13 @@ export const callsAPI = {
     const currentUserId = pb.authStore.model?.id;
     if (!currentUserId) throw new Error('User not authenticated');
 
-    // Get all invites for current user, then filter by space client-side
+    // Get all invites for current user
     const allInvites = await pb.collection('call_invites').getFullList<CallInvite>({
       filter: `invitee = "${currentUserId}"`,
       expand: 'call,inviter',
       sort: '-created'
     });
+
     // Filter to only invites for calls in this space
     return allInvites.filter(invite => invite.expand?.call?.space === spaceId);
   },

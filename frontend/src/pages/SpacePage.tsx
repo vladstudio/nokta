@@ -4,7 +4,10 @@ import { useAtom } from 'jotai';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
+import { useCallHeartbeat } from '../hooks/useCallHeartbeat';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { activeCallAtom, showCallViewAtom, isCallMinimizedAtom } from '../store/callStore';
+import { pb } from '../services/pocketbase';
 
 export default function SpacePage() {
   const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
@@ -14,6 +17,10 @@ export default function SpacePage() {
   const [activeCall, setActiveCall] = useAtom(activeCallAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
   const [isCallMinimized, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
+  const { isOnline } = useConnectionStatus();
+
+  // Maintain call activity heartbeat
+  useCallHeartbeat(activeCall);
 
   useEffect(() => {
     const handleNotificationClick = (event: Event) => {
@@ -62,6 +69,42 @@ export default function SpacePage() {
 
     return () => { unsubscribe.then(fn => fn?.()); };
   }, [spaceId, activeCall, setActiveCall, setShowCallView, setIsCallMinimized]);
+
+  // Offline reconciliation: verify call still exists when reconnecting
+  useEffect(() => {
+    if (!activeCall || !spaceId || !isOnline) return;
+
+    const reconcileCall = async () => {
+      try {
+        // Verify call still exists
+        await pb.collection('calls').getOne(activeCall.id);
+        // Call exists, refresh data to ensure we have latest participants
+        const freshCall = await callsAPI.getMyCall(spaceId);
+        if (freshCall?.id === activeCall.id) {
+          setActiveCall(freshCall);
+        } else {
+          // User no longer in call
+          setActiveCall(null);
+          setShowCallView(false);
+          setIsCallMinimized(false);
+        }
+      } catch {
+        // Call was deleted while offline
+        console.log('[Reconciliation] Call no longer exists, clearing state');
+        setActiveCall(null);
+        setShowCallView(false);
+        setIsCallMinimized(false);
+      }
+    };
+
+    // Only reconcile on online event (not on mount)
+    const handleOnline = () => {
+      reconcileCall();
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [activeCall, spaceId, isOnline, setActiveCall, setShowCallView, setIsCallMinimized]);
 
   const handleLeaveCall = async () => {
     if (activeCall) {

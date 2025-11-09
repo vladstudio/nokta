@@ -369,18 +369,17 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
         <h2 className="text-lg font-semibold">{chat?.name || 'Chat'}</h2>
-        {!activeCall && (
-          <Button
-            onClick={handleStartCall}
-            variant="ghost"
-            size="default"
-            className="gap-2"
-            disabled={isCreatingCall}
-          >
-            <Phone className="w-4 h-4" />
-            {isCreatingCall ? 'Starting...' : 'Call'}
-          </Button>
-        )}
+        <Button
+          onClick={handleStartCall}
+          variant="ghost"
+          size="default"
+          className="gap-2"
+          disabled={isCreatingCall || !!activeCall}
+          title={activeCall ? 'Leave current call first' : 'Start a call'}
+        >
+          <Phone className="w-4 h-4" />
+          {isCreatingCall ? 'Starting...' : activeCall ? 'In call' : 'Call'}
+        </Button>
       </div>
 
       {/* Messages Area */}

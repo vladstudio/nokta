@@ -94,6 +94,7 @@ export interface Call {
   participants: string[];
   daily_room_url: string;
   daily_room_name: string;
+  last_activity: string;
   created?: string;
   expand?: {
     participants?: User[];

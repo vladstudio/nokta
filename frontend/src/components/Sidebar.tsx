@@ -7,7 +7,7 @@ import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { showCallNotification } from '../utils/notifications';
-import { Menu, ScrollArea } from '../ui';
+import { Menu, ScrollArea, useToastManager } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
 import MinimizedCallWidget from './MinimizedCallWidget';
@@ -19,6 +19,7 @@ const LAST_SPACE_KEY = 'talk:lastSpaceId';
 
 export default function Sidebar() {
   const { t } = useTranslation();
+  const toastManager = useToastManager();
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
   const spaceId = params?.spaceId;
@@ -28,6 +29,8 @@ export default function Sidebar() {
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [callInvites, setCallInvites] = useState<CallInvite[]>([]);
+  const [acceptingInvites, setAcceptingInvites] = useState<Set<string>>(new Set());
+  const [decliningInvites, setDecliningInvites] = useState<Set<string>>(new Set());
   const [activeCall, setActiveCall] = useAtom(activeCallAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
   const [, setIsCallMinimized] = useAtom(isCallMinimizedAtom);
@@ -53,8 +56,10 @@ export default function Sidebar() {
     if (!spaceId) return;
     try {
       const invites = await callsAPI.getMyInvites(spaceId);
+      console.log('[Sidebar] loadInvites result:', invites);
       setCallInvites(invites);
-    } catch {
+    } catch (error) {
+      console.error('[Sidebar] loadInvites error:', error);
       setCallInvites([]);
     }
   }, [spaceId]);
@@ -100,7 +105,9 @@ export default function Sidebar() {
   useEffect(() => {
     if (!spaceId) return;
     const unsubscribe = callsAPI.subscribeToInvites(async (data) => {
+      console.log('[Sidebar] Invite subscription event:', data);
       if (data.action === 'create' && data.record.invitee === auth.user?.id) {
+        console.log('[Sidebar] Processing invite for current user:', data.record.id);
         loadInvites();
 
         // Show OS notification for incoming call
@@ -140,6 +147,10 @@ export default function Sidebar() {
   }, [spaceId, loadInvites, spaceList]);
 
   const handleAcceptInvite = useCallback(async (inviteId: string) => {
+    // Prevent duplicate calls
+    if (acceptingInvites.has(inviteId)) return;
+
+    setAcceptingInvites(prev => new Set(prev).add(inviteId));
     try {
       const call = await callsAPI.acceptInvite(inviteId);
       setActiveCall(call);
@@ -148,17 +159,43 @@ export default function Sidebar() {
       setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
     } catch (error) {
       console.error('Failed to accept invite:', error);
+      toastManager.add({
+        title: 'Failed to join call',
+        description: 'Could not accept the invitation. Please try again.',
+        data: { type: 'error' }
+      });
+    } finally {
+      setAcceptingInvites(prev => {
+        const next = new Set(prev);
+        next.delete(inviteId);
+        return next;
+      });
     }
-  }, [setActiveCall, setShowCallView, setIsCallMinimized]);
+  }, [acceptingInvites, setActiveCall, setShowCallView, setIsCallMinimized, toastManager]);
 
   const handleDeclineInvite = useCallback(async (inviteId: string) => {
+    // Prevent duplicate calls
+    if (decliningInvites.has(inviteId)) return;
+
+    setDecliningInvites(prev => new Set(prev).add(inviteId));
     try {
       await callsAPI.declineInvite(inviteId);
       setCallInvites(prev => prev.filter(inv => inv.id !== inviteId));
     } catch (error) {
       console.error('Failed to decline invite:', error);
+      toastManager.add({
+        title: 'Failed to decline',
+        description: 'Could not decline the invitation. Please try again.',
+        data: { type: 'error' }
+      });
+    } finally {
+      setDecliningInvites(prev => {
+        const next = new Set(prev);
+        next.delete(inviteId);
+        return next;
+      });
     }
-  }, []);
+  }, [decliningInvites, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
@@ -189,12 +226,16 @@ export default function Sidebar() {
             unreadCounts={unreadCounts}
           />
         </ScrollArea>
+        {console.log('[Sidebar] Rendering invites:', callInvites)}
         {callInvites.map(invite => (
           <CallInviteWidget
             key={invite.id}
             invite={invite}
             onAccept={handleAcceptInvite}
             onDecline={handleDeclineInvite}
+            isAccepting={acceptingInvites.has(invite.id)}
+            isDeclining={decliningInvites.has(invite.id)}
+            isInCall={!!activeCall}
           />
         ))}
         <MinimizedCallWidget />
