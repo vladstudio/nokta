@@ -32,7 +32,7 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div
-      className={`bg-white rounded ${shadowStyles[shadow]} ${border ? 'border border-gray-200' : ''
+      className={`bg-(--color-bg-primary) rounded ${shadowStyles[shadow]} ${border ? 'border border-(--color-border-default)' : ''
         } ${paddingStyles[padding]} ${className}`}
     >
       {children}

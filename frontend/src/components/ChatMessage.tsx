@@ -120,7 +120,7 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
       className={clsx(
         'p-2 flex cursor-pointer transition-colors hover:bg-(--color-bg-hover) rounded',
         isOwn ? 'justify-end' : 'justify-start',
-        isSelected && 'bg-(--color-bg-active)'
+        isSelected && 'bg-(--color-bg-active)!'
       )}
     >
       <div className={clsx('flex flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>

@@ -20,7 +20,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
           orientation="vertical"
           className="w-1 absolute top-0 right-0 bottom-0 flex justify-center select-none touch-none bg-transparent rounded-md m-1 opacity-0 transition-opacity duration-75 delay-300 data-[hovering]:opacity-100 data-[hovering]:delay-0 data-[scrolling]:opacity-100 data-[scrolling]:delay-0 group-hover/scroll:opacity-100 group-hover/scroll:delay-0"
         >
-          <BaseScrollArea.Thumb className="w-full rounded-md bg-gray-400/60 hover:bg-gray-500/80 transition-colors" />
+          <BaseScrollArea.Thumb className="w-full rounded-md bg-(--color-text-secondary)/60 hover:bg-(--color-text-primary)/80 transition-colors" />
         </BaseScrollArea.Scrollbar>
       </BaseScrollArea.Root>
     );

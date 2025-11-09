@@ -33,9 +33,9 @@ export function Select<T extends string = string>({
     <BaseSelect.Root value={value} defaultValue={defaultValue} onValueChange={onChange} disabled={disabled}>
       <BaseSelect.Trigger
         ref={ref}
-        className={`w-full px-4 py-2 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between ${className}`}
+        className={`w-full px-4 py-2 border border-(--color-border-default) rounded bg-(--color-bg-primary) focus:outline-none focus:ring-2 focus:ring-(--color-primary-500) focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between ${className}`}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-light'}>
+        <span className={selectedOption ? 'text-(--color-text-primary)' : 'text-light'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <BaseSelect.Icon className="ml-2 text-light">▼</BaseSelect.Icon>
@@ -49,7 +49,7 @@ export function Select<T extends string = string>({
                   <BaseSelect.Item
                     key={option.value}
                     value={option.value}
-                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 data-highlighted:bg-gray-100 data-selected:bg-blue-50 data-selected:text-blue-600 flex items-center justify-between"
+                    className="px-4 py-2 cursor-pointer hover:bg-(--color-bg-hover) data-highlighted:bg-(--color-bg-hover) data-selected:bg-(--color-primary-50) data-selected:text-(--color-primary-600) flex items-center justify-between"
                   >
                     <BaseSelect.ItemText>{option.label}</BaseSelect.ItemText>
                     <BaseSelect.ItemIndicator className="ml-2">✓</BaseSelect.ItemIndicator>

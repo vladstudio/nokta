@@ -35,7 +35,7 @@ export function FileUpload({ onChange, accept = 'image/*', preview, className = 
       onDragOver={handleDragOver}
       onDragLeave={() => setIsDragging(false)}
       onClick={() => inputRef.current?.click()}
-      className={`relative border-2 border-dashed rounded p-6 cursor-pointer transition-colors ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+      className={`relative border-2 border-dashed rounded p-6 cursor-pointer transition-colors ${isDragging ? 'border-(--color-primary-500) bg-(--color-primary-50)' : 'border-(--color-border-default) hover:border-(--color-border-medium)'
         } ${className}`}
     >
       <input
@@ -48,10 +48,10 @@ export function FileUpload({ onChange, accept = 'image/*', preview, className = 
       {preview ? (
         <div className="flex flex-col items-center gap-2">
           <img src={preview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
-          <span className="text-sm text-gray-600">Click or drag to change</span>
+          <span className="text-sm text-light">Click or drag to change</span>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-2 text-gray-600">
+        <div className="flex flex-col items-center gap-2 text-light">
           <CloudArrowUpIcon className="w-12 h-12" />
           <span className="text-sm">Click or drag to upload</span>
         </div>

@@ -4,12 +4,12 @@ interface OnlineIndicatorProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 export default function OnlineIndicator({ isOnline, className = '', ref, ...props }: OnlineIndicatorProps) {
-  const bgColor = isOnline ? 'bg-(--color-success-500)' : 'bg-gray-400';
+  const bgColor = isOnline ? 'bg-(--color-success-500)' : 'bg-(--color-text-secondary)';
 
   return (
     <span
       ref={ref}
-      className={`w-3 h-3 rounded-full border-2 border-white ${bgColor} ${className}`}
+      className={`w-3 h-3 rounded-full border-2 border-(--color-bg-primary) ${bgColor} ${className}`}
       {...props}
     />
   );

@@ -20,7 +20,7 @@ export function Popover({ trigger, children, title, open, defaultOpen, onOpenCha
         <BasePopover.Positioner sideOffset={8}>
           <BasePopover.Popup className={`z-[100] max-w-xs ${className}`}>
             <Card shadow="lg" border padding="md">
-              {title && <BasePopover.Title className="font-semibold text-gray-900 mb-2">{title}</BasePopover.Title>}
+              {title && <BasePopover.Title className="font-semibold text-(--color-text-primary) mb-2">{title}</BasePopover.Title>}
               {children}
             </Card>
           </BasePopover.Popup>

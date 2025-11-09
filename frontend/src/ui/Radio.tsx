@@ -25,10 +25,10 @@ export function RadioGroup<T extends string = string>({ value, onChange, options
       <div className="space-y-2">
         {options.map((option) => (
           <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-            <Radio.Root value={option.value} disabled={disabled} className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed data-checked:border-blue-600">
-              <Radio.Indicator className="w-2 h-2 rounded-full bg-blue-600" />
+            <Radio.Root value={option.value} disabled={disabled} className="w-4 h-4 rounded-full border-2 border-(--color-border-default) flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed data-checked:border-(--color-primary-600)">
+              <Radio.Indicator className="w-2 h-2 rounded-full bg-(--color-primary-600)" />
             </Radio.Root>
-            <span className="text-gray-900">{option.label}</span>
+            <span className="text-(--color-text-primary)">{option.label}</span>
           </label>
         ))}
       </div>

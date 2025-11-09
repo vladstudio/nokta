@@ -5,10 +5,10 @@ import { Card } from './Card';
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
 const typeStyles: Record<ToastType, string> = {
-  info: 'border-blue-500 bg-blue-50',
-  success: 'border-green-500 bg-green-50',
+  info: 'border-(--color-primary-500) bg-(--color-primary-50)',
+  success: 'border-(--color-success-500) bg-(--color-success-50)',
   warning: 'border-yellow-500 bg-yellow-50',
-  error: 'border-red-500 bg-red-50',
+  error: 'border-(--color-error-500) bg-(--color-error-50)',
 };
 
 function ToastList() {
@@ -20,12 +20,12 @@ function ToastList() {
         <Card shadow="lg" padding="md" className={`border-l-4 ${typeStyles[type]}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              {toast.title && <div className="font-medium text-gray-900">{toast.title}</div>}
+              {toast.title && <div className="font-medium text-(--color-text-primary)">{toast.title}</div>}
               {toast.description && (
-                <div className="mt-1 text-sm text-gray-600">{toast.description}</div>
+                <div className="mt-1 text-sm text-light">{toast.description}</div>
               )}
             </div>
-            <BaseToast.Close className="text-gray-400 hover:text-gray-600" aria-label="Close">
+            <BaseToast.Close className="text-light hover:text-(--color-text-primary)" aria-label="Close">
               <XIcon className="w-4 h-4" />
             </BaseToast.Close>
           </div>

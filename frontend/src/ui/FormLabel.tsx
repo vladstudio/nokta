@@ -14,10 +14,10 @@ export const FormLabel: React.FC<FormLabelProps> = ({
   return (
     <label
       htmlFor={htmlFor}
-      className="block text-sm font-medium text-gray-700 mb-1"
+      className="block text-sm font-medium text-(--color-text-primary) mb-1"
     >
       {children}
-      {required && <span className="text-red-500 ml-1">*</span>}
+      {required && <span className="text-(--color-error-500) ml-1">*</span>}
     </label>
   );
 };
