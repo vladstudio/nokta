@@ -88,7 +88,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         data: { type: 'success' },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update settings');
+      setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     } finally {
       setSaving(false);
     }

@@ -98,7 +98,7 @@ export default function Sidebar() {
 
   const getCallChatName = useCallback((chat: Chat) => {
     if (chat.type === 'public') {
-      return chat.name || 'General';
+      return chat.name || t('calls.general');
     }
 
     // For private chats, show other participants' names
@@ -131,7 +131,7 @@ export default function Sidebar() {
             if (!isUserInCall) {
               try {
                 const chatName = getCallChatName(data.record);
-                const notification = showCallNotification('Active Call', chatName, {
+                const notification = showCallNotification(t('calls.activeCall'), chatName, {
                   spaceId: spaceId,
                   tag: `active-call-${data.record.id}`,
                 });
@@ -182,8 +182,8 @@ export default function Sidebar() {
     } catch (error) {
       console.error('Failed to join call:', error);
       toastManager.add({
-        title: 'Failed to join call',
-        description: 'Could not join the call. Please try again.',
+        title: t('calls.failedToJoinCall'),
+        description: t('calls.couldNotJoinCall'),
         data: { type: 'error' }
       });
     } finally {
@@ -208,7 +208,7 @@ export default function Sidebar() {
               trigger={
                 <div className="w-full flex flex-col items-start gap-1.5 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                   <div className="flex items-center gap-2 w-full">
-                    <img src="/favicon.svg" alt="Talk" className="w-5 h-5" />
+                    <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
                     <span className="text-sm font-semibold text-gray-900 truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span>
                   </div>
                   <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
@@ -235,7 +235,7 @@ export default function Sidebar() {
                   {getCallChatName(call)}
                 </div>
                 <div className="text-xs text-green-700 mt-0.5">
-                  Active call in progress
+                  {t('calls.activeCallInProgress')}
                 </div>
               </div>
               <Button
@@ -245,7 +245,7 @@ export default function Sidebar() {
                 size="sm"
                 className="btn-primary !bg-green-600 hover:!bg-green-700 disabled:!bg-gray-400 text-xs px-3 py-1.5"
               >
-                {activeCallChat?.id === call.id ? 'In Call' : joiningCalls.has(call.id) ? 'Joining...' : 'Join Call'}
+                {activeCallChat?.id === call.id ? t('calls.inCall') : joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
               </Button>
             </div>
           </div>

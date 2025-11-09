@@ -223,14 +223,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       setSelectedMessageId(null);
       toastManager.add({
         title: t('chatWindow.messageUpdated'),
-        description: 'Your message has been updated successfully',
+        description: t('messages.messageUpdatedSuccess'),
         data: { type: 'success' },
       });
     } catch (err) {
       console.error('Failed to update message:', err);
       toastManager.add({
-        title: 'Failed to update message',
-        description: 'Could not update message. Please try again.',
+        title: t('messages.failedToUpdateMessage'),
+        description: t('messages.couldNotUpdateMessage'),
         data: { type: 'error' },
       });
     }
@@ -248,14 +248,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       setSelectedMessageId(null);
       toastManager.add({
         title: t('chatWindow.messageDeleted'),
-        description: 'Your message has been deleted successfully',
+        description: t('messages.messageDeletedSuccess'),
         data: { type: 'success' },
       });
     } catch (err) {
       console.error('Failed to delete message:', err);
       toastManager.add({
-        title: 'Failed to delete message',
-        description: 'Could not delete message. Please try again.',
+        title: t('messages.failedToDeleteMessage'),
+        description: t('messages.couldNotDeleteMessage'),
         data: { type: 'error' },
       });
     }
@@ -281,8 +281,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     } catch (err) {
       console.error('Copy failed:', err);
       toastManager.add({
-        title: 'Copy failed',
-        description: 'Could not copy to clipboard',
+        title: t('messages.copyFailed'),
+        description: t('messages.couldNotCopyToClipboard'),
         data: { type: 'error' },
       });
     }
@@ -299,8 +299,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     } catch (error) {
       console.error('Failed to start call:', error);
       toastManager.add({
-        title: 'Failed to start call',
-        description: 'Could not start the call. Please try again.',
+        title: t('calls.failedToStartCall'),
+        description: t('calls.couldNotStartCall'),
         data: { type: 'error' }
       });
     } finally {
@@ -366,17 +366,17 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     <div className="flex-1 flex flex-col bg-white min-h-0">
       {/* Header */}
       <div className="header">
-        <h2 className="text-lg font-semibold text-gray-900">{chat?.name || 'Chat'}</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{chat?.name || t('chatWindow.defaultChatName')}</h2>
         <Button
           onClick={handleStartCall}
           variant="ghost"
           size="default"
           className="gap-2 btn-ghost"
           disabled={isCreatingCall || !!activeCallChat}
-          title={activeCallChat ? 'Leave current call first' : 'Start a call'}
+          title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
         >
           <Phone className="w-5 h-5" />
-          <span className="text-sm">{isCreatingCall ? 'Starting...' : activeCallChat ? 'In call' : 'Call'}</span>
+          <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
         </Button>
       </div>
 

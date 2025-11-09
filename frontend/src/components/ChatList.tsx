@@ -47,7 +47,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         {getOnlineStatus(chat) !== null && (
           <span
             className={`badge online absolute -bottom-0.5 -right-0.5 ${getOnlineStatus(chat) ? '' : '!bg-gray-400'}`}
-            title={getOnlineStatus(chat) ? 'Online' : 'Offline'}
+            title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
           />
         )}
       </div>
@@ -95,7 +95,7 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
 
   const getChatName = useCallback((chat: Chat) => {
     if (chat.type === 'public') {
-      return chat.name || 'General';
+      return chat.name || t('calls.general');
     }
 
     // For private chats, show other participants' names

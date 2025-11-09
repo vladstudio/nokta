@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSetAtom } from 'jotai';
+import { useTranslation } from 'react-i18next';
 import { DailyProvider, useCallFrame, useDailyEvent } from '@daily-co/daily-react';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { callsAPI } from '../services/calls';
@@ -44,6 +45,7 @@ function CallContent({ chat }: CallViewProps) {
 }
 
 export default function CallView({ chat }: CallViewProps) {
+  const { t } = useTranslation();
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const hasJoinedRef = useRef(false);
@@ -53,8 +55,8 @@ export default function CallView({ chat }: CallViewProps) {
     return (
       <div className="flex items-center justify-center h-full bg-black text-white">
         <div className="text-center">
-          <p className="text-xl mb-2">Call room not available</p>
-          <p className="text-sm text-gray-400">Please try starting the call again</p>
+          <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
+          <p className="text-sm text-gray-400">{t('calls.tryStartingCallAgain')}</p>
         </div>
       </div>
     );
@@ -98,7 +100,7 @@ export default function CallView({ chat }: CallViewProps) {
       } catch (error) {
         console.error('Failed to join call:', error);
         if (!isCancelled) {
-          setJoinError(error instanceof Error ? error.message : 'Failed to join call');
+          setJoinError(error instanceof Error ? error.message : t('calls.failedToJoinCall'));
         }
       } finally {
         if (!isCancelled) {
@@ -126,7 +128,7 @@ export default function CallView({ chat }: CallViewProps) {
           <div className="mb-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto" />
           </div>
-          <p className="text-lg">Joining call...</p>
+          <p className="text-lg">{t('calls.joiningCall')}</p>
         </div>
       </div>
     );
@@ -137,13 +139,13 @@ export default function CallView({ chat }: CallViewProps) {
     return (
       <div className="flex items-center justify-center h-full bg-black text-white">
         <div className="text-center">
-          <p className="text-xl mb-2 text-red-400">Failed to join call</p>
+          <p className="text-xl mb-2 text-red-400">{t('calls.failedToJoinCall')}</p>
           <p className="text-sm text-gray-400 mb-4">{joinError}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
           >
-            Reload and try again
+            {t('calls.reloadAndTryAgain')}
           </button>
         </div>
       </div>

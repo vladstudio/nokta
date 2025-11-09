@@ -17,16 +17,16 @@ export default function LoginPage() {
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) {
-      return 'Password must be at least 8 characters long';
+      return t('validation.passwordMinLength');
     }
     if (!/[a-z]/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
+      return t('validation.passwordLowercase');
     }
     if (!/[A-Z]/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
+      return t('validation.passwordUppercase');
     }
     if (!/[0-9]/.test(password)) {
-      return 'Password must contain at least one number';
+      return t('validation.passwordNumber');
     }
     return null;
   };
@@ -59,7 +59,7 @@ export default function LoginPage() {
         setLocation('/');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+      const errorMessage = err instanceof Error ? err.message : t('errors.authenticationFailed');
       setError(errorMessage);
     } finally {
       setLoading(false);

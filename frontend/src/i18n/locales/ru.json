@@ -24,7 +24,8 @@
     "messageUpdated": "Сообщение обновлено",
     "messageDeleted": "Сообщение удалено",
     "copied": "Скопировано",
-    "imageCopied": "Изображение скопировано"
+    "imageCopied": "Изображение скопировано",
+    "defaultChatName": "Чат"
   },
   "messageInput": {
     "placeholder": "Введите сообщение..."
@@ -92,5 +93,54 @@
   "languages": {
     "en": "English",
     "ru": "Русский"
+  },
+  "calls": {
+    "general": "Общий",
+    "activeCallInProgress": "Активный звонок",
+    "activeCall": "Активный звонок",
+    "inCall": "В звонке",
+    "joining": "Подключение...",
+    "joinCall": "Присоединиться",
+    "failedToJoinCall": "Не удалось присоединиться",
+    "couldNotJoinCall": "Не удалось присоединиться к звонку. Попробуйте снова.",
+    "failedToStartCall": "Не удалось начать звонок",
+    "couldNotStartCall": "Не удалось начать звонок. Попробуйте снова.",
+    "leaveCurrentCallFirst": "Сначала завершите текущий звонок",
+    "startACall": "Начать звонок",
+    "starting": "Запуск...",
+    "call": "Звонок",
+    "callRoomNotAvailable": "Комната звонка недоступна",
+    "tryStartingCallAgain": "Попробуйте начать звонок снова",
+    "joiningCall": "Подключение к звонку...",
+    "reloadAndTryAgain": "Перезагрузите и попробуйте снова"
+  },
+  "messages": {
+    "selectChatToStart": "Выберите чат, чтобы начать общение",
+    "messageUpdatedSuccess": "Ваше сообщение успешно обновлено",
+    "failedToUpdateMessage": "Не удалось обновить сообщение",
+    "couldNotUpdateMessage": "Не удалось обновить сообщение. Попробуйте снова.",
+    "messageDeletedSuccess": "Ваше сообщение успешно удалено",
+    "failedToDeleteMessage": "Не удалось удалить сообщение",
+    "couldNotDeleteMessage": "Не удалось удалить сообщение. Попробуйте снова.",
+    "copyFailed": "Не удалось скопировать",
+    "couldNotCopyToClipboard": "Не удалось скопировать в буфер обмена"
+  },
+  "presence": {
+    "online": "В сети",
+    "offline": "Не в сети"
+  },
+  "validation": {
+    "passwordMinLength": "Пароль должен содержать минимум 8 символов",
+    "passwordLowercase": "Пароль должен содержать хотя бы одну строчную букву",
+    "passwordUppercase": "Пароль должен содержать хотя бы одну заглавную букву",
+    "passwordNumber": "Пароль должен содержать хотя бы одну цифру"
+  },
+  "errors": {
+    "authenticationFailed": "Ошибка аутентификации",
+    "unexpectedError": "Произошла непредвиденная ошибка",
+    "failedToUpdateSettings": "Не удалось обновить настройки"
+  },
+  "app": {
+    "logoAlt": "Talk"
   }
 }

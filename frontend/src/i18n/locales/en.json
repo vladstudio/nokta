@@ -24,7 +24,8 @@
     "messageUpdated": "Message updated",
     "messageDeleted": "Message deleted",
     "copied": "Copied",
-    "imageCopied": "Image copied"
+    "imageCopied": "Image copied",
+    "defaultChatName": "Chat"
   },
   "messageInput": {
     "placeholder": "Type a message..."
@@ -92,5 +93,54 @@
   "languages": {
     "en": "English",
     "ru": "Русский"
+  },
+  "calls": {
+    "general": "General",
+    "activeCallInProgress": "Active call in progress",
+    "activeCall": "Active Call",
+    "inCall": "In Call",
+    "joining": "Joining...",
+    "joinCall": "Join Call",
+    "failedToJoinCall": "Failed to join call",
+    "couldNotJoinCall": "Could not join the call. Please try again.",
+    "failedToStartCall": "Failed to start call",
+    "couldNotStartCall": "Could not start the call. Please try again.",
+    "leaveCurrentCallFirst": "Leave current call first",
+    "startACall": "Start a call",
+    "starting": "Starting...",
+    "call": "Call",
+    "callRoomNotAvailable": "Call room not available",
+    "tryStartingCallAgain": "Please try starting the call again",
+    "joiningCall": "Joining call...",
+    "reloadAndTryAgain": "Reload and try again"
+  },
+  "messages": {
+    "selectChatToStart": "Select a chat to start messaging",
+    "messageUpdatedSuccess": "Your message has been updated successfully",
+    "failedToUpdateMessage": "Failed to update message",
+    "couldNotUpdateMessage": "Could not update message. Please try again.",
+    "messageDeletedSuccess": "Your message has been deleted successfully",
+    "failedToDeleteMessage": "Failed to delete message",
+    "couldNotDeleteMessage": "Could not delete message. Please try again.",
+    "copyFailed": "Copy failed",
+    "couldNotCopyToClipboard": "Could not copy to clipboard"
+  },
+  "presence": {
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "validation": {
+    "passwordMinLength": "Password must be at least 8 characters long",
+    "passwordLowercase": "Password must contain at least one lowercase letter",
+    "passwordUppercase": "Password must contain at least one uppercase letter",
+    "passwordNumber": "Password must contain at least one number"
+  },
+  "errors": {
+    "authenticationFailed": "Authentication failed",
+    "unexpectedError": "An unexpected error occurred",
+    "failedToUpdateSettings": "Failed to update settings"
+  },
+  "app": {
+    "logoAlt": "Talk"
   }
 }

@@ -21,7 +21,7 @@ function ErrorBoundaryContent({ hasError, error, onReset }: { hasError: boolean;
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('errorBoundary.title')}</h1>
           <p className="text-gray-600 mb-6">
-            {error?.message || 'An unexpected error occurred'}
+            {error?.message || t('errors.unexpectedError')}
           </p>
           <div className="space-y-3">
             <button

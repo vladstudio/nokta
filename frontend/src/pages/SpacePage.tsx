@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useAtom } from 'jotai';
+import { useTranslation } from 'react-i18next';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
@@ -9,6 +10,7 @@ import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { pb } from '../services/pocketbase';
 
 export default function SpacePage() {
+  const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
@@ -128,7 +130,7 @@ export default function SpacePage() {
         <ChatWindow chatId={chatId} />
       ) : (
         <div className="empty-state flex-1">
-          <p className="text-sm">Select a chat to start messaging</p>
+          <p className="text-sm">{t('messages.selectChatToStart')}</p>
         </div>
       )}
     </div>
