@@ -5,10 +5,10 @@ import { Card } from './Card';
 export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
 const typeStyles: Record<ToastType, string> = {
-  info: 'border-(--color-primary-500) bg-(--color-primary-50)',
-  success: 'border-(--color-success-500) bg-(--color-success-50)',
-  warning: 'border-yellow-500 bg-yellow-50',
-  error: 'border-(--color-error-500) bg-(--color-error-50)',
+  info: 'bg-(--color-primary-50)',
+  success: 'bg-(--color-success-50)',
+  warning: 'bg-yellow-50',
+  error: 'bg-(--color-error-50)',
 };
 
 function ToastList() {
@@ -17,7 +17,7 @@ function ToastList() {
     const type = (toast.data?.type as ToastType) || 'info';
     return (
       <BaseToast.Root key={toast.id} toast={toast}>
-        <Card shadow="lg" padding="md" className={`border-l-4 ${typeStyles[type]}`}>
+        <Card shadow="lg" padding="md" className={typeStyles[type]}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               {toast.title && <div className="font-medium text-(--color-text-primary)">{toast.title}</div>}
@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <BaseToast.Provider timeout={3000}>
       {children}
       <BaseToast.Portal>
-        <BaseToast.Viewport className="fixed bottom-4 right-4 flex flex-col gap-2 z-50 max-w-md">
+        <BaseToast.Viewport className="fixed top-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 max-w-md">
           <ToastList />
         </BaseToast.Viewport>
       </BaseToast.Portal>

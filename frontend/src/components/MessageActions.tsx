@@ -12,24 +12,23 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy }: M
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex gap-2">
-        {onCopy && (
-          <Button variant="primary" onClick={onCopy}>
-            {t('common.copy')}
-          </Button>
-        )}
-        {onEdit && (
-          <Button variant="primary" onClick={onEdit}>
-            {t('common.edit')}
-          </Button>
-        )}
-        {onDelete && (
-          <Button variant="primary" onClick={onDelete}>
-            {t('common.delete')}
-          </Button>
-        )}
-      </div>
+    <div className="flex items-center gap-2 w-full">
+      {onCopy && (
+        <Button variant="primary" onClick={onCopy}>
+          {t('common.copy')}
+        </Button>
+      )}
+      {onEdit && (
+        <Button variant="primary" onClick={onEdit}>
+          {t('common.edit')}
+        </Button>
+      )}
+      {onDelete && (
+        <Button variant="primary" onClick={onDelete}>
+          {t('common.delete')}
+        </Button>
+      )}
+      <div className="flex-1" />
       <Button variant="default" onClick={onCancel}>
         {t('common.cancel')}
       </Button>

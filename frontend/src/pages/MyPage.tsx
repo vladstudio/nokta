@@ -3,9 +3,10 @@ import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth, spaces, pb } from '../services/pocketbase';
 import { LAST_SPACE_KEY } from '../components/Sidebar';
-import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, useToastManager } from '../ui';
+import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import type { Space } from '../types';
+import { ArrowRightIcon } from "@phosphor-icons/react";
 
 interface PocketBaseRecord {
   id: string;
@@ -88,7 +89,6 @@ export default function MyPage() {
       if (language !== i18n.language) await i18n.changeLanguage(language);
       toastManager.add({
         title: t('userSettingsDialog.settingsSaved'),
-        description: t('userSettingsDialog.settingsSavedDesc'),
         data: { type: 'success' },
       });
     } catch (err) {
@@ -116,78 +116,76 @@ export default function MyPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 p-6 overflow-y-auto">
-      <div className="w-full max-w-md space-y-8 py-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-6">{t('mySpacesPage.title')}</h1>
-          {spaceList.length > 0 ? (
-            <div className="space-y-3">
-              {spaceList.map((space) => (
-                <button
-                  key={space.id}
-                  onClick={() => handleSpaceClick(space)}
-                  className="w-full p-5 text-left bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="font-semibold text-gray-900 text-base">{space.name}</div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('mySpacesPage.noSpaces')}</p>
-          )}
+    <ScrollArea>
+      <div className="mx-auto w-full max-w-md grid gap-4 p-6">
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold flex-1">{t('mySpacesPage.title')}</h2>
+          <Button variant="ghost" onClick={handleLogout} className="text-xs text-light">
+            {t('sidebar.logOut')}
+          </Button>
         </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">{t('userSettingsDialog.title')}</h2>
-          <Card border shadow="sm" padding="lg" className="space-y-4">
-            {error && <Alert variant="error">{error}</Alert>}
-            <div>
-              <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
-              <div className="flex items-center gap-4">
-                <div className="shrink-0">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
-                  ) : (
-                    <UserAvatar user={currentUser} size={80} />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
-                </div>
+        {spaceList.length > 0 ? (
+          <div className="space-y-1">
+            {spaceList.map((space) => (
+              <Button
+                variant="default"
+                key={space.id}
+                onClick={() => handleSpaceClick(space)}
+                className="w-full p-3! text-left font-normal! flex items-center gap-2"
+              >
+                <div className="flex-1">{space.name}</div>
+                <ArrowRightIcon size={20} className="text-accent" />
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('mySpacesPage.noSpaces')}</p>
+        )}
+        <hr />
+        <h2 className="font-semibold">{t('userSettingsDialog.title')}</h2>
+        <Card border shadow="sm" padding="lg" className="space-y-4">
+          {error && <Alert variant="error">{error}</Alert>}
+          <div>
+            <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
+            <div className="flex items-center gap-4">
+              <div className="shrink-0">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
+                ) : (
+                  <UserAvatar user={currentUser} size={80} />
+                )}
+              </div>
+              <div className="flex-1">
+                <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
               </div>
             </div>
-            <div>
-              <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
-              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('userSettingsDialog.namePlaceholder')} />
-            </div>
-            <div>
-              <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('userSettingsDialog.emailPlaceholder')} />
-            </div>
-            <div>
-              <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
-            </div>
-            <div>
-              <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-              <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
-            </div>
-            <div>
-              <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
-              <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
-            </div>
-            <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? t('common.loading') : t('common.save')}
-            </Button>
-          </Card>
-        </div>
+          </div>
+          <div>
+            <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
+            <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('userSettingsDialog.namePlaceholder')} />
+          </div>
+          <div>
+            <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('userSettingsDialog.emailPlaceholder')} />
+          </div>
+          <div>
+            <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
+          </div>
+          <div>
+            <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
+            <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+          </div>
+          <div>
+            <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
+            <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
+          </div>
+          <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
+            {saving ? t('common.loading') : t('common.save')}
+          </Button>
+        </Card>
 
-        <div>
-          <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-gray-900 underline">
-            {t('sidebar.logOut')}
-          </button>
-        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }

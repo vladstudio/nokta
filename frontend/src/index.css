@@ -123,6 +123,12 @@ body {
   flex-direction: column;
 }
 
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--color-border-default);
+}
+
 :focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-primary-100);

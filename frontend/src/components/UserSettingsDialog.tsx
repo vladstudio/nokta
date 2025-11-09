@@ -87,7 +87,6 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       onOpenChange(false);
       toastManager.add({
         title: t('userSettingsDialog.settingsSaved'),
-        description: t('userSettingsDialog.settingsSavedDesc'),
         data: { type: 'success' },
       });
     } catch (err) {
