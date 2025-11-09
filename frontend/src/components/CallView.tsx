@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { DailyProvider, useCallFrame, useDailyEvent } from '@daily-co/daily-react';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
@@ -10,10 +10,16 @@ interface CallViewProps {
   chat: Chat;
 }
 
-// Inner component that uses useDailyEvent
+// Inner component that handles call events
 function CallContent({ chat }: CallViewProps) {
   const setActiveCallChat = useSetAtom(activeCallChatAtom);
   const setShowCallView = useSetAtom(showCallViewAtom);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const handleLeaveCall = useCallback(async () => {
     const currentUserId = pb.authStore.model?.id;
@@ -21,14 +27,14 @@ function CallContent({ chat }: CallViewProps) {
 
     try {
       await callsAPI.leaveCall(chat.id, currentUserId);
-      // Only clear state if successfully left
-      setActiveCallChat(null);
-      setShowCallView(false);
     } catch (error) {
       console.error('Failed to leave call:', error);
-      // Clear state anyway to prevent stuck UI
-      setActiveCallChat(null);
-      setShowCallView(false);
+    } finally {
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setActiveCallChat(null);
+        setShowCallView(false);
+      }
     }
   }, [chat.id, setActiveCallChat, setShowCallView]);
 
@@ -38,6 +44,10 @@ function CallContent({ chat }: CallViewProps) {
 }
 
 export default function CallView({ chat }: CallViewProps) {
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const hasJoinedRef = useRef(false);
+
   // Check for required data BEFORE calling any hooks
   if (!chat.daily_room_url) {
     return (
@@ -53,10 +63,9 @@ export default function CallView({ chat }: CallViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const callFrame = useCallFrame({
+    // @ts-expect-error - Daily types expect MutableRefObject but useRef returns RefObject
     parentElRef: containerRef,
     options: {
-      url: chat.daily_room_url,
-      showLeaveButton: true,
       iframeStyle: {
         width: '100%',
         height: '100%',
@@ -64,6 +73,82 @@ export default function CallView({ chat }: CallViewProps) {
       },
     },
   });
+
+  // Join the call when component mounts
+  useEffect(() => {
+    if (!callFrame || hasJoinedRef.current) return;
+
+    let isCancelled = false;
+
+    const joinCall = async () => {
+      if (isJoining) return; // Prevent duplicate joins
+
+      setIsJoining(true);
+      setJoinError(null);
+
+      try {
+        await callFrame.join({
+          url: chat.daily_room_url,
+          showLeaveButton: true,
+        });
+
+        if (!isCancelled) {
+          hasJoinedRef.current = true;
+        }
+      } catch (error) {
+        console.error('Failed to join call:', error);
+        if (!isCancelled) {
+          setJoinError(error instanceof Error ? error.message : 'Failed to join call');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsJoining(false);
+        }
+      }
+    };
+
+    joinCall();
+
+    // Cleanup: leave call when component unmounts
+    return () => {
+      isCancelled = true;
+      if (hasJoinedRef.current && callFrame) {
+        callFrame.leave().catch(err => console.error('Error leaving call:', err));
+      }
+    };
+  }, [chat.daily_room_url]); // Removed callFrame to prevent re-runs
+
+  // Show loading state
+  if (isJoining) {
+    return (
+      <div className="flex items-center justify-center h-full bg-black text-white">
+        <div className="text-center">
+          <div className="mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto" />
+          </div>
+          <p className="text-lg">Joining call...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (joinError) {
+    return (
+      <div className="flex items-center justify-center h-full bg-black text-white">
+        <div className="text-center">
+          <p className="text-xl mb-2 text-red-400">Failed to join call</p>
+          <p className="text-sm text-gray-400 mb-4">{joinError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-white text-black rounded hover:bg-gray-200"
+          >
+            Reload and try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DailyProvider callObject={callFrame}>
