@@ -5,14 +5,12 @@
   /* Colors - Neutral palette */
   --color-bg-primary: #ffffff;
   --color-bg-secondary: #f9fafb;
-  --color-bg-tertiary: #f3f4f6;
   --color-bg-hover: #f3f4f6;
   --color-bg-active: #e5e7eb;
 
   /* Text colors */
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
-  --color-text-tertiary: #9ca3af;
 
   /* Border colors */
   --color-border-light: #f3f4f6;

@@ -144,7 +144,10 @@ body {
   width: 280px;
 }
 
-/* Empty state */
+.active-call {
+  background-color: var(--color-success-50);
+}
+
 .empty-state {
   @apply flex flex-col items-center justify-center;
   @apply py-12 px-6;
