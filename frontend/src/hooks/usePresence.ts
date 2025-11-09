@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { pb, auth } from '../services/pocketbase';
 import type { UserPresenceData } from '../types';
 
-const HEARTBEAT_INTERVAL = 20000; // Update every 20 seconds
-const ONLINE_THRESHOLD = 40000; // Consider offline after 40 seconds
+const HEARTBEAT_INTERVAL = 5000; // Update every 5 seconds
+const ONLINE_THRESHOLD = 30000; // Consider offline after 30 seconds
 
 interface UserPresence {
   userId: string;

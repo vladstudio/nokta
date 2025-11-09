@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth } from '../services/pocketbase';
+import { useIsMobile } from '../hooks/useIsMobile';
 import Sidebar from './Sidebar';
 
 interface ProtectedRouteProps {
@@ -11,6 +12,8 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation();
   const [location, setLocation] = useLocation();
+  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const isMobile = useIsMobile();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -37,9 +40,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
+  const showSidebar = location !== '/my' && !(isMobile && params?.chatId);
+
   return (
     <div className="fixed inset-0 flex overflow-hidden">
-      {location !== '/my' && <Sidebar />}
+      {showSidebar && <Sidebar />}
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>

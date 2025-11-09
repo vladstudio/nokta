@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useRoute } from 'wouter';
 import { useAtom } from 'jotai';
-import { PhoneIcon } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeft } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useMessageList } from '../hooks/useMessageList';
 import { useFileUpload } from '../hooks/useFileUpload';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { messageQueue } from '../utils/messageQueue';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
@@ -35,12 +37,36 @@ interface DisplayMessage extends Message {
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
   const { t } = useTranslation();
+  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const [, setLocation] = useLocation();
   const toastManager = useToastManager();
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
+  const isMobile = useIsMobile();
   const [chat, setChat] = useState<Chat | null>(null);
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
+
+  // Get chat name (same logic as ChatList)
+  const getChatName = (chat: Chat | null) => {
+    if (!chat) return t('chatWindow.defaultChatName');
+
+    if (chat.type === 'public') {
+      return chat.name || t('calls.general');
+    }
+
+    // For private chats, show other participants' names
+    if (chat.expand?.participants) {
+      const otherParticipants = chat.expand.participants.filter(
+        (p) => p.id !== currentUser?.id
+      );
+      if (otherParticipants.length > 0) {
+        return otherParticipants.map((p) => p.name || p.email).join(', ');
+      }
+    }
+
+    return t('chatList.directMessage');
+  };
 
   // Use custom hooks
   const {
@@ -309,6 +335,10 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const handleBack = () => {
+    setLocation(`/spaces/${params?.spaceId}/chats`);
+  };
+
   useHotkeys('esc', () => {
     setSelectedMessageId(null);
     (document.activeElement as HTMLElement)?.blur();
@@ -368,7 +398,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold flex-1">{chat?.name || t('chatWindow.defaultChatName')}</h2>
+          {isMobile && (
+            <button onClick={handleBack} className="p-1 -ml-2">
+              <ArrowLeft size={20} className="text-accent" />
+            </button>
+          )}
+          <h2 className="font-semibold flex-1">{getChatName(chat)}</h2>
           {typingUsers.length > 0 && (
             <span className="text-xs text-light">
               {typingUsers.length === 1 ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}` : typingUsers.length === 2 ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}` : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}

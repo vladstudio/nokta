@@ -150,7 +150,7 @@ hr {
 
 /* Sidebar */
 .sidebar {
-  @apply flex flex-col gap-px pr-px;
+  @apply flex flex-col gap-px sm:pr-px;
   background-color: var(--color-border-default);
   width: 280px;
 }
