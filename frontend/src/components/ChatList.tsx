@@ -43,14 +43,14 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
     >
       <div className="relative shrink-0">
         {chat.type === 'private' ? (
-          <UserAvatar user={getOtherParticipant(chat)} size={48} />
+          <UserAvatar user={getOtherParticipant(chat)} size={40} />
         ) : (
-          <ChatAvatar chat={chat} size={48} />
+          <ChatAvatar chat={chat} size={40} />
         )}
         {getOnlineStatus(chat) !== null && (
           <OnlineIndicator
             isOnline={getOnlineStatus(chat)!}
-            className="absolute! -bottom-0.5 -right-0.5"
+            className="absolute! bottom-0 right-0"
             title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
           />
         )}

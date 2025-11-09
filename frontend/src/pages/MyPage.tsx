@@ -133,9 +133,7 @@ export default function MyPage() {
               ))}
             </div>
           ) : (
-            <div className="empty-state bg-white border border-gray-200 rounded shadow-sm py-12">
-              <p className="text-sm">{t('mySpacesPage.noSpaces')}</p>
-            </div>
+            <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('mySpacesPage.noSpaces')}</p>
           )}
         </div>
 

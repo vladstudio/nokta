@@ -392,16 +392,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
-        <div className="px-6 py-4 space-y-3">
+        <div className="p-2 sm:p-4 grid gap-2 auto-rows-min">
           {loadingOlder && (
-            <div className="flex justify-center py-2">
+            <div className="flex justify-center p-2">
               <LoadingSpinner size="sm" />
             </div>
           )}
           {allMessages.length === 0 ? (
-            <div className="empty-state">
-              <p className="text-sm">{t('chatWindow.noMessages')}</p>
-            </div>
+            <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('chatWindow.noMessages')}</p>
           ) : (
             allMessages.map((message) => (
               <ChatMessage

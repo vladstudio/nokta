@@ -131,9 +131,7 @@ export default function SpacePage() {
       {chatId ? (
         <ChatWindow chatId={chatId} />
       ) : (
-        <div className="empty-state flex-1">
-          <p className="text-sm">{t('messages.selectChatToStart')}</p>
-        </div>
+        <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('messages.selectChatToStart')}</p>
       )}
     </div>
   );
