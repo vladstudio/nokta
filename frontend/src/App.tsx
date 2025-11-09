@@ -51,7 +51,7 @@ function App() {
     }
   }, [isAuthenticated, location, setLocation]);
 
-  // Request notification and media permissions
+  // Request notification permission
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -64,22 +64,6 @@ function App() {
         const granted = await requestNotificationPermission();
         if (granted) {
           console.log('Notification permission granted');
-        }
-      }
-
-      // Request camera and microphone permissions
-      if (navigator.mediaDevices?.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: true
-          });
-          stream.getTracks().forEach(track => track.stop());
-          console.log('Media permissions granted');
-        } catch (error) {
-          if (error instanceof Error && error.name === 'NotAllowedError') {
-            console.warn('Media permissions denied');
-          }
         }
       }
     };

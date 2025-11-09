@@ -6,6 +6,7 @@ import { auth, spaces, chats } from '../services/pocketbase';
 import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
+import { showCallNotification } from '../utils/notifications';
 import { Menu, ScrollArea } from '../ui';
 import ChatList from './ChatList';
 import UserSettingsDialog from './UserSettingsDialog';
@@ -98,15 +99,42 @@ export default function Sidebar() {
   // Subscribe to call invites
   useEffect(() => {
     if (!spaceId) return;
-    const unsubscribe = callsAPI.subscribeToInvites((data) => {
+    const unsubscribe = callsAPI.subscribeToInvites(async (data) => {
       if (data.action === 'create' && data.record.invitee === auth.user?.id) {
         loadInvites();
+
+        // Show OS notification for incoming call
+        try {
+          const invite = await callsAPI.getMyInvites(spaceId);
+          const newInvite = invite.find(inv => inv.id === data.record.id);
+
+          if (newInvite?.expand?.inviter && newInvite.expand?.call) {
+            const inviterName = newInvite.expand.inviter.name || newInvite.expand.inviter.email;
+            const space = spaceList.find(s => s.id === newInvite.expand?.call?.space);
+            const spaceName = space?.name || 'Unknown Space';
+
+            const notification = showCallNotification(inviterName, spaceName, {
+              inviteId: newInvite.id,
+              spaceId: newInvite.expand.call.space,
+            });
+
+            // Handle notification click
+            if (notification) {
+              notification.onclick = () => {
+                window.focus();
+                notification.close();
+              };
+            }
+          }
+        } catch (err) {
+          console.error('Failed to show call notification:', err);
+        }
       } else if (data.action === 'delete') {
         setCallInvites(prev => prev.filter(inv => inv.id !== data.record.id));
       }
     });
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, loadInvites]);
+  }, [spaceId, loadInvites, spaceList]);
 
   const handleAcceptInvite = useCallback(async (inviteId: string) => {
     try {

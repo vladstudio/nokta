@@ -104,6 +104,52 @@ export function showMessageNotification(
 }
 
 /**
+ * Show a notification for an incoming call
+ *
+ * @param callerName - Name of the person calling
+ * @param spaceName - Name of the space
+ * @param options - Additional notification options
+ */
+export function showCallNotification(
+  callerName: string,
+  spaceName: string,
+  options?: {
+    inviteId?: string;
+    spaceId?: string;
+    icon?: string;
+    tag?: string;
+  }
+): Notification | null {
+  const permission = getNotificationPermission();
+
+  if (!permission.granted) {
+    return null;
+  }
+
+  try {
+    const notification = new Notification(`Incoming call from ${callerName}`, {
+      body: `In ${spaceName}`,
+      icon: options?.icon || '/logo.png',
+      tag: options?.tag || `call-invite-${options?.inviteId}`,
+      badge: '/logo-badge.png',
+      requireInteraction: true, // Requires user action (accept/decline)
+      silent: false,
+      data: {
+        inviteId: options?.inviteId,
+        spaceId: options?.spaceId,
+        timestamp: Date.now(),
+        type: 'call-invite',
+      },
+    });
+
+    return notification;
+  } catch (err) {
+    console.error('Failed to show call notification:', err);
+    return null;
+  }
+}
+
+/**
  * Store notification preference in localStorage
  */
 const NOTIFICATION_PREF_KEY = 'notification_preference';
