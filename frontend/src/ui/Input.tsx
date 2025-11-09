@@ -12,7 +12,7 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 
 type Props = InputProps | TextareaProps;
 
-const baseStyles = 'w-full bg-(--color-bg-primary) px-3 py-2 border border-(--color-border-default) rounded-sm';
+const baseStyles = 'w-full bg-(--color-bg-primary)! px-3 py-2 border border-(--color-border-default) rounded-sm';
 
 export function Input({ as: Component = 'input', className = '', ref, ...props }: Props) {
   return Component === 'textarea' ? (

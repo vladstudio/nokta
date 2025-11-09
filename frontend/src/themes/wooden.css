@@ -48,8 +48,8 @@
     /* Colors - Dark wooden palette */
     --color-bg-primary: #1a1410;
     --color-bg-secondary: #0f0c08;
-    --color-bg-hover: #2d2416;
-    --color-bg-active: #3d3020;
+    --color-bg-hover: #4d402a22;
+    --color-bg-active: #c8655522;
 
     /* Text colors */
     --color-text-primary: #f5f1e8;
@@ -63,9 +63,9 @@
     /* Primary brand color - Warm brown (brighter for dark) */
     --color-primary-50: #3d3020;
     --color-primary-100: #4d402a;
-    --color-primary-500: #d4a574;
-    --color-primary-600: #c99864;
-    --color-primary-700: #b88a54;
+    --color-primary-500: #92400e;
+    --color-primary-600: #b45309;
+    --color-primary-700: #d97706;
 
     /* Accent color - Forest green (brighter for dark) */
     --color-accent-50: #2d3828;
