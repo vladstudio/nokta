@@ -95,7 +95,7 @@ function App() {
             <Route>
               {isAuthenticated ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <LoadingSpinner size="lg" />
+                  <LoadingSpinner size="sm" />
                 </div>
               ) : (
                 <LoginPage />

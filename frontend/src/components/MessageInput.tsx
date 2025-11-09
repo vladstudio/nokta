@@ -76,7 +76,7 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
         onKeyDown={handleKeyDown}
         placeholder={t('messageInput.placeholder')}
         rows={1}
-        className="flex-1 max-h-32! overflow-y-auto resize-none "
+        className="flex-1 max-h-64! overflow-y-auto resize-none "
         disabled={disabled}
       />
       <Button

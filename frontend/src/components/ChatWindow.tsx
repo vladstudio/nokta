@@ -357,7 +357,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-primary)">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="sm" />
         <div className="text-light text-sm">{t('chatWindow.loadingMessages')}</div>
       </div>
     );
@@ -417,7 +417,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
-      <div className="w-full bg-(--color-bg-primary) border-t border-(--color-border-default) flex items-stretch p-2">
+      <div className="w-full shrink-0 min-h-16! bg-(--color-bg-primary) border-t border-(--color-border-default) flex items-stretch p-2">
         {/* Message Input or Actions */}
         {showAddActions ? (
           <AddActions
