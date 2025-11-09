@@ -195,24 +195,24 @@ export default function Sidebar() {
   return (
     <>
       <div className="sidebar">
-        <div className="p-2">
+        <div className="w-full p-2">
           <Button variant="ghost"
             onClick={() => setLocation('/my')}
-            className="flex items-center gap-2"
+            className="w-full flex items-center gap-2"
           >
             <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
             <div className="grid flex-1"><span className="text-sm font-semibold truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span></div>
-            <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
+            <span className="text-xs text-gray-500 truncate w-full text-right">{auth.user?.name || auth.user?.email}</span>
           </Button>
         </div>
         {isVideoCallsEnabled && activeCalls.map(call => (
           <div
             key={call.id}
-            className="p-4 active-call"
+            className="p-2 active-call"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-green-900 truncate">
+                <div className="text-sm font-semibold truncate">
                   {getCallChatName(call)}
                 </div>
                 <div className="text-xs text-green-700 mt-0.5">

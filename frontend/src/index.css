@@ -138,10 +138,12 @@ body {
 
 /* Sidebar */
 .sidebar {
-  @apply flex flex-col;
-  background-color: var(--color-bg-primary);
-  border-right: 1px solid var(--color-border-default);
+  @apply flex flex-col gap-px pr-px;
+  background-color: var(--color-border-default);
   width: 280px;
+}
+.sidebar > * {
+  background-color: var(--color-bg-primary);
 }
 
 .active-call {

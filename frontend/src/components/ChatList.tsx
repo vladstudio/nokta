@@ -65,7 +65,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       {hasUnread && (
         <div className="shrink-0">
           <Badge variant="unread">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {unreadCount > 99 ? '*' : unreadCount}
           </Badge>
         </div>
       )}

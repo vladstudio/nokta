@@ -49,19 +49,6 @@ export default function CallView({ chat }: CallViewProps) {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const hasJoinedRef = useRef(false);
-
-  // Check for required data BEFORE calling any hooks
-  if (!chat.daily_room_url) {
-    return (
-      <div className="flex items-center justify-center h-full bg-black text-white">
-        <div className="text-center">
-          <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
-          <p className="text-sm text-gray-400">{t('calls.tryStartingCallAgain')}</p>
-        </div>
-      </div>
-    );
-  }
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   const callFrame = useCallFrame({
@@ -76,7 +63,24 @@ export default function CallView({ chat }: CallViewProps) {
     },
   });
 
-  // Join the call when component mounts
+  // Check for required data AFTER calling all hooks (Rules of Hooks)
+  if (!chat.daily_room_url) {
+    return (
+      <div className="flex items-center justify-center h-full bg-black text-white">
+        <div className="text-center">
+          <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
+          <p className="text-sm text-gray-400">{t('calls.tryStartingCallAgain')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Reset hasJoinedRef when room URL changes
+  useEffect(() => {
+    hasJoinedRef.current = false;
+  }, [chat.daily_room_url]);
+
+  // Join the call when component mounts or room URL changes
   useEffect(() => {
     if (!callFrame || hasJoinedRef.current) return;
 
@@ -109,11 +113,12 @@ export default function CallView({ chat }: CallViewProps) {
 
     joinCall();
 
-    // Cleanup: leave call when component unmounts
+    // Cleanup: leave call and reset state
     return () => {
       isCancelled = true;
       if (hasJoinedRef.current && callFrame) {
         callFrame.leave().catch(err => console.error('Error leaving call:', err));
+        hasJoinedRef.current = false;
       }
     };
   }, [callFrame, chat.daily_room_url, t]);

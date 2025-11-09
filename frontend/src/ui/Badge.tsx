@@ -16,7 +16,7 @@ export default function Badge({ variant = 'default', className = '', children, r
   // Apply custom background colors for unread and online variants
   const style: React.CSSProperties = {};
   if (variant === 'unread') {
-    style.backgroundColor = 'var(--color-error-500)';
+    style.backgroundColor = 'var(--color-accent-500)';
   } else if (variant === 'online') {
     style.backgroundColor = 'var(--color-success-500)';
   }
