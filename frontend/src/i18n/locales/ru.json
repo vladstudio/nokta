@@ -8,7 +8,9 @@
     "you": "Вы",
     "unknown": "Неизвестно",
     "uploading": "Загрузка",
-    "uploadFailed": "Ошибка загрузки"
+    "uploadFailed": "Ошибка загрузки",
+    "copy": "Копировать",
+    "edit": "Изменить"
   },
   "sidebar": {
     "mySpaces": "Мои пространства",

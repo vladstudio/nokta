@@ -17,12 +17,12 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy }: M
         <div className="flex gap-2">
           {onCopy && (
             <Button variant="primary" onClick={onCopy}>
-              {t('chatWindow.copied')}
+              {t('common.copy')}
             </Button>
           )}
           {onEdit && (
             <Button variant="primary" onClick={onEdit}>
-              {t('common.save')}
+              {t('common.edit')}
             </Button>
           )}
           {onDelete && (

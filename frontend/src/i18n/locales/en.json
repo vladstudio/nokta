@@ -8,7 +8,9 @@
     "you": "You",
     "unknown": "Unknown",
     "uploading": "Uploading",
-    "uploadFailed": "Upload failed"
+    "uploadFailed": "Upload failed",
+    "copy": "Copy",
+    "edit": "Edit"
   },
   "sidebar": {
     "mySpaces": "My Spaces",
