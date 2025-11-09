@@ -36,7 +36,11 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       key={chat.id}
       variant="default"
       onClick={handleClick}
-      className={`chat-list-item ${isSelected ? 'selected' : ''}`}
+      className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors duration-100 border-0 rounded-none border-b border-b-[var(--color-border-light)] hover:bg-[var(--color-bg-hover)] ${
+        isSelected
+          ? 'bg-[var(--color-primary-50)] border-l-[3px] border-l-[var(--color-primary-500)] pl-[calc(1rem-3px)]'
+          : 'bg-[var(--color-bg-primary)]'
+      }`}
     >
       <div className="relative shrink-0">
         {chat.type === 'private' ? (
@@ -140,7 +144,7 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   }, [currentUser?.id, isUserOnline]);
 
   return chats.length === 0 ? (
-    <div className="empty-state py-8">
+    <div className="flex flex-col items-center justify-center py-8 px-6 text-center text-[var(--color-text-secondary)]">
       <p className="text-sm">{t('chatList.noChats')}</p>
     </div>
   ) : (
