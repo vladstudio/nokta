@@ -364,7 +364,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white min-h-0">
+    <div className="flex-1 flex flex-col bg-zinc-50 min-h-0">
       {/* Header */}
       <div className="header">
         <div className="flex items-center gap-3">
@@ -392,32 +392,32 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
-          <div className="px-6 py-4 space-y-3">
-            {loadingOlder && (
-              <div className="flex justify-center py-2">
-                <LoadingSpinner size="sm" />
-              </div>
-            )}
-            {allMessages.length === 0 ? (
-              <div className="empty-state">
-                <p className="text-sm">{t('chatWindow.noMessages')}</p>
-              </div>
-            ) : (
-              allMessages.map((message) => (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  isOwn={message.sender === currentUser?.id}
-                  currentUserId={currentUser?.id || ''}
-                  isSelected={selectedMessageId === message.id}
-                  onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
-                  onRetry={message.type === 'text' ? handleRetryMessage : handleRetryUpload}
-                  onCancelUpload={handleCancelUpload}
-                />
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+        <div className="px-6 py-4 space-y-3">
+          {loadingOlder && (
+            <div className="flex justify-center py-2">
+              <LoadingSpinner size="sm" />
+            </div>
+          )}
+          {allMessages.length === 0 ? (
+            <div className="empty-state">
+              <p className="text-sm">{t('chatWindow.noMessages')}</p>
+            </div>
+          ) : (
+            allMessages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                isOwn={message.sender === currentUser?.id}
+                currentUserId={currentUser?.id || ''}
+                isSelected={selectedMessageId === message.id}
+                onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
+                onRetry={message.type === 'text' ? handleRetryMessage : handleRetryUpload}
+                onCancelUpload={handleCancelUpload}
+              />
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </ScrollArea>
 
       {/* Message Input or Actions */}
