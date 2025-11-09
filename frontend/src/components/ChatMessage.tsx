@@ -1,9 +1,17 @@
 import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
 import type { Message } from '../types';
 import { messages as messagesAPI } from '../services/pocketbase';
 
+type MessageWithStatus = Message & {
+  isPending?: boolean;
+  isFailed?: boolean;
+  tempId?: string;
+  uploadProgress?: number;
+};
+
 interface ChatMessageProps {
-  message: Message & { isPending?: boolean; isFailed?: boolean; tempId?: string; uploadProgress?: number };
+  message: MessageWithStatus;
   isOwn: boolean;
   currentUserId: string;
   isSelected: boolean;
@@ -16,83 +24,90 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
   const { t } = useTranslation();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
 
+  const renderUploadingState = () => (
+    <div className="space-y-1">
+      <p className="text-sm">{t('common.uploading')} {message.content}...</p>
+      <div className="w-full bg-(--color-bg-active) rounded-full h-2">
+        <div
+          className="bg-(--color-primary-600) h-2 rounded-full transition-all"
+          style={{ width: `${message.uploadProgress || 0}%` }}
+        />
+      </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
+        className="text-xs text-light hover:text-(--color-text-primary) underline"
+      >
+        {t('common.cancel')}
+      </button>
+    </div>
+  );
+
+  const renderFailedState = () => (
+    <div className="space-y-2">
+      <p className="text-sm text-(--color-error-600)">{t('common.uploadFailed')}: {message.content}</p>
+      <button
+        onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
+        className="text-xs text-(--color-error-500) hover:text-(--color-error-600) underline"
+      >
+        {t('common.send')}
+      </button>
+    </div>
+  );
+
+  const renderTextMessage = () => (
+    <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
+  );
+
+  const renderImageMessage = () => {
+    const imageUrl = messagesAPI.getFileURL(message, '600x600');
+    return (
+      <div>
+        <img
+          src={imageUrl}
+          alt={message.content || 'Image'}
+          className="max-w-xs rounded cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(messagesAPI.getFileURL(message), '_blank');
+          }}
+        />
+        {message.content && message.content !== message.file && (
+          <p className="text-sm mt-2">{message.content}</p>
+        )}
+      </div>
+    );
+  };
+
+  const renderFileMessage = () => {
+    const fileUrl = messagesAPI.getFileURL(message);
+    return (
+      <a
+        href={fileUrl + '?download=1'}
+        download={message.file}
+        className="flex items-center gap-2 hover:underline"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="text-lg">📄</span>
+        <span className="text-sm">{message.file}</span>
+      </a>
+    );
+  };
+
   const renderContent = () => {
-    // Uploading state (for image/file)
     if (message.isPending && (message.type === 'image' || message.type === 'file')) {
-      return (
-        <div className="space-y-2">
-          <p className="text-sm">{t('common.uploading')} {message.content}...</p>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${message.uploadProgress || 0}%` }}
-            />
-          </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
-            className="text-xs text-light hover:text-gray-700 underline"
-          >
-            {t('common.cancel')}
-          </button>
-        </div>
-      );
+      return renderUploadingState();
     }
-
-    // Failed upload state
     if (message.isFailed && (message.type === 'image' || message.type === 'file')) {
-      return (
-        <div className="space-y-2">
-          <p className="text-sm text-red-700">{t('common.uploadFailed')}: {message.content}</p>
-          <button
-            onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
-            className="text-xs text-red-500 hover:text-red-700 underline"
-          >
-            {t('common.send')}
-          </button>
-        </div>
-      );
+      return renderFailedState();
     }
-
-    // Text message
     if (message.type === 'text') {
-      return <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>;
+      return renderTextMessage();
     }
-
-    // Image message (uploaded successfully)
     if (message.type === 'image' && message.file) {
-      const imageUrl = messagesAPI.getFileURL(message, '600x600');
-      return (
-        <div>
-          <img
-            src={imageUrl}
-            alt={message.content || 'Image'}
-            className="max-w-xs rounded cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(messagesAPI.getFileURL(message), '_blank');
-            }}
-          />
-          {message.content && message.content !== message.file && (
-            <p className="text-sm mt-2">{message.content}</p>
-          )}
-        </div>
-      );
+      return renderImageMessage();
     }
-
-    // File message (uploaded successfully)
     if (message.type === 'file' && message.file) {
-      const fileUrl = messagesAPI.getFileURL(message);
-      return (
-        <a
-          href={fileUrl + '?download=1'}
-          download={message.file}
-          className="flex items-center gap-2 hover:underline"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="text-lg">📄</span>
-          <span className="text-sm">{message.file}</span>
-        </a>
-      );
+      return renderFileMessage();
     }
 
     return null;
@@ -102,34 +117,42 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
     <div
       id={`msg-${message.id}`}
       onClick={onSelect}
-      className={`flex cursor-pointer transition-all ${isOwn ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-50 -mx-2 px-2 py-1 rounded' : ''}`}
+      className={clsx(
+        'flex cursor-pointer transition-all',
+        isOwn ? 'justify-end' : 'justify-start',
+        isSelected && 'bg-(--color-primary-50) -mx-2 px-2 py-1 rounded'
+      )}
     >
-      <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
+      <div className={clsx('flex flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
         <div className="flex items-baseline gap-2 px-1">
-          <span className="text-xs font-medium text-gray-600">
+          <span className="text-xs font-medium text-light">
             {isOwn ? t('common.you') : senderName}
           </span>
           {message.created && !message.isPending && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-light">
               {new Date(message.created).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
           {message.isPending && message.type === 'text' && (
-            <span className="text-xs text-gray-400">{t('common.uploading')}...</span>
+            <span className="text-xs text-light">{t('common.uploading')}...</span>
           )}
           {message.isFailed && message.type === 'text' && (
             <button
               onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
-              className="text-xs text-red-500 hover:text-red-700 underline"
+              className="text-xs text-(--color-error-500) hover:text-(--color-error-600) underline"
             >
               {t('common.uploadFailed')} - {t('common.send')}
             </button>
           )}
         </div>
-        <div className={`rounded-2xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-sm) ${isOwn
-          ? 'bg-(--color-primary-500) text-white rounded-br-md'
-          : 'bg-white text-(--color-text-primary) border border-(--color-border-default) rounded-bl-md'
-          } ${message.isFailed ? 'bg-red-100! text-red-900! border-red-300!' : ''} ${message.isPending ? 'opacity-70' : ''}`}>
+        <div className={clsx(
+          'rounded-xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
+          isOwn
+            ? 'bg-(--color-bg-primary)/10'
+            : 'bg-(--color-bg-primary)',
+          message.isFailed && 'bg-(--color-error-50)! text-(--color-error-600)! border-(--color-error-500)!',
+          message.isPending && 'opacity-70'
+        )}>
           {renderContent()}
         </div>
       </div>
