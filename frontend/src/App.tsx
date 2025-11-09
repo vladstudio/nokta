@@ -9,7 +9,7 @@ import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
-import MySpacesPage from './pages/MySpacesPage';
+import MyPage from './pages/MyPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
 import './i18n/config';
@@ -38,7 +38,7 @@ function App() {
     if (isAuthenticated && (location === '/' || location === '/spaces')) {
       spaces.list().then(spaceList => {
         if (spaceList.length === 0) {
-          setLocation('/my-spaces');
+          setLocation('/my');
         } else {
           const lastSpaceId = localStorage.getItem(LAST_SPACE_KEY);
           const targetSpace = spaceList.find(s => s.id === lastSpaceId) || spaceList[0];
@@ -46,7 +46,7 @@ function App() {
         }
       }).catch((err) => {
         console.error('Failed to load spaces:', err);
-        setLocation('/my-spaces');
+        setLocation('/my');
       });
     }
   }, [isAuthenticated, location, setLocation]);
@@ -78,9 +78,9 @@ function App() {
           <ConnectionBanner />
           <Switch>
             <Route path="/login" component={LoginPage} />
-            <Route path="/my-spaces">
+            <Route path="/my">
               <ProtectedRoute>
-                <MySpacesPage />
+                <MyPage />
               </ProtectedRoute>
             </Route>
             <Route path="/spaces/:spaceId/chats/:chatId?">

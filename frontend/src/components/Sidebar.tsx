@@ -8,9 +8,8 @@ import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { showCallNotification } from '../utils/notifications';
 import { isVideoCallsEnabled } from '../config/features';
-import { Menu, ScrollArea, useToastManager, Button } from '../ui';
+import { ScrollArea, useToastManager, Button } from '../ui';
 import ChatList from './ChatList';
-import UserSettingsDialog from './UserSettingsDialog';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
 
@@ -26,7 +25,6 @@ export default function Sidebar() {
 
   const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [chatList, setChatList] = useState<Chat[]>([]);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
@@ -90,12 +88,6 @@ export default function Sidebar() {
   }, [unreadCounts]);
 
   useFavicon(hasUnread);
-
-  const menuItems = useMemo(() => [
-    { label: t('sidebar.mySpaces'), onClick: () => { setLocation('/my-spaces'); } },
-    { label: t('sidebar.mySettings'), onClick: () => { setSettingsOpen(true); } },
-    { label: t('sidebar.logOut'), onClick: () => { auth.logout(); setLocation('/login'); } },
-  ], [setLocation, t]);
 
   const getCallChatName = useCallback((chat: Chat) => {
     if (chat.type === 'public') {
@@ -205,18 +197,16 @@ export default function Sidebar() {
       <div className="sidebar">
         <ScrollArea>
           <div className="p-4 border-b border-gray-100">
-            <Menu
-              trigger={
-                <div className="w-full flex flex-col items-start gap-1.5 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                  <div className="flex items-center gap-2 w-full">
-                    <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
-                    <span className="text-sm font-semibold text-gray-900 truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span>
-                  </div>
-                  <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
-                </div>
-              }
-              items={menuItems}
-            />
+            <div
+              onClick={() => setLocation('/my')}
+              className="w-full flex flex-col items-start gap-1.5 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-2 w-full">
+                <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5" />
+                <span className="text-sm font-semibold text-gray-900 truncate">{currentSpace?.name || t('sidebar.selectSpace')}</span>
+              </div>
+              <span className="text-xs text-gray-500 truncate w-full">{auth.user?.name || auth.user?.email}</span>
+            </div>
           </div>
           <ChatList
             chats={chatList}
@@ -252,7 +242,6 @@ export default function Sidebar() {
           </div>
         ))}
       </div>
-      <UserSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }

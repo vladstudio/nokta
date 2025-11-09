@@ -39,7 +39,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   return (
     <div className="fixed inset-0 flex overflow-hidden">
-      {location !== '/my-spaces' && <Sidebar />}
+      {location !== '/my' && <Sidebar />}
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>
