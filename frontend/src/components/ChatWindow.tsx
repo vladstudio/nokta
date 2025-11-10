@@ -256,6 +256,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const handleReaction = async (messageId: string, emoji: string) => {
     try {
       await messagesAPI.toggleReaction(messageId, emoji);
+      setSelectedMessageId(null);
     } catch (err) {
       console.error('Failed to toggle reaction:', err);
     }

@@ -69,7 +69,13 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   );
 
   const renderTextMessage = () => (
-    <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
+    <p className="text-sm whitespace-pre-wrap wrap-break-word">
+      {message.content.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+        part.match(/^https?:\/\//) ?
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline hover:text-(--color-primary-600)">{part}</a>
+          : part
+      )}
+    </p>
   );
 
   const renderImageMessage = () => {
@@ -171,7 +177,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           {message.reactions && Object.keys(message.reactions).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {Object.entries(message.reactions).map(([emoji, userIds]) => (
-                <Button key={emoji} variant="ghost" size="icon" isSelected={userIds.includes(currentUserId)} onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs">
+                <Button key={emoji} variant="ghost" size="icon" isSelected={userIds.includes(currentUserId)} disabled={isOwn} onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs">
                   <span className="text-base">{emoji}</span>
                   <div className="flex -space-x-1">{userIds.slice(0, 4).map(uid => <UserAvatar key={uid} user={reactionUsers[uid]} size={16} className="border rounded-full! border-white" />)}</div>
                   {userIds.length > 4 && <span className="text-light ml-0.5">+{userIds.length - 4}</span>}
