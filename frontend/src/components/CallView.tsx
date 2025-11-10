@@ -45,7 +45,7 @@ function CallContent({ chat }: CallViewProps) {
 }
 
 export default function CallView({ chat }: CallViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
   const hasJoinedRef = useRef(false);
@@ -94,6 +94,7 @@ export default function CallView({ chat }: CallViewProps) {
         await callFrame.join({
           url: chat.daily_room_url,
           showLeaveButton: true,
+          lang: i18n.language as 'en' | 'ru',
         });
 
         if (!isCancelled) {

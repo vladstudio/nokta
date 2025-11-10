@@ -42,8 +42,8 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   if (!chatId) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-secondary)">
-        <img src="/icon-muted.svg" alt="" className="w-24 h-24 opacity-20" />
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
         <div className="text-light text-sm">{t('messages.selectChatToStart')}</div>
       </div>
     );
@@ -525,14 +525,17 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
       {/* Messages Area */}
       <ScrollArea ref={messagesContainerRef}>
-        <div className="p-1 grid auto-rows-min">
+        <div className="p-1 flex flex-col min-h-[50dvh]">
           {loadingOlder && (
             <div className="flex justify-center p-2">
               <LoadingSpinner size="sm" />
             </div>
           )}
           {allMessages.length === 0 ? (
-            <p className="text-sm text-light font-medium text-center p-1">{t('chatWindow.noMessages')}</p>
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light">
+              <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
+              {t('chatWindow.noMessages')}
+            </div>
           ) : (
             allMessages.map((message) => (
               <ChatMessage

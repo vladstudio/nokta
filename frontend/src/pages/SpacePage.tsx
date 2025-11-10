@@ -6,6 +6,7 @@ import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
 import { pb } from '../services/pocketbase';
@@ -17,6 +18,7 @@ export default function SpacePage() {
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
   const spaceId = params?.spaceId;
+  const isMobile = useIsMobile();
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
   const { isOnline } = useConnectionStatus();
@@ -125,6 +127,8 @@ export default function SpacePage() {
   if (isVideoCallsEnabled && showCallView && activeCallChat) {
     return <CallView chat={activeCallChat} />;
   }
+
+  if (isMobile && !chatId) return null;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">

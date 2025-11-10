@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation();
   const [location, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
   const isMobile = useIsMobile();
   const [isChecking, setIsChecking] = useState(true);
 
