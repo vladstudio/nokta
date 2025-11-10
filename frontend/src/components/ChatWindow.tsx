@@ -347,7 +347,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   const handleLeaveGroup = async () => {
     if (!chat || !currentUser) return;
     try {
-      await chats.removeParticipant(chat.id, chat, currentUser.id);
+      await chats.removeParticipant(chat.id, currentUser.id);
       setLocation(`/spaces/${params?.spaceId}`);
       toastManager.add({
         title: t('chats.leftChat'),
@@ -378,6 +378,16 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         data: { type: 'error' }
       });
     }
+  };
+
+  const handleConfirmLeaveGroup = () => {
+    handleLeaveGroup();
+    setLeaveDialogOpen(false);
+  };
+
+  const handleConfirmDeleteChat = () => {
+    handleDeleteChat();
+    setDeleteChatDialogOpen(false);
   };
 
   useHotkeys('esc', () => {
@@ -592,7 +602,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         footer={
           <>
             <Button variant="default" onClick={() => setLeaveDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button variant="primary" onClick={() => { handleLeaveGroup(); setLeaveDialogOpen(false); }}>{t('common.leave')}</Button>
+            <Button variant="primary" onClick={handleConfirmLeaveGroup}>{t('common.leave')}</Button>
           </>
         }
       >
@@ -608,7 +618,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         footer={
           <>
             <Button variant="default" onClick={() => setDeleteChatDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button variant="primary" onClick={() => { handleDeleteChat(); setDeleteChatDialogOpen(false); }}>{t('common.delete')}</Button>
+            <Button variant="primary" onClick={handleConfirmDeleteChat}>{t('common.delete')}</Button>
           </>
         }
       >

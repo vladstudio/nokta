@@ -56,7 +56,7 @@ export const spaces = {
 export const spaceMembers = {
   async list(spaceId: string) {
     const records = await pb.collection('space_members').getFullList<SpaceMember>({
-      filter: `space = "${spaceId}"`,
+      filter: pb.filter('space = {:spaceId}', { spaceId }),
       expand: 'user',
     });
     return records;
@@ -66,7 +66,7 @@ export const spaceMembers = {
 export const chats = {
   async list(spaceId: string) {
     const records = await pb.collection('chats').getFullList<Chat>({
-      filter: `space = "${spaceId}"`,
+      filter: pb.filter('space = {:spaceId}', { spaceId }),
       expand: 'participants,last_message_sender',
       sort: '-last_message_at',
     });
@@ -81,12 +81,15 @@ export const chats = {
   },
 
   async create(spaceId: string, type: 'public' | 'private', participants: string[], name?: string) {
+    if (!auth.user?.id) {
+      throw new Error('User must be authenticated to create a chat');
+    }
     return await pb.collection('chats').create<Chat>({
       space: spaceId,
       type,
       participants,
       name,
-      created_by: auth.user?.id,
+      created_by: auth.user.id,
     });
   },
 
@@ -94,7 +97,8 @@ export const chats = {
     await pb.collection('chats').delete(chatId);
   },
 
-  async removeParticipant(chatId: string, chat: Chat, userId: string) {
+  async removeParticipant(chatId: string, userId: string) {
+    const chat = await this.getOne(chatId);
     const updatedParticipants = chat.participants.filter(id => id !== userId);
     return await pb.collection('chats').update<Chat>(chatId, {
       participants: updatedParticipants,
@@ -113,7 +117,7 @@ export const chats = {
 export const messages = {
   async list(chatId: string, page = 1, perPage = 50) {
     const records = await pb.collection('messages').getList<Message>(page, perPage, {
-      filter: `chat = "${chatId}"`,
+      filter: pb.filter('chat = {:chatId}', { chatId }),
       expand: 'sender',
       sort: '-created', // Sort descending to get LATEST 50 messages
     });
@@ -167,14 +171,14 @@ export const messages = {
 
   async countUnread(chatId: string, afterTimestamp: string): Promise<number> {
     const result = await pb.collection('messages').getList(1, 1, {
-      filter: `chat = "${chatId}" && created > "${afterTimestamp}"`,
+      filter: pb.filter('chat = {:chatId} && created > {:afterTimestamp}', { chatId, afterTimestamp }),
     });
     return result.totalItems;
   },
 
   subscribe(chatId: string, callback: (data: PocketBaseEvent<Message>) => void) {
     return pb.collection('messages').subscribe('*', callback, {
-      filter: `chat = "${chatId}"`,
+      filter: pb.filter('chat = {:chatId}', { chatId }),
     });
   },
 
@@ -190,7 +194,7 @@ export const chatReadStatus = {
    */
   async getForSpace(userId: string, spaceId: string): Promise<Map<string, string>> {
     const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
-      filter: `user = "${userId}" && chat.space = "${spaceId}"`,
+      filter: pb.filter('user = {:userId} && chat.space = {:spaceId}', { userId, spaceId }),
       expand: 'chat',
     });
 
@@ -206,7 +210,7 @@ export const chatReadStatus = {
    */
   async getOrCreate(userId: string, chatId: string): Promise<ChatReadStatus> {
     const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
-      filter: `user = "${userId}" && chat = "${chatId}"`,
+      filter: pb.filter('user = {:userId} && chat = {:chatId}', { userId, chatId }),
     });
 
     if (records.length > 0) {

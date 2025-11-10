@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, Button, Input, FormLabel, ScrollArea, Checkbox } from '../ui';
+import { Dialog, Button, Input, FormLabel, ScrollArea, Checkbox, useToastManager } from '../ui';
 import { spaceMembers, chats, auth } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
 import type { SpaceMember } from '../types';
@@ -14,6 +14,7 @@ interface CreateGroupChatDialogProps {
 
 export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onChatCreated }: CreateGroupChatDialogProps) {
   const { t } = useTranslation();
+  const toastManager = useToastManager();
   const [chatName, setChatName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [members, setMembers] = useState<SpaceMember[]>([]);
@@ -31,18 +32,23 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
 
   const availableMembers = useMemo(() =>
     members.filter(m => m.expand?.user && m.user !== auth.user?.id),
-    [members]
+    [members, auth.user?.id]
   );
 
   const handleCreate = async () => {
-    if (selectedUsers.length === 0) return;
+    if (selectedUsers.length === 0 || !auth.user?.id) return;
     setCreating(true);
     try {
-      await chats.create(spaceId, 'private', [...selectedUsers, auth.user!.id], chatName || undefined);
+      await chats.create(spaceId, 'private', [...selectedUsers, auth.user.id], chatName.trim() || undefined);
       onOpenChange(false);
       onChatCreated?.();
     } catch (error) {
       console.error('Failed to create chat:', error);
+      toastManager.add({
+        title: t('chats.failedToCreate'),
+        description: t('chats.couldNotCreateChat'),
+        data: { type: 'error' },
+      });
     } finally {
       setCreating(false);
     }
