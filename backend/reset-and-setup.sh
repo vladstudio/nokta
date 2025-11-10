@@ -38,6 +38,30 @@ else
 fi
 
 echo ""
+
+# Load .env if exists
+if [ -f ".env" ]; then
+    export $(grep -v '^#' .env | xargs)
+    echo "✓ Loaded .env"
+else
+    echo "⚠️  No .env file found, using .env.example defaults"
+    export $(grep -v '^#' .env.example | xargs)
+fi
+
+# Create admin user
+echo "👑 Creating admin user..."
+./pocketbase superuser upsert "$ADMIN_EMAIL" "$ADMIN_PASSWORD" > /dev/null 2>&1
+echo "✓ Admin created: $ADMIN_EMAIL"
+echo ""
+
+# Install dependencies if needed
+if [ ! -d "node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    bun install
+    echo "✓ Dependencies installed"
+    echo ""
+fi
+
 echo "🚀 Starting PocketBase..."
 echo "   (Starting in background, logs in pocketbase.log)"
 echo ""
@@ -59,30 +83,10 @@ fi
 echo "✓ PocketBase is ready"
 echo ""
 
-# Install dependencies if needed
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    npm install
-    echo "✓ Dependencies installed"
-    echo ""
-fi
-
-# Run setup script (will show instructions if admin doesn't exist)
+# Run setup script
 echo "🎬 Running setup script..."
 echo ""
-npm run setup
-
-# If setup failed, wait for user to create admin and retry
-if [ $? -ne 0 ]; then
-    echo ""
-    read -p "Press Enter when you've created the admin account to retry..."
-    echo ""
-    echo "⏳ Waiting a moment for PocketBase to sync..."
-    sleep 2
-    echo "🔄 Retrying setup..."
-    echo ""
-    npm run setup
-fi
+bun run setup
 
 echo ""
 echo "✅ All done!"
