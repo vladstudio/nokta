@@ -22,7 +22,7 @@ const sizes: Record<Size, string> = {
 };
 
 export function Button({ variant = 'primary', size = 'default', className = '', disabled, isSelected, ref, ...props }: ButtonProps) {
-  const baseClasses = `${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`;
+  const baseClasses = `${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1`;
   const variantClasses = isSelected ? 'bg-(--color-bg-active)!' : variants[variant];
 
   return (

@@ -199,6 +199,11 @@ export default function Sidebar() {
     setLocation(`/spaces/${spaceId}/chat`);
   }, [spaceId, setLocation, setShowCallView]);
 
+  const handleChatCreated = useCallback((chatId: string) => {
+    loadChats();
+    setLocation(`/spaces/${spaceId}/chat/${chatId}`);
+  }, [loadChats, setLocation, spaceId]);
+
   return (
     <>
       <div className="sidebar">
@@ -286,7 +291,7 @@ export default function Sidebar() {
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
           spaceId={spaceId}
-          onChatCreated={loadChats}
+          onChatCreated={handleChatCreated}
         />
       )}
     </>

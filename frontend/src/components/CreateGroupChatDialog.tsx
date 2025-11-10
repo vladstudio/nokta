@@ -9,7 +9,7 @@ interface CreateGroupChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   spaceId: string;
-  onChatCreated?: () => void;
+  onChatCreated?: (chatId: string) => void;
 }
 
 export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onChatCreated }: CreateGroupChatDialogProps) {
@@ -39,9 +39,9 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
     if (selectedUsers.length === 0 || !auth.user?.id) return;
     setCreating(true);
     try {
-      await chats.create(spaceId, 'private', [...selectedUsers, auth.user.id], chatName.trim() || undefined);
+      const chat = await chats.create(spaceId, 'private', [...selectedUsers, auth.user.id], chatName.trim() || undefined);
       onOpenChange(false);
-      onChatCreated?.();
+      onChatCreated?.(chat.id);
     } catch (error) {
       console.error('Failed to create chat:', error);
       toastManager.add({

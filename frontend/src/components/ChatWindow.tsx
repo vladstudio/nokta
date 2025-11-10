@@ -3,7 +3,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useRoute } from 'wouter';
 import { useAtom } from 'jotai';
-import { PhoneIcon, ArrowLeft, DotsThreeVertical } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -470,7 +470,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
         <div className="flex items-center gap-2">
           {isMobile && (
             <button onClick={handleBack} className="p-1 -ml-2">
-              <ArrowLeft size={20} className="text-accent" />
+              <ArrowLeftIcon size={20} className="text-accent" />
             </button>
           )}
           <h2 className="font-semibold flex-1">{getChatName(chat)}</h2>
@@ -519,7 +519,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             <Menu
               trigger={
                 <Button variant="ghost" size="icon">
-                  <DotsThreeVertical size={20} />
+                  <DotsThreeIcon weight="bold" size={20} className="text-accent" />
                 </Button>
               }
               items={

@@ -173,3 +173,7 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 - `docs/daily-react.md` - Daily.co video call documentation
 - `project.md` - Original project specification
 - `ARCHITECTURE_SUMMARY.txt` - Detailed architecture overview
+
+Also,
+
+- for all icons, use '@phosphor-icons/react': <SomeIcon size={20} className="text-accent" />
