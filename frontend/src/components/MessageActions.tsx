@@ -7,12 +7,13 @@ interface MessageActionsProps {
   onDelete?: () => void;
   onCopy?: () => void;
   onReact?: (emoji: string) => void;
+  userReactions?: string[];
 }
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉'];
-const MORE_EMOJIS = ['🔥', '👏', '💯', '✅', '😍', '🤔', '👀', '💪', '🙏', '⭐', '🚀', '💡'];
+const MORE_EMOJIS = ['🔥', '👏', '💯', '✅', '😍', '🤔', '👀', '💪', '🙏', '⭐', '🚀', '💡', '🎯', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎵', '🎸', '🎹', '🎺', '🎻', '🥁', '🎮', '🎲', '🎰', '🧩', '🎳', '🎯', '🎱', '🏆', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥊'];
 
-export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReact }: MessageActionsProps) {
+export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReact, userReactions }: MessageActionsProps) {
   const { t } = useTranslation();
 
   return (
@@ -20,12 +21,12 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
       {onReact && (
         <>
           {QUICK_EMOJIS.map(emoji => (
-            <button key={emoji} onClick={() => onReact(emoji)} className="text-xl hover:scale-110 transition-transform">{emoji}</button>
+            <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl">{emoji}</Button>
           ))}
-          <Popover trigger={<span className="text-lg cursor-pointer hover:scale-110 transition-transform">...</span>}>
-            <div className="grid grid-cols-6 gap-1">
+          <Popover trigger={<Button variant="ghost" size="icon" className="text-lg">...</Button>}>
+            <div className="grid grid-cols-8 gap-1">
               {MORE_EMOJIS.map(emoji => (
-                <button key={emoji} onClick={() => onReact(emoji)} className="text-xl hover:scale-110 transition-transform p-1">{emoji}</button>
+                <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl">{emoji}</Button>
               ))}
             </div>
           </Popover>

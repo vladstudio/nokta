@@ -7,8 +7,8 @@
   /* Colors - Warm wooden palette */
   --color-bg-primary: #fdfbf7;
   --color-bg-secondary: #f5f1e8;
-  --color-bg-hover: #c9bda518;
-  --color-bg-active: #c8655518;
+  --color-bg-hover: #c9bda522;
+  --color-bg-active: #c8655533;
 
   /* Text colors */
   --color-text-primary: #2d2416;
@@ -48,8 +48,8 @@
     /* Colors - Dark wooden palette */
     --color-bg-primary: #1a1410;
     --color-bg-secondary: #0f0c08;
-    --color-bg-hover: #4d402a22;
-    --color-bg-active: #c8655522;
+    --color-bg-hover: #4d402a44;
+    --color-bg-active: #b4530955;
 
     /* Text colors */
     --color-text-primary: #f5f1e8;

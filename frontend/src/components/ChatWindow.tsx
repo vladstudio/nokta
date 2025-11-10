@@ -584,6 +584,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
             onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
             onReact={!canEditOrDelete && selectedMessageId ? (emoji) => handleReaction(selectedMessageId, emoji) : undefined}
+            userReactions={selectedMessage?.reactions ? Object.keys(selectedMessage.reactions).filter(emoji => selectedMessage.reactions![emoji].includes(currentUser?.id || '')) : undefined}
           />
         ) : (
           <MessageInput

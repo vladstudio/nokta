@@ -17,10 +17,10 @@ interface MenuProps {
 export function Menu({ trigger, items, className = '' }: MenuProps) {
   return (
     <BaseMenu.Root>
-      <BaseMenu.Trigger render={trigger} className={className} />
+      <BaseMenu.Trigger className={className}>{trigger}</BaseMenu.Trigger>
       <BaseMenu.Portal>
         <BaseMenu.Positioner sideOffset={4}>
-          <BaseMenu.Popup className="z-50 min-w-[160px]">
+          <BaseMenu.Popup className="z-50 min-w-40">
             <Card shadow="lg" border className="py-1">
               {items.map((item, i) => (
                 <BaseMenu.Item

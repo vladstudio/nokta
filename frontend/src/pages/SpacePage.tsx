@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useAtom } from 'jotai';
-import { useTranslation } from 'react-i18next';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import { callsAPI } from '../services/calls';
@@ -13,7 +12,6 @@ import { pb } from '../services/pocketbase';
 import type { Chat } from '../types';
 
 export default function SpacePage() {
-  const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
@@ -131,7 +129,7 @@ export default function SpacePage() {
       {isVideoCallsEnabled && activeCallChat && (
         <CallView show={showCallView} chat={activeCallChat} />
       )}
-      <div className={`flex-1 flex flex-col overflow-hidden bg-white ${showCallView ? 'hidden' : ''}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${showCallView ? 'hidden' : ''}`}>
         <ChatWindow key={chatId || 'empty'} chatId={chatId} />
       </div>
     </>

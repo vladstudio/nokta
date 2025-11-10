@@ -6,6 +6,7 @@ type Size = 'default' | 'icon';
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
+  isSelected?: boolean;
   ref?: React.Ref<HTMLButtonElement>;
 }
 
@@ -20,12 +21,15 @@ const sizes: Record<Size, string> = {
   icon: 'p-2',
 };
 
-export function Button({ variant = 'primary', size = 'default', className = '', disabled, ref, ...props }: ButtonProps) {
+export function Button({ variant = 'primary', size = 'default', className = '', disabled, isSelected, ref, ...props }: ButtonProps) {
+  const baseClasses = `${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`;
+  const variantClasses = isSelected ? 'bg-(--color-bg-active)!' : variants[variant];
+
   return (
     <button
       ref={ref}
       disabled={disabled}
-      className={`${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${className}`}
       {...props}
     />
   );

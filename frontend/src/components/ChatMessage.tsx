@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
+import { Button } from '../ui';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -168,21 +169,13 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         )}>
           {renderContent()}
           {message.reactions && Object.keys(message.reactions).length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-(--color-border-default)/30">
+            <div className="flex flex-wrap gap-1 mt-2">
               {Object.entries(message.reactions).map(([emoji, userIds]) => (
-                <button
-                  key={emoji}
-                  onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }}
-                  className={clsx("flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-all",
-                    userIds.includes(currentUserId) ? "bg-(--color-primary-100) border-(--color-primary-300)" : "bg-(--color-bg-hover) border-(--color-border-default)"
-                  )}
-                >
+                <Button key={emoji} variant="ghost" size="icon" isSelected={userIds.includes(currentUserId)} onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs">
                   <span className="text-base">{emoji}</span>
-                  <div className="flex -space-x-1">
-                    {userIds.slice(0, 4).map(uid => <UserAvatar key={uid} user={reactionUsers[uid]} size={16} className="border rounded-full! border-white" />)}
-                  </div>
+                  <div className="flex -space-x-1">{userIds.slice(0, 4).map(uid => <UserAvatar key={uid} user={reactionUsers[uid]} size={16} className="border rounded-full! border-white" />)}</div>
                   {userIds.length > 4 && <span className="text-light ml-0.5">+{userIds.length - 4}</span>}
-                </button>
+                </Button>
               ))}
             </div>
           )}

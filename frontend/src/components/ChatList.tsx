@@ -36,10 +36,8 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       key={chat.id}
       variant="ghost"
       onClick={handleClick}
-      className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
-        ? 'bg-(--color-bg-active)!'
-        : 'bg-(--color-bg-primary)'
-        }`}
+      isSelected={isSelected}
+      className="w-full p-2! text-left flex items-center gap-2"
     >
       <div className="relative shrink-0">
         {chat.type === 'private' ? (

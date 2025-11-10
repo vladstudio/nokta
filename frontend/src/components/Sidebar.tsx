@@ -231,16 +231,17 @@ export default function Sidebar() {
               const Container = isInCall ? Button : 'div';
               const containerProps = isInCall ? {
                 variant: 'ghost' as const,
-                onClick: handleShowActiveCall
+                onClick: handleShowActiveCall,
+                isSelected: isSelected
               } : {};
 
               return (
                 <Container
                   key={call.id}
                   {...containerProps}
-                  className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
+                  className={`w-full p-2! text-left flex items-center gap-2 ${!isInCall && isSelected
                     ? 'bg-(--color-bg-active)!'
-                    : 'bg-(--color-bg-primary)'
+                    : !isInCall ? 'bg-(--color-bg-primary)' : ''
                   }`}
                 >
                   <div className="shrink-0">
