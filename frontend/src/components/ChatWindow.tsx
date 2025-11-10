@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useRoute } from 'wouter';
+import { useLocation, useRoute, useSearch } from 'wouter';
 import { useAtom } from 'jotai';
 import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
@@ -50,6 +50,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   }
 
   const [location, setLocation] = useLocation();
+  const searchString = useSearch();
   const toastManager = useToastManager();
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
@@ -83,9 +84,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   // Parse anchor message from URL param
   const anchorMessageId = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('msg') || undefined;
-  }, [location]);
+    const searchParams = new URLSearchParams(searchString);
+    return searchParams.get('msg') || undefined;
+  }, [searchString]);
 
   // Use custom hooks
   const {

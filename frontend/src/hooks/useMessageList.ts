@@ -92,7 +92,9 @@ export function useMessageList(chatId: string, anchorMessageId?: string): UseMes
   // Initial load and real-time subscriptions
   useEffect(() => {
     setLoading(true);
+    setMessages([]);
     setHasMore(false);
+    setHasMoreAfter(false);
     setLoadingOlder(false);
     loadMessages();
 
