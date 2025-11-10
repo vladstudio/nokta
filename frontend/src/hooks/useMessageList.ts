@@ -10,40 +10,48 @@ export interface UseMessageListReturn {
   loading: boolean;
   loadingOlder: boolean;
   hasMore: boolean;
+  hasMoreAfter: boolean;
   loadOlderMessages: () => Promise<void>;
   typingUsers: Array<{ userId: string; userName: string }>;
   setTypingUsers: React.Dispatch<React.SetStateAction<Array<{ userId: string; userName: string }>>>;
 }
 
-export function useMessageList(chatId: string): UseMessageListReturn {
+export function useMessageList(chatId: string, anchorMessageId?: string): UseMessageListReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [hasMoreAfter, setHasMoreAfter] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string }>>([]);
   const lastLoadTimeRef = useRef(0);
 
   const loadMessages = useCallback(async () => {
     try {
-      const cached = await messageCache.getMessages(chatId);
-      if (cached.length > 0) setMessages(cached);
+      if (anchorMessageId) {
+        const result = await messagesAPI.getAround(anchorMessageId, 50);
+        setMessages(result.items);
+        setHasMore(result.hasMoreBefore);
+        setHasMoreAfter(result.hasMoreAfter);
+      } else {
+        const cached = await messageCache.getMessages(chatId);
+        if (cached.length > 0) setMessages(cached);
 
-      const result = await messagesAPI.list(chatId, 1, 50);
-      const chronologicalMessages = [...result.items].reverse();
-      setMessages(chronologicalMessages);
-      setHasMore(result.totalPages > 1);
-      setPage(1);
+        const result = await messagesAPI.list(chatId, 1, 50);
+        const chronologicalMessages = [...result.items].reverse();
+        setMessages(chronologicalMessages);
+        setHasMore(result.totalPages > 1);
+        setHasMoreAfter(false);
 
-      await messageCache.saveMessages(chatId, chronologicalMessages);
+        await messageCache.saveMessages(chatId, chronologicalMessages);
+      }
     } catch (err) {
       console.error('Failed to load messages:', err);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [chatId]);
+  }, [chatId, anchorMessageId]);
 
   const loadOlderMessages = useCallback(async () => {
     if (loadingOlder || !hasMore) return;
@@ -51,11 +59,16 @@ export function useMessageList(chatId: string): UseMessageListReturn {
     setLoadingOlder(true);
 
     try {
-      const nextPage = page + 1;
-      const result = await messagesAPI.list(chatId, nextPage, 50);
+      const firstMsg = messages[0];
+      if (!firstMsg) {
+        setLoadingOlder(false);
+        return;
+      }
 
+      const result = await messagesAPI.list(chatId, 1, 50, firstMsg.created);
       if (result.items.length === 0) {
         setHasMore(false);
+        setLoadingOlder(false);
         return;
       }
 
@@ -68,19 +81,17 @@ export function useMessageList(chatId: string): UseMessageListReturn {
         });
         return updated;
       });
-      setPage(nextPage);
-      setHasMore(result.page < result.totalPages);
+      setHasMore(result.totalPages > 1);
     } catch (err) {
       console.error('Failed to load older messages:', err);
-      throw err;
     } finally {
       setLoadingOlder(false);
     }
-  }, [loadingOlder, hasMore, page, chatId]);
+  }, [loadingOlder, hasMore, chatId, messages]);
 
   // Initial load and real-time subscriptions
   useEffect(() => {
-    setPage(1);
+    setLoading(true);
     setHasMore(false);
     setLoadingOlder(false);
     loadMessages();
@@ -135,6 +146,7 @@ export function useMessageList(chatId: string): UseMessageListReturn {
     loading,
     loadingOlder,
     hasMore,
+    hasMoreAfter,
     loadOlderMessages,
     typingUsers,
     setTypingUsers,

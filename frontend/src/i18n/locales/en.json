@@ -30,7 +30,8 @@
     "messageDeleted": "Message deleted",
     "copied": "Copied",
     "imageCopied": "Image copied",
-    "defaultChatName": "Chat"
+    "defaultChatName": "Chat",
+    "jumpToPresent": "Jump to present"
   },
   "messageInput": {
     "placeholder": "Type a message..."

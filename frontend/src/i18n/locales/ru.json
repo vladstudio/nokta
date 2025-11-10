@@ -30,7 +30,8 @@
     "messageDeleted": "Сообщение удалено",
     "copied": "Скопировано",
     "imageCopied": "Изображение скопировано",
-    "defaultChatName": "Чат"
+    "defaultChatName": "Чат",
+    "jumpToPresent": "К последним"
   },
   "messageInput": {
     "placeholder": "Введите сообщение..."

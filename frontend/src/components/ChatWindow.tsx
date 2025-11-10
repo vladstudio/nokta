@@ -49,7 +49,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     );
   }
 
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const toastManager = useToastManager();
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
@@ -81,6 +81,12 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
   };
 
+  // Parse anchor message from URL param
+  const anchorMessageId = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('msg') || undefined;
+  }, [location]);
+
   // Use custom hooks
   const {
     messages,
@@ -88,10 +94,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     loading,
     loadingOlder,
     hasMore,
+    hasMoreAfter,
     loadOlderMessages,
     typingUsers,
     setTypingUsers,
-  } = useMessageList(chatId);
+  } = useMessageList(chatId, anchorMessageId);
 
   const { onTyping } = useTypingIndicator(chatId, setTypingUsers);
 
@@ -169,6 +176,13 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     };
   }, [chatId]);
 
+  // Sync selected message to hash (without scrolling)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.hash = selectedMessageId ? `msg-${selectedMessageId}` : '';
+    history.replaceState(null, '', url.toString());
+  }, [selectedMessageId]);
+
   // Process queue when connection is restored
   useEffect(() => {
     if (isOnline) {
@@ -179,8 +193,19 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   }, [isOnline]);
 
+  // Scroll to anchor message after initial load (once)
+  useEffect(() => {
+    if (!loading && anchorMessageId && messages.length > 0 && !scrollStateRef.current.hasScrolledInitially) {
+      scrollStateRef.current.hasScrolledInitially = true;
+      requestAnimationFrame(() => {
+        document.getElementById(`msg-${anchorMessageId}`)?.scrollIntoView({ block: 'center' });
+      });
+    }
+  }, [loading, anchorMessageId, messages.length]);
+
   // Auto-scroll: on initial load, when current user sends, OR when new message arrives and already at bottom
   useEffect(() => {
+    if (anchorMessageId) return; // Skip auto-scroll in anchor mode
     const { lastMsgId: prevLastId, pendingCount: prevPending, hasScrolledInitially } = scrollStateRef.current;
     const lastMsg = messages[messages.length - 1];
     const lastMsgId = lastMsg?.id || '';
@@ -200,7 +225,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       }
     }
     if (prevPending && pendingMessages.length > prevPending) requestAnimationFrame(scrollToBottom);
-  }, [messages, pendingMessages, loading, currentUser?.id]);
+  }, [messages, pendingMessages, loading, currentUser?.id, anchorMessageId]);
 
   // Scroll handler for loading older messages
   // Dependencies: only re-run when loading state changes (initial mount -> loaded)
@@ -560,6 +585,11 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                 onReactionClick={(emoji) => handleReaction(message.id, emoji)}
               />
             ))
+          )}
+          {hasMoreAfter && (
+            <div className="flex justify-center p-4">
+              <Button variant="default" onClick={() => setLocation(`/spaces/${params?.spaceId}/chat/${chatId}`)}>{t('chatWindow.jumpToPresent')}</Button>
+            </div>
           )}
           <div ref={messagesEndRef} />
         </div>

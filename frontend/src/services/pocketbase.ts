@@ -122,11 +122,14 @@ export const chats = {
 };
 
 export const messages = {
-  async list(chatId: string, page = 1, perPage = 50) {
+  async list(chatId: string, page = 1, perPage = 50, beforeTimestamp?: string) {
+    const filter = beforeTimestamp
+      ? pb.filter('chat = {:chatId} && created < {:beforeTimestamp}', { chatId, beforeTimestamp })
+      : pb.filter('chat = {:chatId}', { chatId });
     const records = await pb.collection('messages').getList<Message>(page, perPage, {
-      filter: pb.filter('chat = {:chatId}', { chatId }),
+      filter,
       expand: 'sender',
-      sort: '-created', // Sort descending to get LATEST 50 messages
+      sort: '-created',
     });
     return records;
   },
@@ -136,6 +139,29 @@ export const messages = {
       expand: 'sender',
     });
     return record;
+  },
+
+  async getAround(messageId: string, total = 50) {
+    const targetMsg = await this.getOne(messageId);
+    const halfCount = Math.floor(total / 2);
+    const [beforeResult, afterResult] = await Promise.all([
+      pb.collection('messages').getList<Message>(1, halfCount, {
+        filter: pb.filter('chat = {:chatId} && created < {:created}', { chatId: targetMsg.chat, created: targetMsg.created }),
+        expand: 'sender',
+        sort: '-created',
+      }),
+      pb.collection('messages').getList<Message>(1, total - halfCount, {
+        filter: pb.filter('chat = {:chatId} && created >= {:created}', { chatId: targetMsg.chat, created: targetMsg.created }),
+        expand: 'sender',
+        sort: 'created',
+      }),
+    ]);
+    return {
+      items: [...beforeResult.items.reverse(), ...afterResult.items],
+      hasMoreBefore: beforeResult.totalItems > halfCount,
+      hasMoreAfter: afterResult.totalItems > (total - halfCount),
+      targetIndex: beforeResult.items.length,
+    };
   },
 
   async create(chatId: string, content: string) {
