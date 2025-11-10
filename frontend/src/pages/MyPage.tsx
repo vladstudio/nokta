@@ -91,6 +91,7 @@ export default function MyPage() {
         title: t('userSettingsDialog.settingsSaved'),
         data: { type: 'success' },
       });
+      setLocation('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     } finally {

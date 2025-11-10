@@ -26,7 +26,7 @@ import { isVideoCallsEnabled } from '../config/features';
 import type { Message, Chat } from '../types';
 
 interface ChatWindowProps {
-  chatId: string;
+  chatId?: string;
 }
 
 interface DisplayMessage extends Message {
@@ -38,7 +38,17 @@ interface DisplayMessage extends Message {
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
   const { t } = useTranslation();
-  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+
+  if (!chatId) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-secondary)">
+        <img src="/icon-muted.svg" alt="" className="w-24 h-24 opacity-20" />
+        <div className="text-light text-sm">{t('messages.selectChatToStart')}</div>
+      </div>
+    );
+  }
+
   const [, setLocation] = useLocation();
   const toastManager = useToastManager();
   const currentUser = auth.user;
@@ -341,7 +351,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const handleBack = () => {
-    setLocation(`/spaces/${params?.spaceId}/chats`);
+    setLocation(`/spaces/${params?.spaceId}`);
   };
 
   const handleLeaveGroup = async () => {

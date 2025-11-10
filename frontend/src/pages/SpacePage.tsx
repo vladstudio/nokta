@@ -13,7 +13,7 @@ import type { Chat } from '../types';
 
 export default function SpacePage() {
   const { t } = useTranslation();
-  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
   const [, setLocation] = useLocation();
   const chatId = params?.chatId;
   const spaceId = params?.spaceId;
@@ -25,7 +25,7 @@ export default function SpacePage() {
     const handleNotificationClick = (event: Event) => {
       const { chatId: targetChatId, spaceId: targetSpaceId } = (event as CustomEvent).detail;
       if (targetSpaceId && targetChatId) {
-        setLocation(`/spaces/${targetSpaceId}/chats/${targetChatId}`);
+        setLocation(`/spaces/${targetSpaceId}/${targetChatId}`);
       }
     };
     window.addEventListener('notification-click', handleNotificationClick);
@@ -128,11 +128,7 @@ export default function SpacePage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      {chatId ? (
-        <ChatWindow chatId={chatId} />
-      ) : (
-        <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('messages.selectChatToStart')}</p>
-      )}
+      <ChatWindow key={chatId || 'empty'} chatId={chatId} />
     </div>
   );
 }

@@ -45,7 +45,7 @@ function App() {
         } else {
           const lastSpaceId = localStorage.getItem(LAST_SPACE_KEY);
           const targetSpace = spaceList.find(s => s.id === lastSpaceId) || spaceList[0];
-          setLocation(`/spaces/${targetSpace.id}/chats`);
+          setLocation(`/spaces/${targetSpace.id}`);
         }
       }).catch((err) => {
         console.error('Failed to load spaces:', err);
@@ -87,7 +87,7 @@ function App() {
                 <MyPage />
               </ProtectedRoute>
             </Route>
-            <Route path="/spaces/:spaceId/chats/:chatId?">
+            <Route path="/spaces/:spaceId/:chatId?">
               <ProtectedRoute>
                 <SpacePage />
               </ProtectedRoute>

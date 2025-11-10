@@ -21,7 +21,7 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/chats/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
   const spaceId = params?.spaceId;
   const chatId = params?.chatId;
 
@@ -42,13 +42,10 @@ export default function Sidebar() {
     try {
       const data = await chats.list(spaceId);
       setChatList(data);
-      if (!chatId && data.length > 0) {
-        setLocation(`/spaces/${spaceId}/chats/${data[0].id}`);
-      }
     } catch {
       setChatList([]);
     }
-  }, [spaceId, chatId, setLocation]);
+  }, [spaceId]);
 
   const loadActiveCalls = useCallback(async () => {
     if (!spaceId) return;
@@ -194,7 +191,7 @@ export default function Sidebar() {
   }, [joiningCalls, setActiveCallChat, setShowCallView, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
-    setLocation(`/spaces/${spaceId}/chats/${newChatId}`);
+    setLocation(`/spaces/${spaceId}/${newChatId}`);
   }, [spaceId, setLocation]);
 
   return (
