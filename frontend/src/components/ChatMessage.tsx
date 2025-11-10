@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import type { Message } from '../types';
-import { messages as messagesAPI } from '../services/pocketbase';
+import type { Message, User } from '../types';
+import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
+import { UserAvatar } from './Avatar';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -18,11 +20,22 @@ interface ChatMessageProps {
   onSelect: () => void;
   onRetry?: (tempId: string) => void;
   onCancelUpload?: (tempId: string) => void;
+  onReactionClick?: (emoji: string) => void;
 }
 
-export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRetry, onCancelUpload }: ChatMessageProps) {
+export default function ChatMessage({ message, isOwn, currentUserId, isSelected, onSelect, onRetry, onCancelUpload, onReactionClick }: ChatMessageProps) {
   const { t } = useTranslation();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
+  const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
+
+  useEffect(() => {
+    if (!message.reactions) return;
+    const allUserIds = [...new Set(Object.values(message.reactions).flat())];
+    if (!allUserIds.length) return;
+    usersAPI.getMany(allUserIds).then(users => {
+      setReactionUsers(Object.fromEntries(users.map(u => [u.id, u])));
+    });
+  }, [message.reactions]);
 
   const renderUploadingState = () => (
     <div className="space-y-1">
@@ -154,6 +167,25 @@ export default function ChatMessage({ message, isOwn, isSelected, onSelect, onRe
           message.isPending && 'opacity-70'
         )}>
           {renderContent()}
+          {message.reactions && Object.keys(message.reactions).length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-(--color-border-default)/30">
+              {Object.entries(message.reactions).map(([emoji, userIds]) => (
+                <button
+                  key={emoji}
+                  onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }}
+                  className={clsx("flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-all",
+                    userIds.includes(currentUserId) ? "bg-(--color-primary-100) border-(--color-primary-300)" : "bg-(--color-bg-hover) border-(--color-border-default)"
+                  )}
+                >
+                  <span className="text-base">{emoji}</span>
+                  <div className="flex -space-x-1">
+                    {userIds.slice(0, 4).map(uid => <UserAvatar key={uid} user={reactionUsers[uid]} size={16} className="border rounded-full! border-white" />)}
+                  </div>
+                  {userIds.length > 4 && <span className="text-light ml-0.5">+{userIds.length - 4}</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

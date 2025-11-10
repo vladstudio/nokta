@@ -126,7 +126,7 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 ### Routing (wouter)
 - `/login` - LoginPage (public)
 - `/my-spaces` - MySpacesPage (list of spaces)
-- `/spaces/:spaceId/chats/:chatId?` - SpacePage (main chat UI)
+- `/spaces/:spaceId/chat/:chatId?` - SpacePage (main chat UI)
 
 ### Video Calling
 - Daily.co SDK integration (`@daily-co/daily-react`)

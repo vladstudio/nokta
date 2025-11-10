@@ -57,7 +57,7 @@ export default function MyPage() {
 
   const handleSpaceClick = useCallback((space: Space) => {
     localStorage.setItem(LAST_SPACE_KEY, space.id);
-    setLocation(`/spaces/${space.id}/chats`);
+    setLocation(`/spaces/${space.id}/chat`);
   }, [setLocation]);
 
   const handleAvatarChange = (file: File | null) => {

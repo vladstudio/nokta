@@ -43,6 +43,13 @@ export const auth = {
   },
 };
 
+export const users = {
+  async getMany(ids: string[]) {
+    if (!ids.length) return [];
+    return await pb.collection('users').getFullList<User>({ filter: ids.map(id => `id='${id}'`).join('||') });
+  },
+};
+
 export const spaces = {
   async list() {
     return await pb.collection('spaces').getFullList<Space>();
@@ -184,6 +191,17 @@ export const messages = {
 
   unsubscribe(subscriptionId?: string) {
     return pb.collection('messages').unsubscribe(subscriptionId);
+  },
+
+  async toggleReaction(messageId: string, emoji: string) {
+    const msg = await pb.collection('messages').getOne<Message>(messageId);
+    const reactions = { ...(msg.reactions || {}) };
+    const userId = auth.user!.id;
+    if (!reactions[emoji]) reactions[emoji] = [];
+    const idx = reactions[emoji].indexOf(userId);
+    idx > -1 ? reactions[emoji].splice(idx, 1) : reactions[emoji].push(userId);
+    if (!reactions[emoji].length) delete reactions[emoji];
+    return await pb.collection('messages').update<Message>(messageId, { reactions });
   },
 };
 

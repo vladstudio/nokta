@@ -38,7 +38,7 @@ interface DisplayMessage extends Message {
 
 export default function ChatWindow({ chatId }: ChatWindowProps) {
   const { t } = useTranslation();
-  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
   if (!chatId) {
     return (
@@ -253,6 +253,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   };
 
+  const handleReaction = async (messageId: string, emoji: string) => {
+    try {
+      await messagesAPI.toggleReaction(messageId, emoji);
+    } catch (err) {
+      console.error('Failed to toggle reaction:', err);
+    }
+  };
+
   const handleEditMessage = () => {
     setEditDialogOpen(true);
   };
@@ -338,7 +346,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       const callChat = await callsAPI.startCall(chat.id);
       setActiveCallChat(callChat);
       setShowCallView(true);
-      setLocation(`/spaces/${params?.spaceId}`);
+      setLocation(`/spaces/${params?.spaceId}/chat`);
     } catch (error) {
       console.error('Failed to start call:', error);
       toastManager.add({
@@ -352,14 +360,14 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
   };
 
   const handleBack = () => {
-    setLocation(`/spaces/${params?.spaceId}`);
+    setLocation(`/spaces/${params?.spaceId}/chat`);
   };
 
   const handleLeaveGroup = async () => {
     if (!chat || !currentUser) return;
     try {
       await chats.removeParticipant(chat.id, currentUser.id);
-      setLocation(`/spaces/${params?.spaceId}`);
+      setLocation(`/spaces/${params?.spaceId}/chat`);
       toastManager.add({
         title: t('chats.leftChat'),
         data: { type: 'success' }
@@ -377,7 +385,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     if (!chat) return;
     try {
       await chats.delete(chat.id);
-      setLocation(`/spaces/${params?.spaceId}`);
+      setLocation(`/spaces/${params?.spaceId}/chat`);
       toastManager.add({
         title: t('chats.chatDeleted'),
         data: { type: 'success' }
@@ -548,6 +556,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
                 onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
                 onRetry={message.type === 'text' ? handleRetryMessage : handleRetryUpload}
                 onCancelUpload={handleCancelUpload}
+                onReactionClick={(emoji) => handleReaction(message.id, emoji)}
               />
             ))
           )}
@@ -574,6 +583,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
             onCopy={selectedMessage?.type !== 'file' ? handleCopyMessage : undefined}
             onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
             onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
+            onReact={!canEditOrDelete && selectedMessageId ? (emoji) => handleReaction(selectedMessageId, emoji) : undefined}
           />
         ) : (
           <MessageInput

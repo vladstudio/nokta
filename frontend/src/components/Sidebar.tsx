@@ -21,7 +21,7 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/:chatId?');
+  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
   const spaceId = params?.spaceId;
   const chatId = params?.chatId;
 
@@ -172,7 +172,7 @@ export default function Sidebar() {
       const chat = await callsAPI.startCall(callChatId);
       setActiveCallChat(chat);
       setShowCallView(true);
-      setLocation(`/spaces/${spaceId}`);
+      setLocation(`/spaces/${spaceId}/chat`);
     } catch (error) {
       console.error('Failed to join call:', error);
       toastManager.add({
@@ -191,12 +191,12 @@ export default function Sidebar() {
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setShowCallView(false);
-    setLocation(`/spaces/${spaceId}/${newChatId}`);
+    setLocation(`/spaces/${spaceId}/chat/${newChatId}`);
   }, [spaceId, setLocation, setShowCallView]);
 
   const handleShowActiveCall = useCallback(() => {
     setShowCallView(true);
-    setLocation(`/spaces/${spaceId}`);
+    setLocation(`/spaces/${spaceId}/chat`);
   }, [spaceId, setLocation, setShowCallView]);
 
   return (
@@ -226,11 +226,18 @@ export default function Sidebar() {
             {activeCalls.map(call => {
               const isInCall = activeCallChat?.id === call.id;
               const isSelected = isInCall && !chatId;
+
+              // Use Button only when clickable (isInCall), otherwise use div to avoid nested buttons
+              const Container = isInCall ? Button : 'div';
+              const containerProps = isInCall ? {
+                variant: 'ghost' as const,
+                onClick: handleShowActiveCall
+              } : {};
+
               return (
-                <Button
+                <Container
                   key={call.id}
-                  variant="ghost"
-                  onClick={isInCall ? handleShowActiveCall : undefined}
+                  {...containerProps}
                   className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
                     ? 'bg-(--color-bg-active)!'
                     : 'bg-(--color-bg-primary)'
@@ -250,7 +257,7 @@ export default function Sidebar() {
                   {!isInCall && (
                     <div className="shrink-0">
                       <Button
-                        onClick={(e) => { e.stopPropagation(); handleJoinCall(call.id); }}
+                        onClick={() => handleJoinCall(call.id)}
                         disabled={joiningCalls.has(call.id)}
                         variant="primary"
                         className="text-xs"
@@ -259,7 +266,7 @@ export default function Sidebar() {
                       </Button>
                     </div>
                   )}
-                </Button>
+                </Container>
               );
             })}
           </div>

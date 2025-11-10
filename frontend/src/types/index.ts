@@ -58,6 +58,7 @@ export interface Message {
   type: 'text' | 'image' | 'file';
   content: string;
   file?: string;
+  reactions?: Record<string, string[]>;
   created?: string;
   updated?: string;
   expand?: {
