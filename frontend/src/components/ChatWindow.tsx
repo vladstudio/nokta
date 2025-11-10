@@ -338,6 +338,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       const callChat = await callsAPI.startCall(chat.id);
       setActiveCallChat(callChat);
       setShowCallView(true);
+      setLocation(`/spaces/${params?.spaceId}`);
     } catch (error) {
       console.error('Failed to start call:', error);
       toastManager.add({

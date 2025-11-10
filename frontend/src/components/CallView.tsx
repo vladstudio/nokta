@@ -8,6 +8,7 @@ import { pb } from '../services/pocketbase';
 import type { Chat } from '../types';
 
 interface CallViewProps {
+  show: boolean;
   chat: Chat;
 }
 
@@ -44,7 +45,7 @@ function CallContent({ chat }: CallViewProps) {
   return null;
 }
 
-export default function CallView({ chat }: CallViewProps) {
+export default function CallView({ show, chat }: CallViewProps) {
   const { t, i18n } = useTranslation();
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -66,7 +67,7 @@ export default function CallView({ chat }: CallViewProps) {
   // Check for required data AFTER calling all hooks (Rules of Hooks)
   if (!chat.daily_room_url) {
     return (
-      <div className="flex items-center justify-center h-full bg-black text-white">
+      <div className={show ? 'flex items-center justify-center h-full bg-black text-white' : 'hidden'}>
         <div className="text-center">
           <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
           <p className="text-sm text-light">{t('calls.tryStartingCallAgain')}</p>
@@ -126,7 +127,7 @@ export default function CallView({ chat }: CallViewProps) {
 
   return (
     <DailyProvider callObject={callFrame}>
-      <div ref={containerRef} className="relative w-full h-full bg-black">
+      <div ref={containerRef} className={show ? 'relative w-full h-full bg-black' : 'hidden'}>
         {/* Show loading overlay */}
         {isJoining && (
           <div className="absolute inset-0 flex items-center justify-center bg-black text-white z-10">
@@ -155,7 +156,7 @@ export default function CallView({ chat }: CallViewProps) {
           </div>
         )}
       </div>
-      <CallContent chat={chat} />
+      <CallContent show chat={chat} />
     </DailyProvider>
   );
 }

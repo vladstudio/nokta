@@ -38,7 +38,6 @@ export default function SpacePage() {
   useEffect(() => {
     if (!isVideoCallsEnabled || !spaceId) return;
 
-    // Find chat where user is in call_participants and is_active_call is true
     const loadActiveCall = async () => {
       try {
         const currentUserId = pb.authStore.model?.id;
@@ -51,7 +50,8 @@ export default function SpacePage() {
 
         if (myActiveCall) {
           setActiveCallChat(myActiveCall);
-          setShowCallView(true);
+          // Only show call view if no chat is selected
+          if (!chatId) setShowCallView(true);
         }
       } catch (error) {
         console.error('Failed to load active call:', error);
@@ -60,7 +60,7 @@ export default function SpacePage() {
     };
 
     loadActiveCall();
-  }, [spaceId, setActiveCallChat, setShowCallView]);
+  }, [spaceId, chatId, setActiveCallChat, setShowCallView]);
 
   // Subscribe to chat updates for active calls
   useEffect(() => {
@@ -124,15 +124,16 @@ export default function SpacePage() {
     return () => window.removeEventListener('online', handleOnline);
   }, [activeCallChat, spaceId, setActiveCallChat, setShowCallView]);
 
-  if (isVideoCallsEnabled && showCallView && activeCallChat) {
-    return <CallView chat={activeCallChat} />;
-  }
-
   if (isMobile && !chatId) return null;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white">
-      <ChatWindow key={chatId || 'empty'} chatId={chatId} />
-    </div>
+    <>
+      {isVideoCallsEnabled && activeCallChat && (
+        <CallView show={showCallView} chat={activeCallChat} />
+      )}
+      <div className={`flex-1 flex flex-col overflow-hidden bg-white ${showCallView ? 'hidden' : ''}`}>
+        <ChatWindow key={chatId || 'empty'} chatId={chatId} />
+      </div>
+    </>
   );
 }

@@ -166,14 +166,13 @@ export default function Sidebar() {
   }, [spaceId, handleActiveCallEvent]);
 
   const handleJoinCall = useCallback(async (callChatId: string) => {
-    // Prevent duplicate calls
     if (joiningCalls.has(callChatId)) return;
-
     setJoiningCalls(prev => new Set(prev).add(callChatId));
     try {
       const chat = await callsAPI.startCall(callChatId);
       setActiveCallChat(chat);
       setShowCallView(true);
+      setLocation(`/spaces/${spaceId}`);
     } catch (error) {
       console.error('Failed to join call:', error);
       toastManager.add({
@@ -188,11 +187,17 @@ export default function Sidebar() {
         return next;
       });
     }
-  }, [joiningCalls, setActiveCallChat, setShowCallView, toastManager]);
+  }, [joiningCalls, setActiveCallChat, setShowCallView, setLocation, spaceId, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
+    setShowCallView(false);
     setLocation(`/spaces/${spaceId}/${newChatId}`);
-  }, [spaceId, setLocation]);
+  }, [spaceId, setLocation, setShowCallView]);
+
+  const handleShowActiveCall = useCallback(() => {
+    setShowCallView(true);
+    setLocation(`/spaces/${spaceId}`);
+  }, [spaceId, setLocation, setShowCallView]);
 
   return (
     <>
@@ -216,27 +221,34 @@ export default function Sidebar() {
             ]}
           />
         </div>
-        {isVideoCallsEnabled && activeCalls.map(call => (
-          <div
-            key={call.id}
-            className="p-2"
-          >
-            <div className="active-call p-2 flex items-center gap-2">
-              <PhoneIcon />
-              <div className="text-sm font-semibold grid flex-1">
-                <div className="truncate">{getCallChatName(call)}</div>
-              </div>
-              <Button
-                onClick={() => handleJoinCall(call.id)}
-                disabled={joiningCalls.has(call.id) || activeCallChat?.id === call.id}
-                variant="primary"
-                className="text-xs"
+        {isVideoCallsEnabled && activeCalls.map(call => {
+          const isInCall = activeCallChat?.id === call.id;
+          return (
+            <div key={call.id} className="p-2">
+              <div
+                className="active-call p-2 flex items-center gap-2 cursor-pointer"
+                onClick={isInCall ? handleShowActiveCall : undefined}
               >
-                {activeCallChat?.id === call.id ? t('calls.inCall') : joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
-              </Button>
+                <PhoneIcon />
+                <div className="text-sm font-semibold grid flex-1">
+                  <div className="truncate">{getCallChatName(call)}</div>
+                </div>
+                {isInCall ? (
+                  <span className="text-xs text-accent">{t('calls.inCall')}</span>
+                ) : (
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); handleJoinCall(call.id); }}
+                    disabled={joiningCalls.has(call.id)}
+                    variant="primary"
+                    className="text-xs"
+                  >
+                    {joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <ScrollArea>
           <ChatList
             chats={chatList}
