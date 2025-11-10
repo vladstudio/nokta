@@ -221,34 +221,49 @@ export default function Sidebar() {
             ]}
           />
         </div>
-        {isVideoCallsEnabled && activeCalls.map(call => {
-          const isInCall = activeCallChat?.id === call.id;
-          return (
-            <div key={call.id} className="p-2">
-              <div
-                className="active-call p-2 flex items-center gap-2 cursor-pointer"
-                onClick={isInCall ? handleShowActiveCall : undefined}
-              >
-                <PhoneIcon />
-                <div className="text-sm font-semibold grid flex-1">
-                  <div className="truncate">{getCallChatName(call)}</div>
-                </div>
-                {isInCall ? (
-                  <span className="text-xs text-accent">{t('calls.inCall')}</span>
-                ) : (
-                  <Button
-                    onClick={(e) => { e.stopPropagation(); handleJoinCall(call.id); }}
-                    disabled={joiningCalls.has(call.id)}
-                    variant="primary"
-                    className="text-xs"
-                  >
-                    {joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {isVideoCallsEnabled && activeCalls.length > 0 && (
+          <div className="p-2 grid gap-1">
+            {activeCalls.map(call => {
+              const isInCall = activeCallChat?.id === call.id;
+              const isSelected = isInCall && !chatId;
+              return (
+                <Button
+                  key={call.id}
+                  variant="ghost"
+                  onClick={isInCall ? handleShowActiveCall : undefined}
+                  className={`w-full p-2! text-left flex items-center gap-2 ${isSelected
+                    ? 'bg-(--color-bg-active)!'
+                    : 'bg-(--color-bg-primary)'
+                  }`}
+                >
+                  <div className="shrink-0">
+                    <PhoneIcon size={24} className="text-accent" />
+                  </div>
+                  <div className="flex-1 grid min-w-0">
+                    <div className={`text-sm truncate ${isInCall ? 'font-semibold text-(--color-text-primary)' : 'font-medium text-(--color-text-primary)'}`}>
+                      {getCallChatName(call)}
+                    </div>
+                    <div className="text-xs text-light truncate mt-0.5">
+                      {isInCall ? t('calls.inCall') : t('calls.activeCall')}
+                    </div>
+                  </div>
+                  {!isInCall && (
+                    <div className="shrink-0">
+                      <Button
+                        onClick={(e) => { e.stopPropagation(); handleJoinCall(call.id); }}
+                        disabled={joiningCalls.has(call.id)}
+                        variant="primary"
+                        className="text-xs"
+                      >
+                        {joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
+                      </Button>
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        )}
         <ScrollArea>
           <ChatList
             chats={chatList}
