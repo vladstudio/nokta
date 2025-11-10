@@ -47,7 +47,7 @@ async function getOrCreate(collection, filter, data, params = {}) {
 async function ensureAdmin() {
   console.log('\n👑 Checking admin account...');
   try {
-    await pb.admins.authWithPassword(ADMIN.email, ADMIN.password);
+    await pb.collection('_superusers').authWithPassword(ADMIN.email, ADMIN.password);
     console.log(`✓ Logged in as admin: ${ADMIN.email}`);
   } catch {
     console.log('⚠️  Admin account not found\n');
@@ -70,7 +70,7 @@ async function createUsers() {
         { email: user.email }
       );
       console.log(`✓ ${user.name} (${user.email})`);
-      users.push(record);
+      users.push({ ...record, password: user.password });
     } catch (error) {
       console.error(`✗ Failed to create ${user.email}:`, error.message);
     }
@@ -143,6 +143,9 @@ async function setupPublicChats(spaces, users) {
   console.log('\n💬 Setting up public chats...');
   const chats = [];
   const alice = users.find(u => u.name === 'Alice');
+
+  // Re-auth as admin to access and update chats
+  await pb.collection('_superusers').authWithPassword(ADMIN.email, ADMIN.password);
 
   for (const space of spaces) {
     try {
