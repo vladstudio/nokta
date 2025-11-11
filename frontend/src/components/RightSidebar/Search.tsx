@@ -38,7 +38,8 @@ export default function Search({ chatId }: SearchProps) {
   const resultRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSelectMessage = (message: Message) => {
+  const handleSelectMessage = (message: Message, index: number) => {
+    setSelectedIndex(index);
     setLocation(`/spaces/${params?.spaceId}/chat/${chatId}?msg=${message.id}`);
   };
 
@@ -71,7 +72,7 @@ export default function Search({ chatId }: SearchProps) {
 
   useHotkeys('enter', () => {
     if (results.length > 0 && results[selectedIndex]) {
-      handleSelectMessage(results[selectedIndex]);
+      handleSelectMessage(results[selectedIndex], selectedIndex);
     }
   }, { preventDefault: true, enabled: results.length > 0 });
 
@@ -119,7 +120,7 @@ export default function Search({ chatId }: SearchProps) {
             <button
               key={message.id}
               ref={el => { resultRefs.current[index] = el; }}
-              onClick={() => handleSelectMessage(message)}
+              onClick={() => handleSelectMessage(message, index)}
               className={`w-full p-2 text-left rounded hover:bg-(--color-bg-secondary) transition-colors ${selectedIndex === index ? 'bg-(--color-bg-active)' : ''
                 }`}
             >
