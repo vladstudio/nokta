@@ -34,7 +34,6 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  // Temporary basic rules (will be updated after space_members is created)
   spaces.listRule = '@request.auth.id != ""'
   spaces.viewRule = '@request.auth.id != ""'
   spaces.createRule = '@request.auth.id != ""'
@@ -64,7 +63,7 @@ migrate((app) => {
     type: "relation",
     required: true,
     collectionId: app.findCollectionByNameOrId("users").id,
-    cascadeDelete: false, // Don't cascade delete when user is deleted
+    cascadeDelete: false,
     maxSelect: 1,
     minSelect: 0
   }))
@@ -91,14 +90,12 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  // Temporary basic rules (will be updated after all collections are created)
   spaceMembers.listRule = '@request.auth.id != ""'
   spaceMembers.viewRule = '@request.auth.id != ""'
   spaceMembers.createRule = null
   spaceMembers.updateRule = null
   spaceMembers.deleteRule = null
 
-  // Indexes
   spaceMembers.indexes = [
     "CREATE UNIQUE INDEX idx_unique_space_member ON space_members (space, user)",
     "CREATE INDEX idx_space_members_space ON space_members (space)",
@@ -175,7 +172,7 @@ migrate((app) => {
     type: "file",
     required: false,
     maxSelect: 1,
-    maxSize: 5242880, // 5MB
+    maxSize: 5242880,
     mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"]
   }))
 
@@ -193,14 +190,43 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  // Access rules: authenticated users can create chats, backend manages updates/deletes
+  chats.fields.addAt(10, new Field({
+    name: "daily_room_url",
+    type: "text",
+    required: false,
+    min: 0,
+    max: 500,
+    pattern: ""
+  }))
+
+  chats.fields.addAt(11, new Field({
+    name: "is_active_call",
+    type: "bool",
+    required: false
+  }))
+
+  chats.fields.addAt(12, new Field({
+    name: "call_participants",
+    type: "json",
+    required: false
+  }))
+
+  chats.fields.addAt(13, new Field({
+    name: "created_by",
+    type: "relation",
+    required: false,
+    collectionId: app.findCollectionByNameOrId("users").id,
+    cascadeDelete: false,
+    maxSelect: 1,
+    minSelect: 0
+  }))
+
   chats.listRule = '@request.auth.id != ""'
   chats.viewRule = '@request.auth.id != ""'
   chats.createRule = '@request.auth.id != ""'
-  chats.updateRule = null
-  chats.deleteRule = null
+  chats.updateRule = 'participants.id ?= @request.auth.id'
+  chats.deleteRule = 'created_by = @request.auth.id'
 
-  // Indexes
   chats.indexes = [
     "CREATE INDEX idx_chats_space ON chats (space)",
     "CREATE INDEX idx_chats_type ON chats (type)",
@@ -228,7 +254,7 @@ migrate((app) => {
   messages.fields.addAt(1, new Field({
     name: "sender",
     type: "relation",
-    required: true, // Made required
+    required: true,
     collectionId: app.findCollectionByNameOrId("users").id,
     cascadeDelete: false,
     maxSelect: 1,
@@ -240,7 +266,7 @@ migrate((app) => {
     type: "select",
     required: true,
     maxSelect: 1,
-    values: ["text", "image", "file"]
+    values: ["text", "image", "file", "video"]
   }))
 
   messages.fields.addAt(3, new Field({
@@ -257,7 +283,7 @@ migrate((app) => {
     type: "file",
     required: false,
     maxSelect: 1,
-    maxSize: 52428800, // 50MB
+    maxSize: 104857600,
     thumbs: ["100x100", "300x300", "600x600"]
   }))
 
@@ -275,14 +301,18 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  // Temporary basic rules (will be updated after all collections are created)
+  messages.fields.addAt(7, new Field({
+    name: "reactions",
+    type: "json",
+    required: false
+  }))
+
   messages.listRule = '@request.auth.id != ""'
   messages.viewRule = '@request.auth.id != ""'
   messages.createRule = '@request.auth.id != ""'
-  messages.updateRule = "sender = @request.auth.id"
+  messages.updateRule = '@request.auth.id != ""'
   messages.deleteRule = "sender = @request.auth.id"
 
-  // Indexes
   messages.indexes = [
     "CREATE INDEX idx_messages_chat ON messages (chat)",
     "CREATE INDEX idx_messages_sender ON messages (sender)"
@@ -330,7 +360,6 @@ migrate((app) => {
     onUpdate: false
   }))
 
-  // Access rules: ephemeral data
   typingEvents.listRule = '@request.auth.id != ""'
   typingEvents.viewRule = '@request.auth.id != ""'
   typingEvents.createRule = '@request.auth.id != ""'
@@ -385,14 +414,12 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  // Access rules: users can only see/manage their own read status
   chatReadStatus.listRule = 'user = @request.auth.id'
   chatReadStatus.viewRule = 'user = @request.auth.id'
   chatReadStatus.createRule = '@request.auth.id != "" && user = @request.auth.id'
   chatReadStatus.updateRule = 'user = @request.auth.id'
   chatReadStatus.deleteRule = 'user = @request.auth.id'
 
-  // Indexes
   chatReadStatus.indexes = [
     "CREATE UNIQUE INDEX idx_unique_user_chat_read_status ON chat_read_status (user, chat)",
     "CREATE INDEX idx_chat_read_status_user ON chat_read_status (user)"
@@ -434,20 +461,26 @@ migrate((app) => {
     values: ["en", "ru"]
   }))
 
-  // Access rules: users can view others, but only modify themselves
+  users.fields.addAt(4, new Field({
+    name: "theme",
+    type: "select",
+    required: false,
+    maxSelect: 1,
+    values: ["default", "wooden"]
+  }))
+
+  users.fields.addAt(5, new Field({
+    name: "birthday",
+    type: "date",
+    required: false
+  }))
+
   users.listRule = '@request.auth.id != ""'
   users.viewRule = '@request.auth.id != ""'
   users.updateRule = 'id = @request.auth.id'
   users.deleteRule = 'id = @request.auth.id'
 
   app.save(users)
-
-  // ============================================
-  // Note: Complex access rules with reverse relations should be configured
-  // via the PocketBase admin UI after initial setup, as they cannot be
-  // properly validated during the first migration run.
-  // The basic rules set above allow authenticated access for initial setup.
-  // ============================================
 
   return null
 }, (app) => {
@@ -467,7 +500,7 @@ migrate((app) => {
   const spaceMembers = app.findCollectionByNameOrId("space_members")
   app.delete(spaceMembers)
 
-  const spaces = app.findCollectionByNameId("spaces")
+  const spaces = app.findCollectionByNameOrId("spaces")
   app.delete(spaces)
 
   // Remove fields from users
@@ -476,11 +509,15 @@ migrate((app) => {
   const avatarField = users.fields.getByName("avatar")
   const lastSeenField = users.fields.getByName("last_seen")
   const languageField = users.fields.getByName("language")
+  const themeField = users.fields.getByName("theme")
+  const birthdayField = users.fields.getByName("birthday")
 
   if (nameField) users.fields.removeById(nameField.id)
   if (avatarField) users.fields.removeById(avatarField.id)
   if (lastSeenField) users.fields.removeById(lastSeenField.id)
   if (languageField) users.fields.removeById(languageField.id)
+  if (themeField) users.fields.removeById(themeField.id)
+  if (birthdayField) users.fields.removeById(birthdayField.id)
 
   users.listRule = null
   users.viewRule = null

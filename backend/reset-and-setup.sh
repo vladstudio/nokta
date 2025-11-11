@@ -20,10 +20,10 @@ echo ""
 
 # Backup warning
 echo "⚠️  WARNING: This will DELETE all data in pb_data/"
-read -p "Are you sure you want to continue? (yes/no): " -r
+read -p "Are you sure you want to continue? (y/n): " -r
 echo ""
 
-if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+if [[ ! $REPLY =~ ^[y]$ ]]; then
     echo "Cancelled."
     exit 0
 fi
