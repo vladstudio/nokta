@@ -67,13 +67,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-2">
-      <div className="max-w-md w-full grid gap-4">
-        <div>
-          <h2>
-            {isLogin ? t('loginPage.signInTitle') : t('loginPage.signUpTitle')}
-          </h2>
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center p-2">
+      <div className="flex-1" />
+      <div className="max-w-md w-full center flex-col gap-4">
+        <img src="/favicon.svg" alt="Logo" className="w-20 h-20 m-8" />
         <form className="grid gap-4" onSubmit={handleSubmit}>
           {!isLogin && (
             <div>
@@ -101,7 +98,7 @@ export default function LoginPage() {
           )}
 
           <div>
-            <Button type="submit" disabled={loading} className="w-full">
+            <Button type="submit" disabled={loading} className="w-full center">
               {loading ? t('loginPage.pleaseWait') : isLogin ? t('loginPage.signIn') : t('loginPage.signUp')}
             </Button>
           </div>
@@ -113,6 +110,8 @@ export default function LoginPage() {
           </div>
         </form>
       </div>
+      <div className="flex-3" />
+
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { useMessageList } from '../hooks/useMessageList';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { messageQueue } from '../utils/messageQueue';
+import { messageCache } from '../utils/messageCache';
 import LoadingSpinner from './LoadingSpinner';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
@@ -18,7 +19,7 @@ import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
 import ImageCropDialog from './ImageCropDialog';
 import VideoCompressionDialog from './VideoCompressionDialog';
-import { useToastManager, Button, Dialog } from '../ui';
+import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Message, Chat } from '../types';
@@ -27,8 +28,11 @@ import type { RightSidebarView } from './RightSidebar';
 
 interface ChatWindowProps {
   chatId?: string;
+  chat: Chat | null;
   rightSidebarView?: RightSidebarView | null;
   onToggleRightSidebar?: (view: RightSidebarView | null) => void;
+  onDeleteChat: () => void;
+  onLeaveChat: () => void;
 }
 
 interface DisplayMessage extends Message {
@@ -43,7 +47,7 @@ const SCROLL_AT_BOTTOM_THRESHOLD = 150; // pixels from bottom
 const MAX_ANCHOR_SCROLL_RETRIES = 60; // ~1 second at 60fps
 const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
-export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
+export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar, onDeleteChat, onLeaveChat }: ChatWindowProps) {
   const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
@@ -62,7 +66,7 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const isMobile = useIsMobile();
-  const [chat, setChat] = useState<Chat | null>(null);
+  const [chat, setChat] = useState<Chat | null>(externalChat);
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
 
@@ -128,8 +132,6 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showAddActions, setShowAddActions] = useState(false);
   const [isCreatingCall, setIsCreatingCall] = useState(false);
-  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [deleteChatDialogOpen, setDeleteChatDialogOpen] = useState(false);
   const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
   const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
 
@@ -498,51 +500,10 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
     setLocation(`/spaces/${params?.spaceId}/chat`);
   };
 
-  const handleLeaveGroup = async () => {
-    if (!chat || !currentUser) return;
-    try {
-      await chats.removeParticipant(chat.id, currentUser.id);
-      setLocation(`/spaces/${params?.spaceId}/chat`);
-      toastManager.add({
-        title: t('chats.leftChat'),
-        data: { type: 'success' }
-      });
-    } catch (error) {
-      console.error('Failed to leave chat:', error);
-      toastManager.add({
-        title: t('chats.failedToLeave'),
-        data: { type: 'error' }
-      });
-    }
-  };
-
-  const handleDeleteChat = async () => {
-    if (!chat) return;
-    try {
-      await chats.delete(chat.id);
-      setLocation(`/spaces/${params?.spaceId}/chat`);
-      toastManager.add({
-        title: t('chats.chatDeleted'),
-        data: { type: 'success' }
-      });
-    } catch (error) {
-      console.error('Failed to delete chat:', error);
-      toastManager.add({
-        title: t('chats.failedToDelete'),
-        data: { type: 'error' }
-      });
-    }
-  };
-
-  const handleConfirmLeaveGroup = () => {
-    handleLeaveGroup();
-    setLeaveDialogOpen(false);
-  };
-
-  const handleConfirmDeleteChat = () => {
-    handleDeleteChat();
-    setDeleteChatDialogOpen(false);
-  };
+  // Sync external chat with local state
+  useEffect(() => {
+    if (externalChat) setChat(externalChat);
+  }, [externalChat]);
 
   useHotkeys('esc', () => {
     setSelectedMessageId(null);
@@ -612,8 +573,6 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
         onBack={handleBack}
         onToggleRightSidebar={onToggleRightSidebar!}
         onStartCall={handleStartCall}
-        onLeaveGroup={() => setLeaveDialogOpen(true)}
-        onDeleteChat={() => setDeleteChatDialogOpen(true)}
       />
 
       <MessageList
@@ -715,38 +674,6 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
           onComplete={handleVideoCompressionComplete}
         />
       )}
-
-      {/* Leave Group Dialog */}
-      <Dialog
-        open={leaveDialogOpen}
-        onOpenChange={setLeaveDialogOpen}
-        title={t('chats.leaveGroup')}
-        description={t('chats.confirmLeave')}
-        footer={
-          <>
-            <Button variant="default" onClick={() => setLeaveDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button variant="primary" onClick={handleConfirmLeaveGroup}>{t('common.leave')}</Button>
-          </>
-        }
-      >
-        <div />
-      </Dialog>
-
-      {/* Delete Chat Dialog */}
-      <Dialog
-        open={deleteChatDialogOpen}
-        onOpenChange={setDeleteChatDialogOpen}
-        title={t('chats.deleteChat')}
-        description={t('chats.confirmDelete')}
-        footer={
-          <>
-            <Button variant="default" onClick={() => setDeleteChatDialogOpen(false)}>{t('common.cancel')}</Button>
-            <Button variant="primary" onClick={handleConfirmDeleteChat}>{t('common.delete')}</Button>
-          </>
-        }
-      >
-        <div />
-      </Dialog>
     </div>
   );
 }

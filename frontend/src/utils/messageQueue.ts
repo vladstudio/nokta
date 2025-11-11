@@ -45,6 +45,11 @@ class MessageQueue {
     this.notifyListeners();
   }
 
+  clearChat(chatId: string) {
+    this.queue = this.queue.filter((m) => m.chatId !== chatId);
+    this.notifyListeners();
+  }
+
   getForChat(chatId: string): PendingMessage[] {
     return this.queue.filter((m) => m.chatId === chatId);
   }

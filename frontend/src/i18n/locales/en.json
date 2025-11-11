@@ -122,10 +122,13 @@
     "selectMembers": "Select members to add to the chat",
     "groupName": "Group Name (Optional)",
     "groupNamePlaceholder": "Enter group name...",
+    "participants": "Participants",
     "leaveGroup": "Leave Group",
+    "leaveChat": "Leave Chat",
     "deleteChat": "Delete Chat",
-    "confirmLeave": "Are you sure you want to leave this group?",
+    "confirmLeave": "Are you sure you want to leave this chat?",
     "confirmDelete": "Are you sure you want to delete this chat? This action cannot be undone.",
+    "confirmDeleteForAll": "This will delete the chat for ALL participants. This action cannot be undone.",
     "chatDeleted": "Chat deleted",
     "failedToDelete": "Failed to delete chat",
     "leftChat": "You left the chat",
@@ -137,7 +140,6 @@
     "offline": "You are offline. Messages will be sent when connection is restored."
   },
   "loginPage": {
-    "signInTitle": "Sign in to your account",
     "signUpTitle": "Create new account",
     "nameOptional": "Name (optional)",
     "emailAddress": "Email address",

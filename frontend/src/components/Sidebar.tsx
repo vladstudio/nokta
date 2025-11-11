@@ -65,12 +65,16 @@ export default function Sidebar() {
   useEffect(() => {
     if (!spaceId) return;
     const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
-      if (data.action === 'update' && data.record.space === spaceId) {
-        const fullChat = await chats.getOne(data.record.id);
-        setChatList(prev => prev
-          .map(c => c.id === data.record.id ? fullChat : c)
-          .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))
-        );
+      if (data.record.space === spaceId) {
+        if (data.action === 'update') {
+          const fullChat = await chats.getOne(data.record.id);
+          setChatList(prev => prev
+            .map(c => c.id === data.record.id ? fullChat : c)
+            .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))
+          );
+        } else if (data.action === 'delete') {
+          setChatList(prev => prev.filter(c => c.id !== data.record.id));
+        }
       }
     });
     return () => { unsubscribe.then(fn => fn?.()); };

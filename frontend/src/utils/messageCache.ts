@@ -85,6 +85,30 @@ class MessageCache {
     });
   }
 
+  async clearChat(chatId: string): Promise<void> {
+    if (!this.db) await this.init();
+    if (!this.db) return;
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([MESSAGES_STORE], 'readwrite');
+      const store = transaction.objectStore(MESSAGES_STORE);
+      const index = store.index('chatId');
+      const request = index.openCursor(IDBKeyRange.only(chatId));
+
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async clear(): Promise<void> {
     if (!this.db) await this.init();
     if (!this.db) return;

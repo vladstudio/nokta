@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon, MagnifyingGlassIcon, InfoIcon } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeftIcon, MagnifyingGlassIcon, InfoIcon } from '@phosphor-icons/react';
 import { UserAvatar } from './Avatar';
-import { Button, Menu } from '../ui';
+import { Button } from '../ui';
 import { isVideoCallsEnabled } from '../config/features';
 import type { Chat, User } from '../types';
 import type { RightSidebarView } from './RightSidebar';
@@ -24,8 +24,6 @@ interface ChatHeaderProps {
   onBack: () => void;
   onToggleRightSidebar: (view: RightSidebarView | null) => void;
   onStartCall: () => void;
-  onLeaveGroup: () => void;
-  onDeleteChat: () => void;
 }
 
 export default function ChatHeader({
@@ -40,8 +38,6 @@ export default function ChatHeader({
   onBack,
   onToggleRightSidebar,
   onStartCall,
-  onLeaveGroup,
-  onDeleteChat,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -116,19 +112,6 @@ export default function ChatHeader({
             <PhoneIcon size={20} className="text-accent" />
             <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
-        )}
-        {chat && chat.participants.length > 2 && (
-          <Menu
-            className="p-2 rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-(--color-text-primary) hover:bg-(--color-bg-hover)"
-            trigger={
-              <DotsThreeIcon weight="bold" size={20} className="text-accent" />
-            }
-            items={
-              chat.created_by === currentUser?.id
-                ? [{ label: t('chats.deleteChat'), onClick: onDeleteChat }]
-                : [{ label: t('chats.leaveGroup'), onClick: onLeaveGroup }]
-            }
-          />
         )}
       </div>
     </div>
