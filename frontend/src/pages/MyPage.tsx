@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth, spaces, pb } from '../services/pocketbase';
 import { LAST_SPACE_KEY } from '../components/Sidebar';
-import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, useToastManager, ScrollArea } from '../ui';
+import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import type { Space } from '../types';
 import { ArrowRightIcon } from "@phosphor-icons/react";
@@ -28,6 +28,9 @@ export default function MyPage() {
   const [theme, setTheme] = useState<'default' | 'wooden'>('default');
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [birthdayDay, setBirthdayDay] = useState<string>('');
+  const [birthdayMonth, setBirthdayMonth] = useState<string>('');
+  const [birthdayYear, setBirthdayYear] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +53,13 @@ export default function MyPage() {
           ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
           : null
       );
+      // Parse birthday if it exists
+      if (currentUser.birthday) {
+        const date = new Date(currentUser.birthday);
+        setBirthdayDay(date.getDate().toString());
+        setBirthdayMonth((date.getMonth() + 1).toString());
+        setBirthdayYear(date.getFullYear().toString());
+      }
     }
     // Only run on mount - don't reset form when currentUser changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,6 +94,14 @@ export default function MyPage() {
       if (language !== currentUser.language) formData.append('language', language);
       if (theme !== currentUser.theme) formData.append('theme', theme);
       if (avatar) formData.append('avatar', avatar);
+      // Handle birthday - combine day, month, year into a date string
+      if (birthdayDay && birthdayMonth && birthdayYear) {
+        const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
+        if (birthday !== currentUser.birthday) formData.append('birthday', birthday);
+      } else if (currentUser.birthday) {
+        // Clear birthday if user removed it
+        formData.append('birthday', '');
+      }
       await pb.collection('users').update(currentUser.id, formData);
       await pb.collection('users').authRefresh();
       if (language !== i18n.language) await i18n.changeLanguage(language);
@@ -113,6 +131,41 @@ export default function MyPage() {
     { value: 'default' as const, label: t('themes.default') },
     { value: 'wooden' as const, label: t('themes.wooden') },
   ], [t]);
+
+  const dayOptions = useMemo(() => [
+    { value: '', label: t('userSettingsDialog.day') },
+    ...Array.from({ length: 31 }, (_, i) => ({
+      value: (i + 1).toString(),
+      label: (i + 1).toString()
+    }))
+  ], [t]);
+
+  const monthOptions = useMemo(() => [
+    { value: '', label: t('userSettingsDialog.month') },
+    { value: '1', label: t('months.january') },
+    { value: '2', label: t('months.february') },
+    { value: '3', label: t('months.march') },
+    { value: '4', label: t('months.april') },
+    { value: '5', label: t('months.may') },
+    { value: '6', label: t('months.june') },
+    { value: '7', label: t('months.july') },
+    { value: '8', label: t('months.august') },
+    { value: '9', label: t('months.september') },
+    { value: '10', label: t('months.october') },
+    { value: '11', label: t('months.november') },
+    { value: '12', label: t('months.december') },
+  ], [t]);
+
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return [
+      { value: '', label: t('userSettingsDialog.year') },
+      ...Array.from({ length: 100 }, (_, i) => ({
+        value: (currentYear - i).toString(),
+        label: (currentYear - i).toString()
+      }))
+    ];
+  }, [t]);
 
   if (!currentUser) return null;
 
@@ -172,6 +225,14 @@ export default function MyPage() {
           <div>
             <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
+          </div>
+          <div>
+            <FormLabel>{t('userSettingsDialog.birthday')}</FormLabel>
+            <div className="flex gap-2">
+              <Select value={birthdayDay} onChange={(v) => setBirthdayDay(v || '')} options={dayOptions} className="flex-1" />
+              <Select value={birthdayMonth} onChange={(v) => setBirthdayMonth(v || '')} options={monthOptions} className="flex-1" />
+              <Select value={birthdayYear} onChange={(v) => setBirthdayYear(v || '')} options={yearOptions} className="flex-1" />
+            </div>
           </div>
           <div>
             <FormLabel>{t('userSettingsDialog.language')}</FormLabel>

@@ -97,6 +97,10 @@
     "name": "Name",
     "email": "Email",
     "password": "Password",
+    "birthday": "Birthday",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
     "language": "Language",
     "theme": "Theme",
     "leaveBlankPassword": "Leave blank to keep current",
@@ -160,6 +164,20 @@
   "themes": {
     "default": "Default",
     "wooden": "Wooden"
+  },
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   },
   "calls": {
     "general": "General",

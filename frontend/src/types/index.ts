@@ -6,6 +6,7 @@ export interface User {
   last_seen?: string;
   language?: 'en' | 'ru';
   theme?: 'default' | 'wooden';
+  birthday?: string;
   created: string;
   updated: string;
 }

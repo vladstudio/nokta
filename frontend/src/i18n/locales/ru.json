@@ -97,6 +97,10 @@
     "name": "Имя",
     "email": "Email",
     "password": "Пароль",
+    "birthday": "День рождения",
+    "day": "День",
+    "month": "Месяц",
+    "year": "Год",
     "language": "Язык",
     "theme": "Тема",
     "leaveBlankPassword": "Оставьте пустым, чтобы не менять",
@@ -160,6 +164,20 @@
   "themes": {
     "default": "По умолчанию",
     "wooden": "Деревянная"
+  },
+  "months": {
+    "january": "Январь",
+    "february": "Февраль",
+    "march": "Март",
+    "april": "Апрель",
+    "may": "Май",
+    "june": "Июнь",
+    "july": "Июль",
+    "august": "Август",
+    "september": "Сентябрь",
+    "october": "Октябрь",
+    "november": "Ноябрь",
+    "december": "Декабрь"
   },
   "calls": {
     "general": "Общий",
