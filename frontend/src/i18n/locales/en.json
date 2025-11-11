@@ -15,7 +15,8 @@
     "creating": "Creating...",
     "leave": "Leave",
     "add": "Add",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "noConnection": "No connection"
   },
   "sidebar": {
     "mySpaces": "My Spaces",
@@ -40,6 +41,7 @@
   },
   "addActions": {
     "image": "Image",
+    "video": "Video",
     "file": "File"
   },
   "imageCrop": {
@@ -49,6 +51,34 @@
       "md": "Medium",
       "hq": "High"
     }
+  },
+  "videoCompression": {
+    "title": "Compress Video",
+    "original": "Original",
+    "quality": "Quality",
+    "qualityLQ": "Low",
+    "qualityMD": "Medium",
+    "qualityHQ": "High",
+    "estimatedSize": "est.",
+    "compressing": "Compressing",
+    "loadingVideo": "Loading video...",
+    "compressionFailed": "Compression failed",
+    "formatNotSupported": "This video format is not supported",
+    "tryAgain": "Try Again"
+  },
+  "videoUpload": {
+    "invalidType": "Invalid file type",
+    "pleaseSelectVideo": "Please select a video file",
+    "fileTooLarge": "File too large",
+    "maxSize100MB": "Maximum video size is 100 MB",
+    "uploading": "Uploading video",
+    "uploadFailed": "Video upload failed",
+    "browserNotSupported": "Video messages require a modern browser",
+    "cannotUploadOffline": "Cannot upload videos while offline"
+  },
+  "videoPlayer": {
+    "error": "This video cannot be played",
+    "unsupportedFormat": "Video format not supported by your browser"
   },
   "editMessageDialog": {
     "title": "Edit Message",
@@ -158,7 +188,8 @@
     "failedToDeleteMessage": "Failed to delete message",
     "couldNotDeleteMessage": "Could not delete message. Please try again.",
     "copyFailed": "Copy failed",
-    "couldNotCopyToClipboard": "Could not copy to clipboard"
+    "couldNotCopyToClipboard": "Could not copy to clipboard",
+    "videoError": "Video playback error"
   },
   "presence": {
     "online": "Online",

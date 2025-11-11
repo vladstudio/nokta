@@ -17,11 +17,13 @@ import ChatInputArea from './ChatInputArea';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
 import ImageCropDialog from './ImageCropDialog';
+import VideoCompressionDialog from './VideoCompressionDialog';
 import { useToastManager, Button, Dialog } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
 import type { Message, Chat } from '../types';
+import type { VideoMetadata } from '../types/video';
 
 interface ChatWindowProps {
   chatId?: string;
@@ -128,11 +130,13 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [deleteChatDialogOpen, setDeleteChatDialogOpen] = useState(false);
   const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
+  const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const scrollStateRef = useRef({
     lastMsgId: '',
     pendingCount: 0,
@@ -171,6 +175,56 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
       target: { files: [processedFile] }
     } as React.ChangeEvent<HTMLInputElement>;
     handleFileChange(syntheticEvent);
+  };
+
+  const handleVideoSelect = () => {
+    if (!isOnline) {
+      toastManager.add({
+        title: t('common.noConnection'),
+        description: t('videoUpload.cannotUploadOffline'),
+        data: { type: 'error' }
+      });
+      return;
+    }
+    videoInputRef.current?.click();
+    setShowAddActions(false);
+  };
+
+  const handleVideoInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('video/')) {
+        toastManager.add({
+          title: t('videoUpload.invalidType'),
+          description: t('videoUpload.pleaseSelectVideo'),
+          data: { type: 'error' },
+        });
+        return;
+      }
+
+      // Validate file size (100MB max before compression)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        toastManager.add({
+          title: t('videoUpload.fileTooLarge'),
+          description: t('videoUpload.maxSize100MB'),
+          data: { type: 'error' },
+        });
+        return;
+      }
+
+      setVideoCompressionDialogFile(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleVideoCompressionComplete = (compressedFile: File, metadata: VideoMetadata) => {
+    const syntheticEvent = {
+      target: { files: [compressedFile] }
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleFileChange(syntheticEvent);
+    setVideoCompressionDialogFile(null);
   };
 
   // Load chat data
@@ -588,6 +642,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         onTyping={onTyping}
         onCancelAddActions={() => setShowAddActions(false)}
         onImageSelect={handleImageSelect}
+        onVideoSelect={handleVideoSelect}
         onFileSelect={() => {
           handleFileSelect('file');
           setShowAddActions(false);
@@ -617,6 +672,15 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         onChange={handleImageInputChange}
       />
 
+      {/* Hidden video input for compression */}
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={handleVideoInputChange}
+      />
+
       {/* Edit Message Dialog */}
       <EditMessageDialog
         open={editDialogOpen}
@@ -639,6 +703,16 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
           onOpenChange={(open) => !open && setCropDialogFile(null)}
           file={cropDialogFile}
           onComplete={handleCropComplete}
+        />
+      )}
+
+      {/* Video Compression Dialog */}
+      {videoCompressionDialogFile && (
+        <VideoCompressionDialog
+          open={!!videoCompressionDialogFile}
+          onOpenChange={(open) => !open && setVideoCompressionDialogFile(null)}
+          file={videoCompressionDialogFile}
+          onComplete={handleVideoCompressionComplete}
         />
       )}
 

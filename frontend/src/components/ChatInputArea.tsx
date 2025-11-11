@@ -20,6 +20,7 @@ interface ChatInputAreaProps {
   onTyping: () => void;
   onCancelAddActions: () => void;
   onImageSelect: () => void;
+  onVideoSelect: () => void;
   onFileSelect: () => void;
   onShowAddActions: () => void;
   onCancelMessageSelection: () => void;
@@ -39,6 +40,7 @@ export default function ChatInputArea({
   onTyping,
   onCancelAddActions,
   onImageSelect,
+  onVideoSelect,
   onFileSelect,
   onShowAddActions,
   onCancelMessageSelection,
@@ -53,6 +55,7 @@ export default function ChatInputArea({
         <AddActions
           onCancel={onCancelAddActions}
           onImageSelect={onImageSelect}
+          onVideoSelect={onVideoSelect}
           onFileSelect={onFileSelect}
         />
       ) : selectedMessageId ? (

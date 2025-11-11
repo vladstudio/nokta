@@ -185,7 +185,7 @@ export const messages = {
     await pb.collection('messages').delete(messageId);
   },
 
-  async createWithFile(chatId: string, type: 'image' | 'file', file: File, caption?: string) {
+  async createWithFile(chatId: string, type: 'image' | 'file' | 'video', file: File, caption?: string) {
     const formData = new FormData();
     formData.append('chat', chatId);
     formData.append('sender', auth.user?.id || '');

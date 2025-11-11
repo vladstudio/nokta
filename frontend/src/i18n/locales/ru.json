@@ -15,7 +15,8 @@
     "creating": "Создание...",
     "leave": "Выйти",
     "add": "Добавить",
-    "processing": "Обработка..."
+    "processing": "Обработка...",
+    "noConnection": "Нет соединения"
   },
   "sidebar": {
     "mySpaces": "Мои пространства",
@@ -40,6 +41,7 @@
   },
   "addActions": {
     "image": "Изображение",
+    "video": "Видео",
     "file": "Файл"
   },
   "imageCrop": {
@@ -49,6 +51,34 @@
       "md": "Среднее",
       "hq": "Высокое"
     }
+  },
+  "videoCompression": {
+    "title": "Сжатие видео",
+    "original": "Оригинал",
+    "quality": "Качество",
+    "qualityLQ": "Низкое",
+    "qualityMD": "Среднее",
+    "qualityHQ": "Высокое",
+    "estimatedSize": "прибл.",
+    "compressing": "Сжатие",
+    "loadingVideo": "Загрузка видео...",
+    "compressionFailed": "Ошибка сжатия",
+    "formatNotSupported": "Этот формат видео не поддерживается",
+    "tryAgain": "Попробовать снова"
+  },
+  "videoUpload": {
+    "invalidType": "Неверный тип файла",
+    "pleaseSelectVideo": "Пожалуйста, выберите видеофайл",
+    "fileTooLarge": "Файл слишком большой",
+    "maxSize100MB": "Максимальный размер видео: 100 МБ",
+    "uploading": "Загрузка видео",
+    "uploadFailed": "Не удалось загрузить видео",
+    "browserNotSupported": "Видеосообщения требуют современный браузер",
+    "cannotUploadOffline": "Невозможно загрузить видео без подключения к сети"
+  },
+  "videoPlayer": {
+    "error": "Это видео не может быть воспроизведено",
+    "unsupportedFormat": "Формат видео не поддерживается вашим браузером"
   },
   "editMessageDialog": {
     "title": "Редактировать сообщение",
@@ -158,7 +188,8 @@
     "failedToDeleteMessage": "Не удалось удалить сообщение",
     "couldNotDeleteMessage": "Не удалось удалить сообщение. Попробуйте снова.",
     "copyFailed": "Не удалось скопировать",
-    "couldNotCopyToClipboard": "Не удалось скопировать в буфер обмена"
+    "couldNotCopyToClipboard": "Не удалось скопировать в буфер обмена",
+    "videoError": "Ошибка воспроизведения видео"
   },
   "presence": {
     "online": "В сети",

@@ -4,7 +4,7 @@ import { messages as messagesAPI } from '../services/pocketbase';
 export interface UploadingFile {
   tempId: string;
   chatId: string;
-  type: 'image' | 'file';
+  type: 'image' | 'file' | 'video';
   file: File;
   progress: number;
   status: 'uploading' | 'failed';
@@ -86,10 +86,10 @@ export function useFileUpload(
       return;
     }
 
-    const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB (to support videos)
     const validFiles = files.filter(f => {
       if (f.size > MAX_SIZE) {
-        onError('File too large', `${f.name} exceeds 50MB limit`);
+        onError('File too large', `${f.name} exceeds 100MB limit`);
         return false;
       }
       return true;

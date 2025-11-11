@@ -4,7 +4,8 @@ import clsx from 'clsx';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
-import { Button } from '../ui';
+import { Button, useToastManager } from '../ui';
+import VideoPlayer from './VideoPlayer';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -26,6 +27,7 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message, isOwn, currentUserId, isSelected, onSelect, onRetry, onCancelUpload, onReactionClick }: ChatMessageProps) {
   const { t } = useTranslation();
+  const toastManager = useToastManager();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
   const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
 
@@ -108,11 +110,31 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     );
   };
 
+  const renderVideoMessage = () => {
+    if (!message.file) return null;
+
+    const videoUrl = messagesAPI.getFileURL(message);
+
+    return (
+      <VideoPlayer
+        videoUrl={videoUrl}
+        caption={message.content}
+        onError={() => {
+          console.error('Video playback failed');
+          toastManager.add({
+            title: t('messages.videoError'),
+            data: { type: 'error' },
+          });
+        }}
+      />
+    );
+  };
+
   const renderContent = () => {
-    if (message.isPending && (message.type === 'image' || message.type === 'file')) {
+    if (message.isPending && (message.type === 'image' || message.type === 'file' || message.type === 'video')) {
       return renderUploadingState();
     }
-    if (message.isFailed && (message.type === 'image' || message.type === 'file')) {
+    if (message.isFailed && (message.type === 'image' || message.type === 'file' || message.type === 'video')) {
       return renderFailedState();
     }
     if (message.type === 'text') {
@@ -120,6 +142,9 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     }
     if (message.type === 'image' && message.file) {
       return renderImageMessage();
+    }
+    if (message.type === 'video' && message.file) {
+      return renderVideoMessage();
     }
     if (message.type === 'file' && message.file) {
       return renderFileMessage();
