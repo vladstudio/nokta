@@ -73,19 +73,19 @@ export default function UIPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card shadow="sm" border padding="md">
             <h3>Small Shadow Card</h3>
-            <p className="text-gray-600">With border and medium padding</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>With border and medium padding</p>
           </Card>
           <Card shadow="lg" padding="lg">
             <h3>Large Shadow Card</h3>
-            <p className="text-gray-600">No border, large padding</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>No border, large padding</p>
           </Card>
           <Card shadow="xl" border padding="md">
             <h3>Extra Large Shadow</h3>
-            <p className="text-gray-600">Dramatic shadow effect</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>Dramatic shadow effect</p>
           </Card>
           <Card shadow="none" border padding="sm">
             <h3>No Shadow</h3>
-            <p className="text-gray-600">Just a bordered card</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>Just a bordered card</p>
           </Card>
         </div>
 
@@ -154,7 +154,7 @@ export default function UIPage() {
             ]}
             placeholder="Select an option..."
           />
-          {selectValue && <p className="mt-2 text-sm text-gray-600">Selected: {selectValue}</p>}
+          {selectValue && <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>Selected: {selectValue}</p>}
         </div>
 
         <div className="max-w-md">
@@ -168,7 +168,7 @@ export default function UIPage() {
               { value: 'option3', label: 'Third Option' },
             ]}
           />
-          <p className="mt-2 text-sm text-gray-600">Selected: {radioValue}</p>
+          <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>Selected: {radioValue}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ export default function UIPage() {
           trigger={<Button variant="default">Open Popover</Button>}
           title="Popover Title"
         >
-          <p className="text-sm text-gray-700">
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             This is a popover with some helpful information or actions. It can contain any content you want.
           </p>
           <Button variant="primary" size="default" className="mt-3 w-full">
@@ -212,14 +212,14 @@ export default function UIPage() {
             accept="image/*"
             preview={preview}
           />
-          {file && <p className="mt-2 text-sm text-gray-600">File: {file.name}</p>}
+          {file && <p className="mt-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>File: {file.name}</p>}
         </div>
 
         <Card border padding="md" className="max-w-md">
           <ScrollArea className="h-48">
             <div className="space-y-2 pr-4">
               {Array.from({ length: 20 }, (_, i) => (
-                <div key={i} className="p-3 bg-gray-50 rounded">
+                <div key={i} className="p-3 rounded" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                   Item {i + 1}
                 </div>
               ))}

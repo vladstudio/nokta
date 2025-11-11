@@ -157,7 +157,7 @@ hr {
 .sidebar {
   @apply flex flex-col gap-px sm:pr-px;
   background-color: var(--color-border-default);
-  width: 280px;
+  width: 260px;
 }
 .sidebar > * {
   background-color: var(--color-bg-primary);
@@ -167,7 +167,7 @@ hr {
 .right-sidebar {
   @apply flex flex-col gap-px sm:pl-px;
   background-color: var(--color-border-default);
-  width: 300px;
+  width: 260px;
 }
 .right-sidebar > * {
   background-color: var(--color-bg-primary);

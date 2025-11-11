@@ -151,7 +151,7 @@ export default function VideoCompressionDialog({
 
         {/* Error Message */}
         {error && (
-          <div className="text-sm text-red-500 p-2 bg-red-50 rounded">
+          <div className="text-sm p-2 rounded" style={{ color: 'var(--color-error-500)', backgroundColor: 'var(--color-error-50)' }}>
             {t('videoCompression.compressionFailed')}: {error.message}
           </div>
         )}

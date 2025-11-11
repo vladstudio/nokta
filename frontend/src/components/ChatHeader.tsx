@@ -110,7 +110,7 @@ export default function ChatHeader({
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
           >
             <PhoneIcon size={20} className="text-accent" />
-            <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
+            <span className="hidden sm:flex text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
         )}
       </div>
