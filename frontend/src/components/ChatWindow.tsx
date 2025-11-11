@@ -16,6 +16,7 @@ import MessageList from './MessageList';
 import ChatInputArea from './ChatInputArea';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
+import ImageCropDialog from './ImageCropDialog';
 import { useToastManager, Button, Dialog } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
@@ -126,10 +127,12 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   const [isCreatingCall, setIsCreatingCall] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [deleteChatDialogOpen, setDeleteChatDialogOpen] = useState(false);
+  const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const scrollStateRef = useRef({
     lastMsgId: '',
     pendingCount: 0,
@@ -146,6 +149,28 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   const isAtBottom = () => {
     const c = messagesContainerRef.current;
     return c && c.scrollHeight - c.scrollTop - c.clientHeight < SCROLL_AT_BOTTOM_THRESHOLD;
+  };
+
+  const handleImageSelect = () => {
+    if (!isOnline) {
+      toastManager.add({ title: 'No connection', description: 'Cannot upload files while offline', data: { type: 'error' } });
+      return;
+    }
+    imageInputRef.current?.click();
+    setShowAddActions(false);
+  };
+
+  const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setCropDialogFile(file);
+    e.target.value = '';
+  };
+
+  const handleCropComplete = (processedFile: File) => {
+    const syntheticEvent = {
+      target: { files: [processedFile] }
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleFileChange(syntheticEvent);
   };
 
   // Load chat data
@@ -562,10 +587,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         onSend={handleSend}
         onTyping={onTyping}
         onCancelAddActions={() => setShowAddActions(false)}
-        onImageSelect={() => {
-          handleFileSelect('image');
-          setShowAddActions(false);
-        }}
+        onImageSelect={handleImageSelect}
         onFileSelect={() => {
           handleFileSelect('file');
           setShowAddActions(false);
@@ -586,6 +608,15 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         onChange={handleFileChange}
       />
 
+      {/* Hidden image input for crop */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageInputChange}
+      />
+
       {/* Edit Message Dialog */}
       <EditMessageDialog
         open={editDialogOpen}
@@ -600,6 +631,16 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* Image Crop Dialog */}
+      {cropDialogFile && (
+        <ImageCropDialog
+          open={!!cropDialogFile}
+          onOpenChange={(open) => !open && setCropDialogFile(null)}
+          file={cropDialogFile}
+          onComplete={handleCropComplete}
+        />
+      )}
 
       {/* Leave Group Dialog */}
       <Dialog

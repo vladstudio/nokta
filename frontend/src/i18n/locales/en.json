@@ -13,7 +13,9 @@
     "edit": "Edit",
     "create": "Create",
     "creating": "Creating...",
-    "leave": "Leave"
+    "leave": "Leave",
+    "add": "Add",
+    "processing": "Processing..."
   },
   "sidebar": {
     "mySpaces": "My Spaces",
@@ -39,6 +41,14 @@
   "addActions": {
     "image": "Image",
     "file": "File"
+  },
+  "imageCrop": {
+    "title": "Crop & Compress Image",
+    "quality": {
+      "lq": "Low",
+      "md": "Medium",
+      "hq": "High"
+    }
   },
   "editMessageDialog": {
     "title": "Edit Message",
