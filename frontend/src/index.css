@@ -158,6 +158,16 @@ hr {
   background-color: var(--color-bg-primary);
 }
 
+/* Right Sidebar */
+.right-sidebar {
+  @apply flex flex-col gap-px sm:pl-px;
+  background-color: var(--color-border-default);
+  width: 300px;
+}
+.right-sidebar > * {
+  background-color: var(--color-bg-primary);
+}
+
 .active-call {
   background-color: var(--color-success-50);
 }
@@ -168,6 +178,10 @@ hr {
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
+  }
+
+  .right-sidebar {
+    display: none;
   }
 
   .chat-list {

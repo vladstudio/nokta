@@ -3,7 +3,6 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useRoute, useSearch } from 'wouter';
 import { useAtom } from 'jotai';
-import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon } from '@phosphor-icons/react';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
@@ -12,14 +11,12 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { messageQueue } from '../utils/messageQueue';
 import LoadingSpinner from './LoadingSpinner';
-import ChatMessage from './ChatMessage';
-import MessageActions from './MessageActions';
-import AddActions from './AddActions';
-import MessageInput from './MessageInput';
+import ChatHeader from './ChatHeader';
+import MessageList from './MessageList';
+import ChatInputArea from './ChatInputArea';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
-import { UserAvatar } from './Avatar';
-import { ScrollArea, useToastManager, Button, Menu, Dialog } from '../ui';
+import { useToastManager, Button, Dialog } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
@@ -27,6 +24,8 @@ import type { Message, Chat } from '../types';
 
 interface ChatWindowProps {
   chatId?: string;
+  showRightSidebar?: boolean;
+  onToggleRightSidebar?: () => void;
 }
 
 interface DisplayMessage extends Message {
@@ -36,7 +35,12 @@ interface DisplayMessage extends Message {
   uploadProgress?: number;
 }
 
-export default function ChatWindow({ chatId }: ChatWindowProps) {
+// Constants
+const SCROLL_AT_BOTTOM_THRESHOLD = 150; // pixels from bottom
+const MAX_ANCHOR_SCROLL_RETRIES = 60; // ~1 second at 60fps
+const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
+
+export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
@@ -49,7 +53,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     );
   }
 
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const searchString = useSearch();
   const toastManager = useToastManager();
   const currentUser = auth.user;
@@ -131,7 +135,9 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     pendingCount: 0,
     hasScrolledInitially: false,
     lastScrollLoadTime: 0,
+    lastScrolledAnchor: '',
   });
+  const prevAnchorRef = useRef<string | undefined>(undefined);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
@@ -139,7 +145,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   const isAtBottom = () => {
     const c = messagesContainerRef.current;
-    return c && c.scrollHeight - c.scrollTop - c.clientHeight < 150;
+    return c && c.scrollHeight - c.scrollTop - c.clientHeight < SCROLL_AT_BOTTOM_THRESHOLD;
   };
 
   // Load chat data
@@ -166,7 +172,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     return () => window.removeEventListener('focus', handleFocus);
   }, [chatId, currentUser?.id]);
 
-  // Reset selected message and scroll state when chat changes
+  // Reset selected message and scroll state when chat or anchor changes
   useEffect(() => {
     setSelectedMessageId(null);
     scrollStateRef.current = {
@@ -175,7 +181,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
       hasScrolledInitially: false,
       lastScrollLoadTime: 0,
     };
-  }, [chatId]);
+  }, [chatId, anchorMessageId]);
 
   // Sync selected message to hash (without scrolling)
   useEffect(() => {
@@ -194,19 +200,43 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
     }
   }, [isOnline]);
 
-  // Scroll to anchor message after initial load (once)
+  // Scroll to anchor message after initial load (once per anchor)
   useEffect(() => {
-    if (!loading && anchorMessageId && messages.length > 0 && !scrollStateRef.current.hasScrolledInitially) {
+    if (!loading && anchorMessageId && messages.length > 0 &&
+        scrollStateRef.current.lastScrolledAnchor !== anchorMessageId) {
       scrollStateRef.current.hasScrolledInitially = true;
-      requestAnimationFrame(() => {
-        document.getElementById(`msg-${anchorMessageId}`)?.scrollIntoView({ block: 'center' });
-      });
+      scrollStateRef.current.lastScrolledAnchor = anchorMessageId;
+
+      // Wait for element to exist in DOM (with max retries)
+      let retries = 0;
+      const checkAndScroll = () => {
+        const el = document.getElementById(`msg-${anchorMessageId}`);
+        if (el) {
+          el.scrollIntoView({ block: 'center' });
+        } else if (retries < MAX_ANCHOR_SCROLL_RETRIES) {
+          retries++;
+          requestAnimationFrame(checkAndScroll);
+        } else {
+          console.warn(`Failed to scroll to anchor message ${anchorMessageId} after ${MAX_ANCHOR_SCROLL_RETRIES} retries`);
+        }
+      };
+      requestAnimationFrame(checkAndScroll);
     }
   }, [loading, anchorMessageId, messages.length]);
 
   // Auto-scroll: on initial load, when current user sends, OR when new message arrives and already at bottom
   useEffect(() => {
-    if (anchorMessageId) return; // Skip auto-scroll in anchor mode
+    if (anchorMessageId) {
+      prevAnchorRef.current = anchorMessageId;
+      return; // Skip auto-scroll in anchor mode
+    }
+
+    // Force scroll on transition from anchor to present
+    if (prevAnchorRef.current && !anchorMessageId) {
+      scrollStateRef.current.hasScrolledInitially = false;
+      prevAnchorRef.current = undefined;
+    }
+
     const { lastMsgId: prevLastId, pendingCount: prevPending, hasScrolledInitially } = scrollStateRef.current;
     const lastMsg = messages[messages.length - 1];
     const lastMsgId = lastMsg?.id || '';
@@ -237,7 +267,7 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
     const handleScroll = () => {
       const timeSinceLastLoad = Date.now() - scrollStateRef.current.lastScrollLoadTime;
-      if (container.scrollTop < 100 && hasMore && !loadingOlder && timeSinceLastLoad > 1000) {
+      if (container.scrollTop < 100 && hasMore && !loadingOlder && timeSinceLastLoad > LOAD_OLDER_COOLDOWN) {
         scrollStateRef.current.lastScrollLoadTime = Date.now();
         loadOlderMessages();
       }
@@ -492,140 +522,61 @@ export default function ChatWindow({ chatId }: ChatWindowProps) {
 
   return (
     <div className="flex-1 flex flex-col bg-(--color-bg-secondary) min-h-0">
-      {/* Header */}
-      <div className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
-        <div className="flex items-center gap-2">
-          {isMobile && (
-            <button onClick={handleBack} className="p-1 -ml-2">
-              <ArrowLeftIcon size={20} className="text-accent" />
-            </button>
-          )}
-          <h2 className="font-semibold flex-1">{getChatName(chat)}</h2>
-          {typingUsers.length > 0 && (
-            <span className="text-xs text-light">
-              {typingUsers.length === 1 ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}` : typingUsers.length === 2 ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}` : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Participant avatars for group chats */}
-          {chat && (chat.type === 'public' || (chat.participants?.length || 0) > 2) && chat.expand?.participants && (
-            <div className="flex items-center -space-x-2">
-              {chat.expand.participants.slice(0, 5).map((participant) => (
-                <UserAvatar
-                  key={participant.id}
-                  user={participant}
-                  size={24}
-                  className="border-2 rounded-full border-(--color-bg-primary)/90"
-                />
-              ))}
-              {chat.expand.participants.length > 5 && (
-                <div
-                  className="rounded-full flex items-center justify-center text-xs font-semibold border-2 border-(--color-bg-primary) bg-(--color-bg-secondary)"
-                  style={{ width: 24, height: 24 }}
-                >
-                  +{chat.expand.participants.length - 5}
-                </div>
-              )}
-            </div>
-          )}
-          {isVideoCallsEnabled && (
-            <Button
-              onClick={handleStartCall}
-              variant="ghost"
-              size="default"
-              className="flex items-center gap-2 text-accent"
-              disabled={isCreatingCall || !!activeCallChat}
-              title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}
-            >
-              <PhoneIcon size={20} className="text-accent" />
-              <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
-            </Button>
-          )}
-          {chat && chat.type === 'private' && chat.participants.length > 2 && (
-            <Menu
-              trigger={
-                <Button variant="ghost" size="icon">
-                  <DotsThreeIcon weight="bold" size={20} className="text-accent" />
-                </Button>
-              }
-              items={
-                chat.created_by === currentUser?.id
-                  ? [{ label: t('chats.deleteChat'), onClick: () => setDeleteChatDialogOpen(true) }]
-                  : [{ label: t('chats.leaveGroup'), onClick: () => setLeaveDialogOpen(true) }]
-              }
-            />
-          )}
-        </div>
-      </div>
+      <ChatHeader
+        chat={chat}
+        chatName={getChatName(chat)}
+        typingUsers={typingUsers}
+        isMobile={isMobile}
+        showRightSidebar={showRightSidebar}
+        isCreatingCall={isCreatingCall}
+        activeCallChat={activeCallChat}
+        currentUser={currentUser}
+        onBack={handleBack}
+        onToggleRightSidebar={onToggleRightSidebar!}
+        onStartCall={handleStartCall}
+        onLeaveGroup={() => setLeaveDialogOpen(true)}
+        onDeleteChat={() => setDeleteChatDialogOpen(true)}
+      />
 
-      {/* Messages Area */}
-      <ScrollArea ref={messagesContainerRef}>
-        <div className="p-1 flex flex-col min-h-[50dvh]">
-          {loadingOlder && (
-            <div className="flex justify-center p-2">
-              <LoadingSpinner size="sm" />
-            </div>
-          )}
-          {allMessages.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light">
-              <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
-              {t('chatWindow.noMessages')}
-            </div>
-          ) : (
-            allMessages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                isOwn={message.sender === currentUser?.id}
-                currentUserId={currentUser?.id || ''}
-                isSelected={selectedMessageId === message.id}
-                onSelect={() => setSelectedMessageId(selectedMessageId === message.id ? null : message.id)}
-                onRetry={message.type === 'text' ? handleRetryMessage : handleRetryUpload}
-                onCancelUpload={handleCancelUpload}
-                onReactionClick={(emoji) => handleReaction(message.id, emoji)}
-              />
-            ))
-          )}
-          {hasMoreAfter && (
-            <div className="flex justify-center p-4">
-              <Button variant="default" onClick={() => setLocation(`/spaces/${params?.spaceId}/chat/${chatId}`)}>{t('chatWindow.jumpToPresent')}</Button>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-      <div className="w-full shrink-0 min-h-16! bg-(--color-bg-primary) border-t border-(--color-border-default) flex items-stretch p-2">
-        {/* Message Input or Actions */}
-        {showAddActions ? (
-          <AddActions
-            onCancel={() => setShowAddActions(false)}
-            onImageSelect={() => {
-              handleFileSelect('image');
-              setShowAddActions(false);
-            }}
-            onFileSelect={() => {
-              handleFileSelect('file');
-              setShowAddActions(false);
-            }}
-          />
-        ) : selectedMessageId ? (
-          <MessageActions
-            onCancel={() => setSelectedMessageId(null)}
-            onCopy={selectedMessage?.type !== 'file' ? handleCopyMessage : undefined}
-            onEdit={canEditOrDelete && selectedMessage?.type === 'text' ? handleEditMessage : undefined}
-            onDelete={canEditOrDelete ? handleDeleteMessage : undefined}
-            onReact={!canEditOrDelete && selectedMessageId ? (emoji) => handleReaction(selectedMessageId, emoji) : undefined}
-            userReactions={selectedMessage?.reactions ? Object.keys(selectedMessage.reactions).filter(emoji => selectedMessage.reactions![emoji].includes(currentUser?.id || '')) : undefined}
-          />
-        ) : (
-          <MessageInput
-            onSend={handleSend}
-            onTyping={onTyping}
-            onAddClick={() => setShowAddActions(true)}
-          />
-        )}
-      </div>
+      <MessageList
+        ref={messagesContainerRef}
+        messages={allMessages}
+        loadingOlder={loadingOlder}
+        selectedMessageId={selectedMessageId}
+        hasMoreAfter={hasMoreAfter}
+        currentUserId={currentUser?.id || ''}
+        onSelectMessage={setSelectedMessageId}
+        onRetryMessage={handleRetryMessage}
+        onRetryUpload={handleRetryUpload}
+        onCancelUpload={handleCancelUpload}
+        onReaction={handleReaction}
+        onJumpToPresent={() => setLocation(`/spaces/${params?.spaceId}/chat/${chatId}`)}
+        messagesEndRef={messagesEndRef}
+      />
+      <ChatInputArea
+        showAddActions={showAddActions}
+        selectedMessageId={selectedMessageId}
+        selectedMessage={selectedMessage}
+        canEditOrDelete={canEditOrDelete}
+        currentUserId={currentUser?.id || ''}
+        onSend={handleSend}
+        onTyping={onTyping}
+        onCancelAddActions={() => setShowAddActions(false)}
+        onImageSelect={() => {
+          handleFileSelect('image');
+          setShowAddActions(false);
+        }}
+        onFileSelect={() => {
+          handleFileSelect('file');
+          setShowAddActions(false);
+        }}
+        onShowAddActions={() => setShowAddActions(true)}
+        onCancelMessageSelection={() => setSelectedMessageId(null)}
+        onCopy={handleCopyMessage}
+        onEdit={handleEditMessage}
+        onDelete={handleDeleteMessage}
+        onReact={(emoji) => handleReaction(selectedMessageId!, emoji)}
+      />
 
       {/* Hidden file input */}
       <input

@@ -167,5 +167,13 @@
   },
   "app": {
     "logoAlt": "Talk"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search messages...",
+    "label": "Search messages",
+    "toggleSearch": "Toggle search",
+    "noResults": "No messages found",
+    "emptyState": "Enter a search query to find messages"
   }
 }

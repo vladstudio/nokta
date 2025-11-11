@@ -216,11 +216,8 @@ export default function Sidebar() {
             <span className="text-xs text-light truncate text-right">{auth.user?.name || auth.user?.email}</span>
           </Button>
           <Menu
-            trigger={
-              <Button variant="ghost" size="icon">
-                <PlusIcon size={20} className="text-accent" />
-              </Button>
-            }
+            className="p-2 rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-(--color-text-primary) hover:bg-(--color-bg-hover)"
+            trigger={<PlusIcon size={20} className="text-accent" />}
             items={[
               { label: t('chats.createGroup'), onClick: () => setShowCreateDialog(true) }
             ]}

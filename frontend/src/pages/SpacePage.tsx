@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useAtom } from 'jotai';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
+import RightSidebar from '../components/RightSidebar';
 import { callsAPI } from '../services/calls';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -20,6 +21,7 @@ export default function SpacePage() {
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
   const { isOnline } = useConnectionStatus();
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
 
   useEffect(() => {
     const handleNotificationClick = (event: Event) => {
@@ -124,13 +126,25 @@ export default function SpacePage() {
 
   if (isMobile && !chatId) return null;
 
+  const showRightSidebarPanel = showRightSidebar && chatId && !isMobile;
+
   return (
     <>
       {isVideoCallsEnabled && activeCallChat && (
         <CallView show={showCallView} chat={activeCallChat} />
       )}
-      <div className={`flex-1 flex flex-col overflow-hidden ${showCallView ? 'hidden' : ''}`}>
-        <ChatWindow key={chatId || 'empty'} chatId={chatId} />
+      <div className={`flex-1 flex overflow-hidden ${showCallView ? 'hidden' : ''}`}>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <ChatWindow
+            key={chatId || 'empty'}
+            chatId={chatId}
+            showRightSidebar={showRightSidebar}
+            onToggleRightSidebar={() => setShowRightSidebar(!showRightSidebar)}
+          />
+        </div>
+        {showRightSidebarPanel && (
+          <RightSidebar chatId={chatId} onClose={() => setShowRightSidebar(false)} />
+        )}
       </div>
     </>
   );

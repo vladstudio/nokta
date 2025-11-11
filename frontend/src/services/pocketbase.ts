@@ -229,6 +229,15 @@ export const messages = {
     if (!reactions[emoji].length) delete reactions[emoji];
     return await pb.collection('messages').update<Message>(messageId, { reactions });
   },
+
+  async search(chatId: string, query: string, page = 1, perPage = 50) {
+    const records = await pb.collection('messages').getList<Message>(page, perPage, {
+      filter: pb.filter('chat = {:chatId} && content ~ {:query}', { chatId, query }),
+      expand: 'sender',
+      sort: '-created',
+    });
+    return records;
+  },
 };
 
 export const chatReadStatus = {
