@@ -32,7 +32,6 @@ export interface SpaceMember {
 export interface Chat {
   id: string;
   space: string;
-  type: 'public' | 'private';
   participants: string[];
   created_by?: string;
   name?: string;

@@ -106,7 +106,7 @@ export default function Sidebar() {
     }
 
     // Default fallback
-    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
+    return chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat');
   }, [t]);
 
   // Handle active call subscription events

@@ -114,9 +114,8 @@
   },
   "chatList": {
     "directMessage": "Direct Message",
-    "noChats": "No chats available",
-    "publicChat": "Public chat",
-    "privateChat": "Private chat"
+    "groupChat": "Group Chat",
+    "noChats": "No chats available"
   },
   "chats": {
     "createChat": "Create Chat",
@@ -130,7 +129,9 @@
     "chatDeleted": "Chat deleted",
     "failedToDelete": "Failed to delete chat",
     "leftChat": "You left the chat",
-    "failedToLeave": "Failed to leave chat"
+    "failedToLeave": "Failed to leave chat",
+    "failedToCreate": "Failed to create chat",
+    "couldNotCreateChat": "Could not create chat. Please try again."
   },
   "connectionBanner": {
     "offline": "You are offline. Messages will be sent when connection is restored."

@@ -40,7 +40,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       className="w-full p-2! text-left flex items-center gap-2"
     >
       <div className="relative shrink-0">
-        {chat.type === 'private' ? (
+        {chat.participants.length === 2 ? (
           <UserAvatar user={getOtherParticipant(chat)} size={40} />
         ) : (
           <ChatAvatar chat={chat} size={40} />
@@ -60,7 +60,7 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
         <div className="text-xs text-light truncate mt-0.5">
           {chat.last_message_content && chat.expand?.last_message_sender ?
             `${chat.expand.last_message_sender.name || chat.expand.last_message_sender.email}: ${chat.last_message_content.slice(0, 50)}` :
-            (chat.type === 'public' ? t('chatList.publicChat') : t('chatList.privateChat'))}
+            (chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat'))}
         </div>
       </div>
       {hasUnread && (
@@ -112,12 +112,10 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
     }
 
     // Default fallback
-    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
+    return chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat');
   }, [currentUser?.id, t]);
 
   const getOtherParticipant = useCallback((chat: Chat) => {
-    if (chat.type === 'public') return null;
-
     if (chat.expand?.participants) {
       const otherParticipants = chat.expand.participants.filter(
         (p) => p.id !== currentUser?.id
@@ -128,9 +126,9 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   }, [currentUser?.id]);
 
   const getOnlineStatus = useCallback((chat: Chat) => {
-    if (chat.type === 'public') return null;
+    // Only show online status for DMs (2 participants)
+    if (chat.participants.length !== 2) return null;
 
-    // For DM, check if other participant is online
     if (chat.expand?.participants) {
       const otherParticipants = chat.expand.participants.filter(
         (p) => p.id !== currentUser?.id

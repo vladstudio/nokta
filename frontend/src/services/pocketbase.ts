@@ -87,13 +87,12 @@ export const chats = {
     return record;
   },
 
-  async create(spaceId: string, type: 'public' | 'private', participants: string[], name?: string) {
+  async create(spaceId: string, participants: string[], name?: string) {
     if (!auth.user?.id) {
       throw new Error('User must be authenticated to create a chat');
     }
     return await pb.collection('chats').create<Chat>({
       space: spaceId,
-      type,
       participants,
       name,
       created_by: auth.user.id,

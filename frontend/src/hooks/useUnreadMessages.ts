@@ -125,7 +125,7 @@ export function useUnreadMessages(
               const sender = expandedMsg.expand.sender;
               // Use explicit name if provided, otherwise fallback
               const chatName = chat.name
-                || (chat.type === 'public' ? 'Public Chat' : `${sender.name || sender.email}`);
+                || (chat.participants.length === 2 ? `${sender.name || sender.email}` : 'Group Chat');
 
               const notification = showMessageNotification(
                 chatName,

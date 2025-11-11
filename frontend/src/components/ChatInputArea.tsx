@@ -24,6 +24,7 @@ interface ChatInputAreaProps {
   onFileSelect: () => void;
   onShowAddActions: () => void;
   onCancelMessageSelection: () => void;
+  onPasteImage?: (file: File) => void;
   onCopy: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -44,6 +45,7 @@ export default function ChatInputArea({
   onFileSelect,
   onShowAddActions,
   onCancelMessageSelection,
+  onPasteImage,
   onCopy,
   onEdit,
   onDelete,
@@ -74,7 +76,7 @@ export default function ChatInputArea({
           }
         />
       ) : (
-        <MessageInput onSend={onSend} onTyping={onTyping} onAddClick={onShowAddActions} />
+        <MessageInput onSend={onSend} onTyping={onTyping} onAddClick={onShowAddActions} onPasteImage={onPasteImage} />
       )}
     </div>
   );

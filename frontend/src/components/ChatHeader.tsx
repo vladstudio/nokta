@@ -66,7 +66,7 @@ export default function ChatHeader({
       </div>
       <div className="flex items-center gap-2">
         {/* Participant avatars for group chats */}
-        {chat && (chat.type === 'public' || (chat.participants?.length || 0) > 2) && chat.expand?.participants && (
+        {chat && (chat.participants?.length || 0) > 2 && chat.expand?.participants && (
           <div className="flex items-center -space-x-2">
             {chat.expand.participants.slice(0, 5).map((participant) => (
               <UserAvatar
@@ -117,7 +117,7 @@ export default function ChatHeader({
             <span className="text-sm">{isCreatingCall ? t('calls.starting') : activeCallChat ? t('calls.inCall') : t('calls.call')}</span>
           </Button>
         )}
-        {chat && chat.type === 'private' && chat.participants.length > 2 && (
+        {chat && chat.participants.length > 2 && (
           <Menu
             className="p-2 rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-(--color-text-primary) hover:bg-(--color-bg-hover)"
             trigger={

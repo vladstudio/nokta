@@ -77,7 +77,14 @@ const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
           )}
           {hasMoreAfter && (
             <div className="flex justify-center p-4">
-              <Button variant="default" onClick={onJumpToPresent}>
+              <Button
+                variant="default"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onJumpToPresent();
+                }}
+              >
                 {t('chatWindow.jumpToPresent')}
               </Button>
             </div>

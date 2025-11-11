@@ -1,16 +1,17 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
-import { PaperPlaneIcon, PaperPlaneTiltIcon, PlusIcon } from "@phosphor-icons/react";
+import { PaperPlaneTiltIcon, PlusIcon } from "@phosphor-icons/react";
 
 interface MessageInputProps {
   onSend: (content: string) => Promise<void>;
   onTyping: () => void;
   onAddClick: () => void;
+  onPasteImage?: (file: File) => void;
   disabled?: boolean;
 }
 
-export default function MessageInput({ onSend, onTyping, onAddClick, disabled = false }: MessageInputProps) {
+export default function MessageInput({ onSend, onTyping, onAddClick, onPasteImage, disabled = false }: MessageInputProps) {
   const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -57,6 +58,20 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
     }
   };
 
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items || !onPasteImage) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) onPasteImage(file);
+        break;
+      }
+    }
+  }, [onPasteImage]);
+
   return (
     <form onSubmit={handleSend} className="w-full min-h-12! flex items-stretch gap-2">
       <Button
@@ -74,6 +89,7 @@ export default function MessageInput({ onSend, onTyping, onAddClick, disabled = 
         value={message}
         onChange={handleMessageChange}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         placeholder={t('messageInput.placeholder')}
         rows={1}
         className="flex-1 max-h-64! overflow-y-auto resize-none "

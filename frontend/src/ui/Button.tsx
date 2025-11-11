@@ -1,14 +1,25 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
 
 type Variant = 'default' | 'primary' | 'ghost' | 'outline';
 type Size = 'default' | 'icon';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonAsButton = ButtonHTMLAttributes<HTMLButtonElement> & {
+  href?: never;
+  ref?: React.Ref<HTMLButtonElement>;
+};
+
+type ButtonAsAnchor = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  href: string;
+  ref?: React.Ref<HTMLAnchorElement>;
+};
+
+interface BaseButtonProps {
   variant?: Variant;
   size?: Size;
   isSelected?: boolean;
-  ref?: React.Ref<HTMLButtonElement>;
 }
+
+type ButtonProps = BaseButtonProps & (ButtonAsButton | ButtonAsAnchor);
 
 const variants: Record<Variant, string> = {
   default: 'border border-(--color-border-default) text-(--color-text-primary) bg-(--color-bg-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
@@ -25,12 +36,25 @@ const sizes: Record<Size, string> = {
 export function Button({ variant = 'primary', size = 'default', className = '', disabled, isSelected, ref, ...props }: ButtonProps) {
   const baseClasses = `${sizes[size]} rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1`;
   const variantClasses = isSelected ? 'bg-(--color-bg-active)!' : variants[variant];
+  const combinedClasses = `${baseClasses} ${variantClasses} ${className}`;
+
+  if ('href' in props && props.href) {
+    const { href, ...anchorProps } = props;
+    return (
+      <a
+        ref={ref as React.Ref<HTMLAnchorElement>}
+        href={href}
+        className={combinedClasses}
+        {...anchorProps}
+      />
+    );
+  }
 
   return (
     <button
-      ref={ref}
+      ref={ref as React.Ref<HTMLButtonElement>}
       disabled={disabled}
-      className={`${baseClasses} ${variantClasses} ${className}`}
+      className={combinedClasses}
       {...props}
     />
   );

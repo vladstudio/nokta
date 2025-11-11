@@ -39,7 +39,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
     if (selectedUsers.length === 0 || !auth.user?.id) return;
     setCreating(true);
     try {
-      const chat = await chats.create(spaceId, 'private', [...selectedUsers, auth.user.id], chatName.trim() || undefined);
+      const chat = await chats.create(spaceId, [...selectedUsers, auth.user.id], chatName.trim() || undefined);
       onOpenChange(false);
       onChatCreated?.(chat.id);
     } catch (error) {

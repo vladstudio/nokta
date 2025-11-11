@@ -86,7 +86,7 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
     }
 
     // Default fallback
-    return chat.type === 'public' ? t('calls.general') : t('chatList.directMessage');
+    return chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat');
   };
 
   // Parse anchor message from URL param
@@ -648,6 +648,7 @@ export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSide
         }}
         onShowAddActions={() => setShowAddActions(true)}
         onCancelMessageSelection={() => setSelectedMessageId(null)}
+        onPasteImage={setCropDialogFile}
         onCopy={handleCopyMessage}
         onEdit={handleEditMessage}
         onDelete={handleDeleteMessage}
