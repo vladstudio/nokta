@@ -118,7 +118,6 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     return (
       <VideoPlayer
         videoUrl={videoUrl}
-        caption={message.content}
         onError={() => {
           console.error('Video playback failed');
           toastManager.add({

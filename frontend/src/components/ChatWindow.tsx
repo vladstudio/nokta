@@ -115,6 +115,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
     fileInputRef,
     handleFileSelect,
     handleFileChange,
+    uploadFiles,
     handleCancelUpload,
     handleRetryUpload,
   } = useFileUpload(chatId, isOnline, (title, description) => {
@@ -220,10 +221,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   };
 
   const handleVideoCompressionComplete = (compressedFile: File, metadata: VideoMetadata) => {
-    const syntheticEvent = {
-      target: { files: [compressedFile] }
-    } as React.ChangeEvent<HTMLInputElement>;
-    handleFileChange(syntheticEvent);
+    uploadFiles([compressedFile], 'video');
     setVideoCompressionDialogFile(null);
   };
 

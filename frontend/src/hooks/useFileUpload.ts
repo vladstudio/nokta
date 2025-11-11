@@ -16,6 +16,7 @@ export interface UseFileUploadReturn {
   fileInputType: 'image' | 'file';
   handleFileSelect: (type: 'image' | 'file') => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  uploadFiles: (files: File[], type: 'image' | 'file' | 'video') => Promise<void>;
   handleCancelUpload: (tempId: string) => void;
   handleRetryUpload: (tempId: string) => void;
 }
@@ -131,12 +132,45 @@ export function useFileUpload(
     uploadFile(upload);
   };
 
+  const uploadFiles = async (files: File[], type: 'image' | 'file' | 'video') => {
+    if (files.length === 0) return;
+
+    if (!isOnline) {
+      onError('No connection', 'Cannot upload files while offline');
+      return;
+    }
+
+    const MAX_SIZE = 100 * 1024 * 1024; // 100MB (to support videos)
+    const validFiles = files.filter(f => {
+      if (f.size > MAX_SIZE) {
+        onError('File too large', `${f.name} exceeds 100MB limit`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    const uploads: UploadingFile[] = validFiles.map(file => ({
+      tempId: `temp_${Date.now()}_${Math.random()}`,
+      chatId,
+      type,
+      file,
+      progress: 0,
+      status: 'uploading' as const,
+    }));
+
+    setUploadingFiles(prev => [...prev, ...uploads]);
+    uploads.forEach(upload => uploadFile(upload));
+  };
+
   return {
     uploadingFiles,
     fileInputRef,
     fileInputType,
     handleFileSelect,
     handleFileChange,
+    uploadFiles,
     handleCancelUpload,
     handleRetryUpload,
   };
