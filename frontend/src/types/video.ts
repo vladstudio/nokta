@@ -7,7 +7,7 @@ export interface VideoMetadata {
   codec: string;
 }
 
-export type VideoQuality = 'lq' | 'md' | 'hq';
+export type VideoQuality = 'vlq' | 'lq' | 'md' | 'hq' | 'vhq';
 
 export interface VideoQualityPreset {
   label: string;

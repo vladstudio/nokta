@@ -7,16 +7,20 @@ import {
   BlobSource,
   BufferTarget,
   Mp4OutputFormat,
+  QUALITY_VERY_LOW,
   QUALITY_LOW,
   QUALITY_MEDIUM,
   QUALITY_HIGH,
+  QUALITY_VERY_HIGH,
 } from 'mediabunny';
 import type { VideoMetadata, VideoQuality } from '../types/video';
 
 const QUALITY_MAP = {
+  vlq: QUALITY_VERY_LOW,
   lq: QUALITY_LOW,
   md: QUALITY_MEDIUM,
   hq: QUALITY_HIGH,
+  vhq: QUALITY_VERY_HIGH,
 };
 
 interface UseVideoCompressionResult {
@@ -74,7 +78,7 @@ export function useVideoCompression(): UseVideoCompressionResult {
         video: {
           codec: 'avc', // H.264
           bitrate: QUALITY_MAP[quality],
-          width: Math.min(originalWidth, quality === 'lq' ? 854 : quality === 'md' ? 1280 : 1920),
+          width: Math.min(originalWidth, quality === 'vlq' ? 640 : quality === 'lq' ? 854 : quality === 'md' ? 1280 : quality === 'hq' ? 1920 : 2560),
           fit: 'contain',
         },
         audio: {

@@ -13,9 +13,11 @@ interface VideoCompressionDialogProps {
 }
 
 const QUALITY_ESTIMATES = {
-  lq: { label: 'Low', multiplier: 0.1 }, // ~10% of original
-  md: { label: 'Medium', multiplier: 0.3 }, // ~30% of original
-  hq: { label: 'High', multiplier: 0.6 }, // ~60% of original
+  vlq: { label: 'Very Low', multiplier: 0.05 },
+  lq: { label: 'Low', multiplier: 0.1 },
+  md: { label: 'Medium', multiplier: 0.3 },
+  hq: { label: 'High', multiplier: 0.6 },
+  vhq: { label: 'Very High', multiplier: 0.85 },
 };
 
 export default function VideoCompressionDialog({
@@ -117,7 +119,7 @@ export default function VideoCompressionDialog({
         <div className="space-y-2">
           <div className="text-sm font-medium">{t('videoCompression.quality')}:</div>
           <div className="flex gap-2">
-            {(['lq', 'md', 'hq'] as const).map((q) => (
+            {(['vlq', 'lq', 'md', 'hq', 'vhq'] as const).map((q) => (
               <Button
                 key={q}
                 isSelected={quality === q}
