@@ -1,16 +1,25 @@
-import type { ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, AnchorHTMLAttributes, HTMLAttributes } from 'react';
 
 type Variant = 'default' | 'primary' | 'ghost' | 'outline';
 type Size = 'default' | 'icon';
 
 type ButtonAsButton = ButtonHTMLAttributes<HTMLButtonElement> & {
+  as?: 'button';
   href?: never;
   ref?: React.Ref<HTMLButtonElement>;
 };
 
 type ButtonAsAnchor = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  as?: 'a';
   href: string;
   ref?: React.Ref<HTMLAnchorElement>;
+};
+
+type ButtonAsDiv = HTMLAttributes<HTMLDivElement> & {
+  as: 'div';
+  href?: never;
+  disabled?: boolean;
+  ref?: React.Ref<HTMLDivElement>;
 };
 
 interface BaseButtonProps {
@@ -19,7 +28,7 @@ interface BaseButtonProps {
   isSelected?: boolean;
 }
 
-type ButtonProps = BaseButtonProps & (ButtonAsButton | ButtonAsAnchor);
+type ButtonProps = BaseButtonProps & (ButtonAsButton | ButtonAsAnchor | ButtonAsDiv);
 
 const variants: Record<Variant, string> = {
   default: 'border border-(--color-border-default) text-(--color-text-primary) bg-(--color-bg-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
@@ -38,8 +47,19 @@ export function Button({ variant = 'primary', size = 'default', className = '', 
   const variantClasses = isSelected ? 'bg-(--color-bg-active)!' : variants[variant];
   const combinedClasses = `${baseClasses} ${variantClasses} ${className}`;
 
+  if ('as' in props && props.as === 'div') {
+    const { as, ...divProps } = props;
+    return (
+      <div
+        ref={ref as React.Ref<HTMLDivElement>}
+        className={combinedClasses}
+        {...divProps}
+      />
+    );
+  }
+
   if ('href' in props && props.href) {
-    const { href, ...anchorProps } = props;
+    const { href, as, ...anchorProps } = props;
     return (
       <a
         ref={ref as React.Ref<HTMLAnchorElement>}
@@ -50,12 +70,13 @@ export function Button({ variant = 'primary', size = 'default', className = '', 
     );
   }
 
+  const { as, ...buttonProps } = props as ButtonAsButton & { as?: 'button' };
   return (
     <button
       ref={ref as React.Ref<HTMLButtonElement>}
       disabled={disabled}
       className={combinedClasses}
-      {...props}
+      {...buttonProps}
     />
   );
 }
