@@ -58,7 +58,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t('chats.createGroup')}
+      title={t('chats.createChat')}
       footer={
         <>
           <Button variant="default" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>

@@ -16,7 +16,7 @@ export default function VideoPlayer({
   onError
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [, setIsFullscreen] = useState(false);
 
   const handleDoubleClick = () => {
     if (videoRef.current) {

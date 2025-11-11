@@ -24,7 +24,7 @@ interface MessageListProps {
   onCancelUpload: (tempId: string) => void;
   onReaction: (messageId: string, emoji: string) => void;
   onJumpToPresent: () => void;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const MessageList = forwardRef<HTMLDivElement, MessageListProps>(

@@ -21,14 +21,14 @@ import VideoCompressionDialog from './VideoCompressionDialog';
 import { useToastManager, Button, Dialog } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
-import { isVideoCallsEnabled } from '../config/features';
 import type { Message, Chat } from '../types';
 import type { VideoMetadata } from '../types/video';
+import type { RightSidebarView } from './RightSidebar';
 
 interface ChatWindowProps {
   chatId?: string;
-  showRightSidebar?: boolean;
-  onToggleRightSidebar?: () => void;
+  rightSidebarView?: RightSidebarView | null;
+  onToggleRightSidebar?: (view: RightSidebarView | null) => void;
 }
 
 interface DisplayMessage extends Message {
@@ -43,7 +43,7 @@ const SCROLL_AT_BOTTOM_THRESHOLD = 150; // pixels from bottom
 const MAX_ANCHOR_SCROLL_RETRIES = 60; // ~1 second at 60fps
 const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
-export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSidebar }: ChatWindowProps) {
+export default function ChatWindow({ chatId, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
@@ -174,7 +174,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   const handleCropComplete = (processedFile: File) => {
     const syntheticEvent = {
       target: { files: [processedFile] }
-    } as React.ChangeEvent<HTMLInputElement>;
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
     handleFileChange(syntheticEvent);
   };
 
@@ -220,7 +220,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
     e.target.value = '';
   };
 
-  const handleVideoCompressionComplete = (compressedFile: File, metadata: VideoMetadata) => {
+  const handleVideoCompressionComplete = (compressedFile: File, _metadata: VideoMetadata) => {
     uploadFiles([compressedFile], 'video');
     setVideoCompressionDialogFile(null);
   };
@@ -257,6 +257,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
       pendingCount: 0,
       hasScrolledInitially: false,
       lastScrollLoadTime: 0,
+      lastScrolledAnchor: '',
     };
   }, [chatId, anchorMessageId]);
 
@@ -280,7 +281,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
   // Scroll to anchor message after initial load (once per anchor)
   useEffect(() => {
     if (!loading && anchorMessageId && messages.length > 0 &&
-        scrollStateRef.current.lastScrolledAnchor !== anchorMessageId) {
+      scrollStateRef.current.lastScrolledAnchor !== anchorMessageId) {
       scrollStateRef.current.hasScrolledInitially = true;
       scrollStateRef.current.lastScrolledAnchor = anchorMessageId;
 
@@ -604,7 +605,7 @@ export default function ChatWindow({ chatId, showRightSidebar, onToggleRightSide
         chatName={getChatName(chat)}
         typingUsers={typingUsers}
         isMobile={isMobile}
-        showRightSidebar={showRightSidebar}
+        rightSidebarView={rightSidebarView}
         isCreatingCall={isCreatingCall}
         activeCallChat={activeCallChat}
         currentUser={currentUser}

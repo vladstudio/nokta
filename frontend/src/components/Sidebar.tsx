@@ -219,7 +219,7 @@ export default function Sidebar() {
             className="p-2 rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-(--color-text-primary) hover:bg-(--color-bg-hover)"
             trigger={<PlusIcon size={20} className="text-accent" />}
             items={[
-              { label: t('chats.createGroup'), onClick: () => setShowCreateDialog(true) }
+              { label: t('chats.createChat'), onClick: () => setShowCreateDialog(true) }
             ]}
           />
         </div>
@@ -244,7 +244,7 @@ export default function Sidebar() {
                   className={`w-full p-2! text-left flex items-center gap-2 ${!isInCall && isSelected
                     ? 'bg-(--color-bg-active)!'
                     : !isInCall ? 'bg-(--color-bg-primary)' : ''
-                  }`}
+                    }`}
                 >
                   <div className="shrink-0">
                     <PhoneIcon size={24} className="text-accent" />

@@ -16,7 +16,9 @@
     "leave": "Leave",
     "add": "Add",
     "processing": "Processing...",
-    "noConnection": "No connection"
+    "noConnection": "No connection",
+    "info": "Info",
+    "comingSoon": "Coming soon"
   },
   "sidebar": {
     "mySpaces": "My Spaces",
@@ -117,7 +119,7 @@
     "privateChat": "Private chat"
   },
   "chats": {
-    "createGroup": "Create Group",
+    "createChat": "Create Chat",
     "selectMembers": "Select members to add to the chat",
     "groupName": "Group Name (Optional)",
     "groupNamePlaceholder": "Enter group name...",

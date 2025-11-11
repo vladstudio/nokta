@@ -12,8 +12,8 @@ export interface UseMessageListReturn {
   hasMore: boolean;
   hasMoreAfter: boolean;
   loadOlderMessages: () => Promise<void>;
-  typingUsers: Array<{ userId: string; userName: string }>;
-  setTypingUsers: React.Dispatch<React.SetStateAction<Array<{ userId: string; userName: string }>>>;
+  typingUsers: Array<{ userId: string; userName: string; timestamp: number }>;
+  setTypingUsers: React.Dispatch<React.SetStateAction<Array<{ userId: string; userName: string; timestamp: number }>>>;
 }
 
 export function useMessageList(chatId: string, anchorMessageId?: string): UseMessageListReturn {
@@ -23,7 +23,7 @@ export function useMessageList(chatId: string, anchorMessageId?: string): UseMes
   const [hasMore, setHasMore] = useState(false);
   const [hasMoreAfter, setHasMoreAfter] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string }>>([]);
+  const [typingUsers, setTypingUsers] = useState<Array<{ userId: string; userName: string; timestamp: number }>>([]);
   const lastLoadTimeRef = useRef(0);
 
   const loadMessages = useCallback(async () => {

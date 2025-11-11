@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon, MagnifyingGlassIcon } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeftIcon, DotsThreeIcon, MagnifyingGlassIcon, InfoIcon } from '@phosphor-icons/react';
 import { UserAvatar } from './Avatar';
 import { Button, Menu } from '../ui';
 import { isVideoCallsEnabled } from '../config/features';
 import type { Chat, User } from '../types';
+import type { RightSidebarView } from './RightSidebar';
 
 interface TypingUser {
   userId: string;
@@ -16,12 +17,12 @@ interface ChatHeaderProps {
   chatName: string;
   typingUsers: TypingUser[];
   isMobile: boolean;
-  showRightSidebar: boolean;
+  rightSidebarView: RightSidebarView | null | undefined;
   isCreatingCall: boolean;
   activeCallChat: any;
   currentUser: User | null;
   onBack: () => void;
-  onToggleRightSidebar: () => void;
+  onToggleRightSidebar: (view: RightSidebarView | null) => void;
   onStartCall: () => void;
   onLeaveGroup: () => void;
   onDeleteChat: () => void;
@@ -32,7 +33,7 @@ export default function ChatHeader({
   chatName,
   typingUsers,
   isMobile,
-  showRightSidebar,
+  rightSidebarView,
   isCreatingCall,
   activeCallChat,
   currentUser,
@@ -86,10 +87,19 @@ export default function ChatHeader({
           </div>
         )}
         <Button
-          onClick={onToggleRightSidebar}
+          onClick={() => onToggleRightSidebar(rightSidebarView === 'info' ? null : 'info')}
           variant="ghost"
           size="icon"
-          className={showRightSidebar ? 'bg-(--color-bg-active)' : ''}
+          className={rightSidebarView === 'info' ? 'bg-(--color-bg-active)' : ''}
+          title={t('common.info')}
+        >
+          <InfoIcon size={20} className="text-accent" />
+        </Button>
+        <Button
+          onClick={() => onToggleRightSidebar(rightSidebarView === 'search' ? null : 'search')}
+          variant="ghost"
+          size="icon"
+          className={rightSidebarView === 'search' ? 'bg-(--color-bg-active)' : ''}
           title={t('search.toggleSearch')}
         >
           <MagnifyingGlassIcon size={20} className="text-accent" />

@@ -3,7 +3,7 @@ import { useRoute, useLocation } from 'wouter';
 import { useAtom } from 'jotai';
 import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
-import RightSidebar from '../components/RightSidebar';
+import RightSidebar, { type RightSidebarView } from '../components/RightSidebar';
 import { callsAPI } from '../services/calls';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -21,7 +21,7 @@ export default function SpacePage() {
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
   const { isOnline } = useConnectionStatus();
-  const [showRightSidebar, setShowRightSidebar] = useState(false);
+  const [rightSidebarView, setRightSidebarView] = useState<RightSidebarView | null>(null);
 
   useEffect(() => {
     const handleNotificationClick = (event: Event) => {
@@ -126,7 +126,7 @@ export default function SpacePage() {
 
   if (isMobile && !chatId) return null;
 
-  const showRightSidebarPanel = showRightSidebar && chatId && !isMobile;
+  const showRightSidebarPanel = rightSidebarView && chatId && !isMobile;
 
   return (
     <>
@@ -138,12 +138,12 @@ export default function SpacePage() {
           <ChatWindow
             key={chatId || 'empty'}
             chatId={chatId}
-            showRightSidebar={showRightSidebar}
-            onToggleRightSidebar={() => setShowRightSidebar(!showRightSidebar)}
+            rightSidebarView={rightSidebarView}
+            onToggleRightSidebar={setRightSidebarView}
           />
         </div>
         {showRightSidebarPanel && (
-          <RightSidebar chatId={chatId} onClose={() => setShowRightSidebar(false)} />
+          <RightSidebar chatId={chatId} view={rightSidebarView} onClose={() => setRightSidebarView(null)} />
         )}
       </div>
     </>

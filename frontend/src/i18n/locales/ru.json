@@ -16,7 +16,9 @@
     "leave": "Выйти",
     "add": "Добавить",
     "processing": "Обработка...",
-    "noConnection": "Нет соединения"
+    "noConnection": "Нет соединения",
+    "info": "Инфо",
+    "comingSoon": "Скоро будет"
   },
   "sidebar": {
     "mySpaces": "Мои пространства",
@@ -117,7 +119,7 @@
     "privateChat": "Приватный чат"
   },
   "chats": {
-    "createGroup": "Создать группу",
+    "createChat": "Создать группу",
     "selectMembers": "Выберите участников для добавления в чат",
     "groupName": "Название группы (необязательно)",
     "groupNamePlaceholder": "Введите название группы...",
