@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { Button, Popover } from '../ui';
 import { CopyIcon, DotsThreeIcon, PencilIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
 
@@ -12,10 +11,34 @@ interface MessageActionsProps {
 }
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉'];
-const MORE_EMOJIS = ['🔥', '👏', '💯', '✅', '😍', '🤔', '👀', '💪', '🙏', '⭐', '🚀', '💡', '🎯', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎵', '🎸', '🎹', '🎺', '🎻', '🥁', '🎮', '🎲', '🎰', '🧩', '🎳', '🎯', '🎱', '🏆', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥊'];
+const MORE_EMOJIS = [
+  // Happy faces
+  '😊', '😄', '😁', '🙂', '😃', '🥰', '😇', '☺️',
+  // Hearts & love
+  '💙', '💚', '💛', '🧡', '💜', '🖤', '💖', '💕',
+  // Laughing
+  '🤣', '😆', '😅', '😹', '🤪', '😜', '😝', '😸',
+  // Celebration
+  '🥳', '🎊', '🤩', '🙌', '👏', '🎈', '🍾', '🥂',
+  // Support & encouragement
+  '💪', '✌️', '🤝', '🙏', '👊', '🤛', '🤜', '🤞',
+  // Thinking & ideas
+  '🤔', '🧠', '💡', '🤓', '📚', '✍️', '💭', '🎯',
+  // Approval & success
+  '✅', '✔️', '💯', '👌', '🏆', '🥇', '⭐', '🌟',
+  // Surprise & shock
+  '😮', '😲', '🤯', '😳', '👀', '🙈', '🙊', '😱',
+  // Sad & disappointed
+  '😢', '😭', '😞', '😔', '😟', '🥺', '😿', '💔',
+  // Angry & frustrated
+  '😠', '😡', '🤬', '😤', '😾', '💢', '👿', '😒',
+  // Tired & sick
+  '😴', '💤', '🥱', '😪', '🤧', '🤒', '🤕', '😵',
+  // Cool & awesome
+  '😎', '🤙', '🆒', '🔥', '🚀', '💎', '⚡', '🎸',
+];
 
 export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReact, userReactions }: MessageActionsProps) {
-  const { t } = useTranslation();
 
   return (
     <div className="flex items-center gap-2 w-full">

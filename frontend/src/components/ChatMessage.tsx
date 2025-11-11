@@ -81,20 +81,15 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   const renderImageMessage = () => {
     const imageUrl = messagesAPI.getFileURL(message, '600x600');
     return (
-      <div>
-        <img
-          src={imageUrl}
-          alt={message.content || 'Image'}
-          className="max-w-xs rounded cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(messagesAPI.getFileURL(message), '_blank');
-          }}
-        />
-        {message.content && message.content !== message.file && (
-          <p className="text-sm mt-2">{message.content}</p>
-        )}
-      </div>
+      <img
+        src={imageUrl}
+        alt={message.content || 'Image'}
+        className="max-w-xs rounded cursor-pointer"
+        onClick={(e) => {
+          e.stopPropagation();
+          window.open(messagesAPI.getFileURL(message), '_blank');
+        }}
+      />
     );
   };
 
