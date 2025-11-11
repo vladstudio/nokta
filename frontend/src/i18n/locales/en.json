@@ -216,5 +216,10 @@
     "toggleSearch": "Toggle search",
     "noResults": "No messages found",
     "emptyState": "Enter a search query to find messages"
+  },
+  "notFound": {
+    "message": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "goHome": "Go to My Spaces"
   }
 }

@@ -131,7 +131,7 @@ hr {
 
 :focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-primary-100);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-500) 20%, transparent);
 }
 
 .text-light {
@@ -143,7 +143,12 @@ hr {
 .text-error {
   color: var(--color-error-500);
 }
-
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 /* ===================================
    UTILITY CLASSES
    =================================== */

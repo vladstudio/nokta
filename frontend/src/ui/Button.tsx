@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react';
 
-type Variant = 'default' | 'primary' | 'ghost';
+type Variant = 'default' | 'primary' | 'ghost' | 'outline';
 type Size = 'default' | 'icon';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,6 +14,7 @@ const variants: Record<Variant, string> = {
   default: 'border border-(--color-border-default) text-(--color-text-primary) bg-(--color-bg-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
   primary: 'bg-(--color-primary-600) text-white hover:bg-(--color-primary-700) focus:ring-(--color-primary-500)',
   ghost: 'text-(--color-text-primary) hover:bg-(--color-bg-hover)',
+  outline: 'border border-(--color-border-default) text-(--color-text-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
 };
 
 const sizes: Record<Size, string> = {

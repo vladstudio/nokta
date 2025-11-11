@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
 import MyPage from './pages/MyPage';
 import UIPage from './pages/UIPage';
+import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
 import './i18n/config';
@@ -20,6 +21,7 @@ import { useTheme } from './hooks/useTheme';
 function App() {
   const [location, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isValid);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const { i18n } = useTranslation();
   useTheme(); // Load and apply user's theme preference
 
@@ -50,7 +52,11 @@ function App() {
       }).catch((err) => {
         console.error('Failed to load spaces:', err);
         setLocation('/my');
+      }).finally(() => {
+        setIsInitialLoading(false);
       });
+    } else {
+      setIsInitialLoading(false);
     }
   }, [isAuthenticated, location, setLocation]);
 
@@ -93,10 +99,12 @@ function App() {
               </ProtectedRoute>
             </Route>
             <Route>
-              {isAuthenticated ? (
+              {isInitialLoading ? (
                 <div className="flex-1 flex items-center justify-center">
                   <LoadingSpinner size="sm" />
                 </div>
+              ) : isAuthenticated ? (
+                <NotFoundPage />
               ) : (
                 <LoginPage />
               )}

@@ -84,10 +84,10 @@ export default function VideoCompressionDialog({
       title={t('videoCompression.title')}
       footer={
         <>
-          <Button variant="ghost" onClick={handleCancel} disabled={isCompressing}>
+          <Button className="flex-1 center" variant="outline" onClick={handleCancel} disabled={isCompressing}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleAdd} disabled={isCompressing || !metadata}>
+          <Button className="flex-1 center" onClick={handleAdd} disabled={isCompressing || !metadata}>
             {isCompressing ? `${t('videoCompression.compressing')}... ${progress}%` : t('common.add')}
           </Button>
         </>
@@ -120,14 +120,15 @@ export default function VideoCompressionDialog({
             {(['lq', 'md', 'hq'] as const).map((q) => (
               <Button
                 key={q}
-                variant={quality === q ? 'primary' : 'ghost'}
+                isSelected={quality === q}
+                variant="outline"
                 onClick={() => setQuality(q)}
                 disabled={isCompressing}
-                className="flex-1"
+                className="flex-1 center"
               >
                 <div className="flex flex-col items-center">
                   <span>{t(`videoCompression.quality${q.toUpperCase()}`)}</span>
-                  <span className="text-xs opacity-75">
+                  <span className="text-xs text-light font-normal!">
                     {getEstimatedSize(q)} {t('videoCompression.estimatedSize')}
                   </span>
                 </div>
