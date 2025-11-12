@@ -20,7 +20,6 @@ export default function AdminPage() {
   const [userRole, setUserRole] = useState<'Member' | 'Admin'>('Member');
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [memberList, setMemberList] = useState<SpaceMember[]>([]);
-  const [showMemberDialog, setShowMemberDialog] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
 
   useEffect(() => {
@@ -121,17 +120,16 @@ export default function AdminPage() {
     loadMembers(space.id);
   }, [loadMembers]);
 
-  const handleAddMember = useCallback(async () => {
-    if (!selectedSpace || !selectedUserId) return;
+  const handleAddMember = useCallback(async (userId: string) => {
+    if (!selectedSpace || !userId) return;
     try {
-      await spaceMembers.add(selectedSpace.id, selectedUserId);
-      setShowMemberDialog(false);
+      await spaceMembers.add(selectedSpace.id, userId);
       setSelectedUserId('');
       loadMembers(selectedSpace.id);
     } catch (error) {
       console.error('Failed to add member:', error);
     }
-  }, [selectedSpace, selectedUserId, loadMembers]);
+  }, [selectedSpace, loadMembers]);
 
   const handleRemoveMember = useCallback(async (member: SpaceMember) => {
     if (!selectedSpace || !confirm(`Remove ${member.expand?.user?.name || 'user'} from space?`)) return;
@@ -190,9 +188,16 @@ export default function AdminPage() {
               <ArrowLeftIcon size={16} />
             </Button>
             <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
-            <Button variant="default" onClick={() => setShowMemberDialog(true)} className="w-full flex items-center gap-2 justify-center">
-              <PlusIcon size={16} /> Add Member
-            </Button>
+            <Select
+              value={selectedUserId}
+              onChange={(value) => {
+                if (value) {
+                  handleAddMember(value);
+                }
+              }}
+              options={userList.filter(u => !memberList.some(m => m.user === u.id)).map(u => ({value: u.id, label: u.name || u.email}))}
+              placeholder="Add member..."
+            />
             {memberList.map((member) => (
               <div key={member.id} className="flex items-center gap-2 p-3 border border-default rounded">
                 <div className="flex-1">
@@ -254,18 +259,6 @@ export default function AdminPage() {
                 Save
               </Button>
             </div>
-          </div>
-        </Dialog>
-
-        <Dialog open={showMemberDialog} onOpenChange={setShowMemberDialog} title="Add Member">
-          <Select value={selectedUserId} onChange={(value) => setSelectedUserId(value || '')} options={userList.map(u => ({value: u.id, label: u.name || u.email}))} placeholder="Select user" />
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setShowMemberDialog(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button variant="default" onClick={handleAddMember} className="flex-1">
-              Add
-            </Button>
           </div>
         </Dialog>
       </div>
