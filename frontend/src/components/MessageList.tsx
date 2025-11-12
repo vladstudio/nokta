@@ -1,9 +1,9 @@
-import { forwardRef } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea, Button } from '../ui';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
-import type { Message } from '../types';
+import type { Message, Chat } from '../types';
 
 interface DisplayMessage extends Message {
   isPending?: boolean;
@@ -18,6 +18,7 @@ interface MessageListProps {
   selectedMessageId: string | null;
   hasMoreAfter: boolean;
   currentUserId: string;
+  chat: Chat | null;
   onSelectMessage: (messageId: string | null) => void;
   onRetryMessage: (tempId: string) => void;
   onRetryUpload: (tempId: string) => void;
@@ -35,6 +36,7 @@ const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
       selectedMessageId,
       hasMoreAfter,
       currentUserId,
+      chat,
       onSelectMessage,
       onRetryMessage,
       onRetryUpload,
@@ -47,9 +49,20 @@ const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
   ) => {
     const { t } = useTranslation();
 
+    const bgStyle = useMemo(
+      () =>
+        chat?.background
+          ? { backgroundImage: `url(/patterns/${chat.background}.png)`, backgroundSize: '400px 400px', backgroundRepeat: 'repeat' }
+          : undefined,
+      [chat?.background]
+    );
+
     return (
       <ScrollArea ref={ref}>
-        <div className="p-1 flex flex-col min-h-[50dvh]">
+        <div
+          className="p-1 flex flex-col flex-1"
+          style={bgStyle}
+        >
           {loadingOlder && (
             <div className="flex justify-center p-2">
               <LoadingSpinner size="sm" />

@@ -42,6 +42,7 @@ export interface Chat {
   daily_room_url?: string;
   is_active_call?: boolean;
   call_participants?: string[];
+  background?: string;
   created?: string;
   updated?: string;
   unreadCount?: number; // Computed client-side, not from DB

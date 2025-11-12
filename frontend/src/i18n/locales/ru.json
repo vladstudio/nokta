@@ -123,6 +123,7 @@
     "groupName": "Название группы (необязательно)",
     "groupNamePlaceholder": "Введите название группы...",
     "participants": "Участники",
+    "background": "Фон",
     "leaveGroup": "Покинуть группу",
     "leaveChat": "Покинуть чат",
     "deleteChat": "Удалить чат",

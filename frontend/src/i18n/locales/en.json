@@ -123,6 +123,7 @@
     "groupName": "Group Name (Optional)",
     "groupNamePlaceholder": "Enter group name...",
     "participants": "Participants",
+    "background": "Background",
     "leaveGroup": "Leave Group",
     "leaveChat": "Leave Chat",
     "deleteChat": "Delete Chat",

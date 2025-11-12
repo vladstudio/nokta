@@ -111,6 +111,10 @@ export const chats = {
     });
   },
 
+  async updateBackground(chatId: string, background: string) {
+    return await pb.collection('chats').update<Chat>(chatId, { background });
+  },
+
   subscribe(callback: (data: PocketBaseEvent<Chat>) => void) {
     return pb.collection('chats').subscribe('*', callback);
   },

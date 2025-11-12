@@ -232,6 +232,20 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     chats.getOne(chatId).then(setChat).catch(() => setChat(null));
   }, [chatId]);
 
+  // Subscribe to chat updates
+  useEffect(() => {
+    let subscriptionId: string | undefined;
+    chats.subscribe((data) => {
+      if (data.record.id === chatId) {
+        chats.getOne(chatId).then(setChat);
+      }
+    }).then(id => { subscriptionId = id; });
+
+    return () => {
+      if (subscriptionId) chats.unsubscribe(subscriptionId);
+    };
+  }, [chatId]);
+
   // Mark chat as read when opened
   useEffect(() => {
     if (currentUser?.id) {
@@ -582,6 +596,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         selectedMessageId={selectedMessageId}
         hasMoreAfter={hasMoreAfter}
         currentUserId={currentUser?.id || ''}
+        chat={chat}
         onSelectMessage={setSelectedMessageId}
         onRetryMessage={handleRetryMessage}
         onRetryUpload={handleRetryUpload}

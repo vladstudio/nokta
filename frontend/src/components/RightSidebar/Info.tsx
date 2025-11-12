@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrashIcon, SignOutIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
 import { Button, Dialog } from '../../ui';
+import { chats } from '../../services/pocketbase';
 import type { Chat, User } from '../../types';
 
 interface InfoProps {
@@ -16,6 +17,11 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
   const { t } = useTranslation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [selectedBg, setSelectedBg] = useState<string>(chat?.background || '');
+
+  useEffect(() => {
+    setSelectedBg(chat?.background || '');
+  }, [chat?.id, chat?.background]);
 
   if (!chat) {
     return (
@@ -26,6 +32,16 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
   }
 
   const participants = chat.expand?.participants || [];
+
+  const handleBgChange = async (bg: string) => {
+    setSelectedBg(bg);
+    try {
+      await chats.updateBackground(chat.id, bg);
+    } catch (err) {
+      console.error('Failed to update background:', err);
+      setSelectedBg(chat.background || '');
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col p-4 gap-6">
@@ -41,6 +57,24 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
                 <span className="text-xs text-light ml-auto">{t('common.you')}</span>
               )}
             </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Background */}
+      <div className="flex flex-col gap-3 border-t pt-4 border-(--color-border-default)">
+        <h4 className="text-xs font-semibold uppercase text-light">{t('chats.background')}</h4>
+        <div className="grid grid-cols-3 gap-2">
+          {[null, '1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+            <Button
+              key={bg || 'none'}
+              variant="ghost"
+              isSelected={selectedBg === (bg || '')}
+              onClick={() => handleBgChange(bg || '')}
+              className="aspect-square center p-1!"
+            >
+              {bg ? <div className="w-full h-full" style={{ backgroundImage: `url(/patterns/${bg}.png)`, backgroundSize: '50%' }} /> : <span className="text-xs text-light">None</span>}
+            </Button>
           ))}
         </div>
       </div>
