@@ -112,7 +112,7 @@ export default function Search({ chatId }: SearchProps) {
 
           {!loading && !query && (
             <div className="flex justify-center p-4">
-              <MagnifyingGlassIcon size={EMPTY_STATE_ICON_SIZE} style={{ color: 'var(--color-border-light)' }} />
+              <MagnifyingGlassIcon size={EMPTY_STATE_ICON_SIZE} className="text-(--color-border-light)" />
             </div>
           )}
 

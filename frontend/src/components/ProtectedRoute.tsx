@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useState, useMemo } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth } from '../services/pocketbase';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useColorScheme } from '../hooks/useColorScheme';
 import Sidebar from './Sidebar';
+import clsx from 'clsx';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -34,13 +35,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return unsubscribe;
   }, [setLocation]);
 
-  const bgStyle = useMemo(
-    () =>
-      auth.user?.background
-        ? { backgroundImage: `url(/patterns/${auth.user.background}-${colorScheme}.png)`, backgroundSize: '400px 400px', backgroundRepeat: 'repeat' }
-        : undefined,
-    [auth.user?.background, colorScheme]
-  );
+  const getBgClass = () => {
+    if (!auth.user?.background) return '';
+    return `bg-pattern-${auth.user.background}-${colorScheme}`;
+  };
 
   if (isChecking) {
     return (
@@ -53,7 +51,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const showSidebar = location !== '/my' && !(isMobile && params?.chatId);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden" style={bgStyle}>
+    <div className={clsx("fixed inset-0 flex overflow-hidden", getBgClass())}>
       {showSidebar && <Sidebar />}
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}

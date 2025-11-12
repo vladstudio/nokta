@@ -42,13 +42,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
 
   const renderUploadingState = () => (
     <div className="space-y-1">
-      <p className="text-sm">{t('common.uploading')} {message.content}...</p>
-      <div className="w-full bg-(--color-bg-active) rounded-full h-2">
-        <div
-          className="bg-(--color-primary-600) h-2 rounded-full transition-all"
-          style={{ width: `${message.uploadProgress || 0}%` }}
-        />
-      </div>
+      <p className="text-sm">{t('common.uploading')} {message.content}... {message.uploadProgress || 0}%</p>
       <button
         onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
         className="text-xs text-light hover:text-(--color-text-primary) underline"

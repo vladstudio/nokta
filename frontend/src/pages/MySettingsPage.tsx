@@ -198,15 +198,23 @@ export default function MySettingsPage() {
           <div>
             <FormLabel>{t('chats.background')}</FormLabel>
             <div className="grid grid-cols-3 gap-2">
-              {[null, '1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+              <Button
+                variant="outline"
+                isSelected={background === ''}
+                onClick={() => setBackground('')}
+                className="aspect-square center p-1!"
+              >
+                <span className="text-xs text-light">None</span>
+              </Button>
+              {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
                 <Button
-                  key={bg || 'none'}
+                  key={bg}
                   variant="outline"
-                  isSelected={background === (bg || '')}
-                  onClick={() => setBackground(bg || '')}
+                  isSelected={background === bg}
+                  onClick={() => setBackground(bg)}
                   className="aspect-square center p-1!"
                 >
-                  {bg ? <div className="w-full h-full" style={{ backgroundImage: `url(/patterns/${bg}-dark.png)`, backgroundSize: '50%' }} /> : <span className="text-xs text-light">None</span>}
+                  <div className={`w-full h-full bg-preview-${bg}`} />
                 </Button>
               ))}
             </div>

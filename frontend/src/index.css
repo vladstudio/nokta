@@ -202,3 +202,34 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     transform: translateX(0);
   }
 }
+
+/* ===================================
+   BACKGROUND PATTERNS
+   =================================== */
+/* Full-size background patterns for ProtectedRoute */
+.bg-pattern-1-light { background-image: url(/patterns/1-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-1-dark { background-image: url(/patterns/1-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-2-light { background-image: url(/patterns/2-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-2-dark { background-image: url(/patterns/2-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-3-light { background-image: url(/patterns/3-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-3-dark { background-image: url(/patterns/3-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-4-light { background-image: url(/patterns/4-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-4-dark { background-image: url(/patterns/4-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-5-light { background-image: url(/patterns/5-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-5-dark { background-image: url(/patterns/5-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-6-light { background-image: url(/patterns/6-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-6-dark { background-image: url(/patterns/6-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-7-light { background-image: url(/patterns/7-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-7-dark { background-image: url(/patterns/7-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-8-light { background-image: url(/patterns/8-light.png); background-size: 400px 400px; background-repeat: repeat; }
+.bg-pattern-8-dark { background-image: url(/patterns/8-dark.png); background-size: 400px 400px; background-repeat: repeat; }
+
+/* Preview thumbnails for MySettingsPage (50% size, always dark) */
+.bg-preview-1 { background-image: url(/patterns/1-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-2 { background-image: url(/patterns/2-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-3 { background-image: url(/patterns/3-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-4 { background-image: url(/patterns/4-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-5 { background-image: url(/patterns/5-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-6 { background-image: url(/patterns/6-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-7 { background-image: url(/patterns/7-dark.png); background-size: 50%; background-repeat: repeat; }
+.bg-preview-8 { background-image: url(/patterns/8-dark.png); background-size: 50%; background-repeat: repeat; }

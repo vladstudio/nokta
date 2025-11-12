@@ -84,6 +84,7 @@ export default function VideoCompressionDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={t('videoCompression.title')}
+      maxWidth="2xl"
       footer={
         <>
           <Button className="flex-1 center" variant="outline" onClick={handleCancel} disabled={isCompressing}>
@@ -117,7 +118,7 @@ export default function VideoCompressionDialog({
 
         {/* Quality Selection */}
         <div className="space-y-2">
-          <div className="text-sm font-medium">{t('videoCompression.quality')}:</div>
+          <div className="text-sm font-medium text-light">{t('videoCompression.quality')}:</div>
           <div className="flex gap-2">
             {(['vlq', 'lq', 'md', 'hq', 'vhq'] as const).map((q) => (
               <Button
@@ -139,19 +140,9 @@ export default function VideoCompressionDialog({
           </div>
         </div>
 
-        {/* Progress Bar */}
-        {isCompressing && (
-          <div className="w-full bg-(--color-bg-secondary) rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-(--color-accent) h-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-
         {/* Error Message */}
         {error && (
-          <div className="text-sm p-2 rounded" style={{ color: 'var(--color-error-500)', backgroundColor: 'var(--color-error-50)' }}>
+          <div className="text-sm p-2 rounded text-(--color-error-500) bg-(--color-error-50)">
             {t('videoCompression.compressionFailed')}: {error.message}
           </div>
         )}

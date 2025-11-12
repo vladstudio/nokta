@@ -56,12 +56,13 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
       open={open}
       onOpenChange={onOpenChange}
       title={t('imageCrop.title')}
+      maxWidth="2xl"
       footer={
         <>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={processing}>
+          <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)} disabled={processing}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleAdd} disabled={processing}>
+          <Button className="flex-1 center" onClick={handleAdd} disabled={processing}>
             {processing ? t('common.processing') : t('common.add')}
           </Button>
         </>
@@ -79,18 +80,22 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
             onCropComplete={onCropComplete}
           />
         </div>
-        <div className="flex gap-2">
-          {(['lq', 'md', 'hq'] as const).map((q) => (
-            <Button
-              key={q}
-              variant={quality === q ? 'primary' : 'ghost'}
-              onClick={() => setQuality(q)}
-              disabled={processing}
-            >
-              {t(`imageCrop.quality.${q}`)}
-            </Button>
-          ))}
-        </div>
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-light">{t('videoCompression.quality')}:</div>
+          <div className="flex gap-2">
+            {(['lq', 'md', 'hq'] as const).map((q) => (
+              <Button
+                key={q}
+                variant="outline"
+                className="flex-1 center"
+                isSelected={quality === q}
+                onClick={() => setQuality(q)}
+                disabled={processing}
+              >
+                {t(`imageCrop.quality.${q}`)}
+              </Button>
+            ))}
+          </div></div>
       </div>
     </Dialog>
   );

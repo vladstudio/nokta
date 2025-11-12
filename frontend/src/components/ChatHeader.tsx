@@ -74,8 +74,7 @@ export default function ChatHeader({
             ))}
             {chat.expand.participants.length > 5 && (
               <div
-                className="rounded-full flex items-center justify-center text-xs font-semibold border-2 border-(--color-bg-primary) bg-(--color-bg-secondary)"
-                style={{ width: 24, height: 24 }}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-(--color-bg-primary) bg-(--color-bg-secondary)"
               >
                 +{chat.expand.participants.length - 5}
               </div>

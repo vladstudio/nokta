@@ -37,6 +37,21 @@ interface ChatAvatarProps {
   className?: string;
 }
 
+// Map pixel sizes to Tailwind classes (4px steps)
+const getSizeClass = (size: number): string => {
+  const sizeMap: Record<number, string> = {
+    16: 'w-4 h-4',
+    20: 'w-5 h-5',
+    24: 'w-6 h-6',
+    32: 'w-8 h-8',
+    40: 'w-10 h-10',
+    48: 'w-12 h-12',
+    64: 'w-16 h-16',
+    80: 'w-20 h-20',
+  };
+  return sizeMap[size] || 'w-10 h-10';
+};
+
 function GenericAvatar({ record, displayName, size = 40, className = '' }: GenericAvatarProps) {
   if (!record) {
     return null;
@@ -48,8 +63,7 @@ function GenericAvatar({ record, displayName, size = 40, className = '' }: Gener
       <img
         src={avatarUrl}
         alt={displayName}
-        className={`rounded-full ${className}`}
-        style={{ width: size, height: size }}
+        className={`rounded-full ${getSizeClass(size)} ${className}`}
       />
     );
   }
