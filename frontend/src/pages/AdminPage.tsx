@@ -25,6 +25,7 @@ export default function AdminPage() {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<{ type: 'space' | 'user' | 'member'; item: any } | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [userErrors, setUserErrors] = useState<string[]>([]);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => {
@@ -85,6 +86,7 @@ export default function AdminPage() {
 
   const handleSaveUser = useCallback(async () => {
     if (!userName.trim() || !userEmail.trim()) return;
+    setUserErrors([]);
     try {
       if (editingUser) {
         await users.update(editingUser.id, { name: userName, email: userEmail, role: userRole });
@@ -102,7 +104,9 @@ export default function AdminPage() {
       setEditingUser(null);
       loadUsers();
     } catch (error: any) {
-      toast.add({ title: 'Failed to save user', description: error?.data?.password?.message || error?.message, data: { type: 'error' } });
+      console.log('Error caught:', error);
+      console.log('Error data:', error?.data);
+      setUserErrors(error?.data ? Object.values(error.data).map((e: any) => e?.message).filter(Boolean) : [error?.message || 'Failed to save user']);
     }
   }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast]);
 
@@ -131,6 +135,7 @@ export default function AdminPage() {
     setUserEmail(user?.email || '');
     setUserPassword('');
     setUserRole(user?.role || 'Member');
+    setUserErrors([]);
     setShowUserDialog(true);
   }, []);
 
@@ -193,30 +198,32 @@ export default function AdminPage() {
 
         {activeTab === 'spaces' && !selectedSpace && (
           <div className="grid gap-2">
-            <Button variant="default" onClick={() => openSpaceDialog()} className="w-full flex items-center gap-2 justify-center">
-              <PlusIcon size={16} /> Add Space
+            <Button variant="default" onClick={() => openSpaceDialog()}>
+              <PlusIcon size={20} /> Add Space
             </Button>
             {spaceList.map((space) => (
-              <div key={space.id} className="flex items-center gap-2 p-3 border border-default rounded">
-                <div className="flex-1 font-medium">{space.name}</div>
-                <Button variant="ghost" onClick={() => openMemberManagement(space)} className="text-xs">
-                  <UsersIcon size={16} />
-                </Button>
-                <Button variant="ghost" onClick={() => openSpaceDialog(space)} className="text-xs">
-                  <PencilIcon size={16} />
-                </Button>
-                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'space', item: space })} className="text-xs text-red-500">
-                  <TrashIcon size={16} />
-                </Button>
-              </div>
+              <Card key={space.id} border padding="sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 font-medium">{space.name}</div>
+                  <Button variant="ghost" size="icon" onClick={() => openMemberManagement(space)}>
+                    <UsersIcon size={20} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => openSpaceDialog(space)}>
+                    <PencilIcon size={20} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'space', item: space })}>
+                    <TrashIcon size={20} className="text-red-600" />
+                  </Button>
+                </div>
+              </Card>
             ))}
           </div>
         )}
 
         {activeTab === 'spaces' && selectedSpace && (
           <div className="grid gap-2">
-            <Button variant="ghost" onClick={() => setSelectedSpace(null)} className="w-fit text-xs">
-              <ArrowLeftIcon size={16} />
+            <Button variant="ghost" size="icon" onClick={() => setSelectedSpace(null)}>
+              <ArrowLeftIcon size={20} />
             </Button>
             <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
             <Select
@@ -230,87 +237,124 @@ export default function AdminPage() {
               placeholder="Add member..."
             />
             {memberList.map((member) => (
-              <div key={member.id} className="flex items-center gap-2 p-3 border border-default rounded">
-                <div className="flex-1">
-                  <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
-                  <div className="text-xs text-light">{member.expand?.user?.email}</div>
+              <Card key={member.id} border padding="sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
+                    <div className="text-xs text-light">{member.expand?.user?.email}</div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'member', item: member })}>
+                    <TrashIcon size={20} className="text-red-600" />
+                  </Button>
                 </div>
-                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'member', item: member })} className="text-xs text-red-500">
-                  <TrashIcon size={16} />
-                </Button>
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
         {activeTab === 'users' && (
           <div className="grid gap-2">
-            <Button variant="default" onClick={() => openUserDialog()} className="w-full flex items-center gap-2 justify-center">
-              <PlusIcon size={16} /> Add User
+            <Button variant="default" onClick={() => openUserDialog()}>
+              <PlusIcon size={20} /> Add User
             </Button>
             {userList.map((user) => (
-              <div key={user.id} className="flex items-center gap-2 p-3 border border-default rounded">
-                <div className="flex-1">
-                  <div className="font-medium">{user.name || user.email}</div>
-                  <div className="text-xs text-light">{user.email} • {user.role}</div>
+              <Card key={user.id} border padding="sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="font-medium">{user.name || user.email}</div>
+                    <div className="text-xs text-light">{user.email} • {user.role}</div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
+                    <PencilIcon size={20} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'user', item: user })}>
+                    <TrashIcon size={20} className="text-red-600" />
+                  </Button>
                 </div>
-                <Button variant="ghost" onClick={() => openUserDialog(user)} className="text-xs">
-                  <PencilIcon size={16} />
-                </Button>
-                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'user', item: user })} className="text-xs text-red-500">
-                  <TrashIcon size={16} />
-                </Button>
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
-        <Dialog open={showSpaceDialog} onOpenChange={setShowSpaceDialog} title={editingSpace ? 'Edit Space' : 'Add Space'}>
+        <Dialog
+          open={showSpaceDialog}
+          onOpenChange={setShowSpaceDialog}
+          title={editingSpace ? 'Edit Space' : 'Add Space'}
+          footer={
+            <>
+              <Button variant="default" onClick={() => setShowSpaceDialog(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleSaveSpace}>
+                Save
+              </Button>
+            </>
+          }
+        >
           <Input placeholder="Space name" value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setShowSpaceDialog(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button variant="default" onClick={handleSaveSpace} className="flex-1">
-              Save
-            </Button>
-          </div>
         </Dialog>
 
-        <Dialog open={showUserDialog} onOpenChange={setShowUserDialog} title={editingUser ? 'Edit User' : 'Add User'}>
+        <Dialog
+          open={showUserDialog}
+          onOpenChange={setShowUserDialog}
+          title={editingUser ? 'Edit User' : 'Add User'}
+          footer={
+            <>
+              <Button variant="default" onClick={() => setShowUserDialog(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleSaveUser}>
+                Save
+              </Button>
+            </>
+          }
+        >
           <div className="grid gap-4">
             <Input placeholder="Name" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
             {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
             <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => setShowUserDialog(false)} className="flex-1">
-                Cancel
-              </Button>
-              <Button variant="default" onClick={handleSaveUser} className="flex-1">
-                Save
-              </Button>
-            </div>
+            {userErrors.length > 0 && (
+              <div className="text-sm text-red-600">
+                {userErrors.map((err, i) => <div key={i}>{err}</div>)}
+              </div>
+            )}
           </div>
         </Dialog>
 
-        <Dialog open={!!generatedPassword} onOpenChange={() => setGeneratedPassword(null)} title="User Created">
+        <Dialog
+          open={!!generatedPassword}
+          onOpenChange={() => setGeneratedPassword(null)}
+          title="User Created"
+          footer={
+            <Button variant="primary" onClick={() => setGeneratedPassword(null)}>
+              Close
+            </Button>
+          }
+        >
           <div className="grid gap-4">
             <p className="text-sm">Password for new user:</p>
             <Input value={generatedPassword || ''} readOnly />
             <p className="text-xs text-light">Save this password - it won't be shown again.</p>
-            <Button variant="default" onClick={() => setGeneratedPassword(null)}>Close</Button>
           </div>
         </Dialog>
 
-        <Dialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)} title="Confirm Delete">
-          <div className="grid gap-4">
-            <p>Are you sure you want to delete this {confirmDelete?.type}?</p>
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">Cancel</Button>
-              <Button variant="default" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember} className="flex-1">Delete</Button>
-            </div>
-          </div>
+        <Dialog
+          open={!!confirmDelete}
+          onOpenChange={() => setConfirmDelete(null)}
+          title="Confirm Delete"
+          footer={
+            <>
+              <Button variant="default" onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember}>
+                Delete
+              </Button>
+            </>
+          }
+        >
+          <p>Are you sure you want to delete this {confirmDelete?.type}?</p>
         </Dialog>
       </div>
     </ScrollArea>
