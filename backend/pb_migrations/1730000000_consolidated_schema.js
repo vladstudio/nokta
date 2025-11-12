@@ -69,21 +69,13 @@ migrate((app) => {
   }))
 
   spaceMembers.fields.addAt(2, new Field({
-    name: "role",
-    type: "select",
-    required: true,
-    maxSelect: 1,
-    values: ["admin", "member"]
-  }))
-
-  spaceMembers.fields.addAt(3, new Field({
     name: "created",
     type: "autodate",
     onCreate: true,
     onUpdate: false
   }))
 
-  spaceMembers.fields.addAt(4, new Field({
+  spaceMembers.fields.addAt(3, new Field({
     name: "updated",
     type: "autodate",
     onCreate: true,

@@ -108,7 +108,7 @@ async function addMembers(spaces, users) {
   for (const space of spaces) {
     for (const user of users) {
       try {
-        await pb.collection('space_members').create({ space: space.id, user: user.id, role: 'member' });
+        await pb.collection('space_members').create({ space: space.id, user: user.id });
         console.log(`✓ ${user.name} → ${space.name}`);
       } catch (error) {
         console.error(`✗ Failed: ${user.name} → ${space.name}`);

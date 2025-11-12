@@ -54,15 +54,14 @@ All db management is done using PocketBase.
 - id: primary key
 - space: relation to spaces
 - user: relation to users
-- role: select (admin, member)
-- joined_at: datetime
+- created: datetime
+- updated: datetime
 ```
 
 **chats** (Base Collection)
 ```
 - id: primary key
 - space: relation to spaces
-- type: select (public: visible to all in space, private: visible only to participants)
 - participants: relation to users (multiple)
 - name: text (for space-wide chats)
 - created: datetime
@@ -141,7 +140,6 @@ talk/
 4. **User Management per Space**
    - View space members
    - Add users to space
-   - Edit user roles (admin/member)
 
 ### Phase 3: Chat Infrastructure
 1. **Chat Creation Logic**

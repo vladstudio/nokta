@@ -96,8 +96,8 @@ Located in `src/hooks/`:
 
 - **users** (auth) - id, email, name, avatar, last_seen, language
 - **spaces** - id, name
-- **space_members** - space, user, role (admin|member)
-- **chats** - space, type (public|private), participants[], name, last_message_at
+- **space_members** - space, user
+- **chats** - space, participants[], name, last_message_at
 - **messages** - chat, sender, type (text|image|file), content, file
 - **chat_read_status** - user, chat, last_read_at
 - **typing_events** (ephemeral) - chat, user, userName, timestamp

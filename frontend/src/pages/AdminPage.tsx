@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { auth, spaces, users } from '../services/pocketbase';
-import { Button, ScrollArea, Dialog, Input, RadioGroup } from '../ui';
-import type { Space, User } from '../types';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon } from "@phosphor-icons/react";
+import { auth, spaces, users, spaceMembers } from '../services/pocketbase';
+import { Button, ScrollArea, Dialog, Input, RadioGroup, Select } from '../ui';
+import type { Space, User, SpaceMember } from '../types';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
@@ -18,10 +18,14 @@ export default function AdminPage() {
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState<'Member' | 'Admin'>('Member');
+  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
+  const [memberList, setMemberList] = useState<SpaceMember[]>([]);
+  const [showMemberDialog, setShowMemberDialog] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState('');
 
   useEffect(() => {
     if (auth.user?.role !== 'Admin') {
-      setLocation('/my-spaces');
+      setLocation('/my');
     }
   }, [setLocation]);
 
@@ -31,6 +35,10 @@ export default function AdminPage() {
 
   const loadUsers = useCallback(() => {
     users.list().then(setUserList).catch(() => setUserList([]));
+  }, []);
+
+  const loadMembers = useCallback((spaceId: string) => {
+    spaceMembers.list(spaceId).then(setMemberList).catch(() => setMemberList([]));
   }, []);
 
   useEffect(() => {
@@ -108,11 +116,38 @@ export default function AdminPage() {
     setShowUserDialog(true);
   }, []);
 
+  const openMemberManagement = useCallback((space: Space) => {
+    setSelectedSpace(space);
+    loadMembers(space.id);
+  }, [loadMembers]);
+
+  const handleAddMember = useCallback(async () => {
+    if (!selectedSpace || !selectedUserId) return;
+    try {
+      await spaceMembers.add(selectedSpace.id, selectedUserId);
+      setShowMemberDialog(false);
+      setSelectedUserId('');
+      loadMembers(selectedSpace.id);
+    } catch (error) {
+      console.error('Failed to add member:', error);
+    }
+  }, [selectedSpace, selectedUserId, loadMembers]);
+
+  const handleRemoveMember = useCallback(async (member: SpaceMember) => {
+    if (!selectedSpace || !confirm(`Remove ${member.expand?.user?.name || 'user'} from space?`)) return;
+    try {
+      await spaceMembers.remove(member.id);
+      loadMembers(selectedSpace.id);
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+    }
+  }, [selectedSpace, loadMembers]);
+
   return (
     <ScrollArea>
       <div className="mx-auto w-full max-w-2xl grid gap-4 p-6">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => setLocation('/my-spaces')} className="text-xs">
+          <Button variant="ghost" onClick={() => setLocation('/my')} className="text-xs">
             <ArrowLeftIcon size={16} />
           </Button>
           <h2 className="font-semibold flex-1">Admin Panel</h2>
@@ -127,7 +162,7 @@ export default function AdminPage() {
           </Button>
         </div>
 
-        {activeTab === 'spaces' && (
+        {activeTab === 'spaces' && !selectedSpace && (
           <div className="grid gap-2">
             <Button variant="default" onClick={() => openSpaceDialog()} className="w-full flex items-center gap-2 justify-center">
               <PlusIcon size={16} /> Add Space
@@ -135,10 +170,36 @@ export default function AdminPage() {
             {spaceList.map((space) => (
               <div key={space.id} className="flex items-center gap-2 p-3 border border-default rounded">
                 <div className="flex-1 font-medium">{space.name}</div>
+                <Button variant="ghost" onClick={() => openMemberManagement(space)} className="text-xs">
+                  <UsersIcon size={16} />
+                </Button>
                 <Button variant="ghost" onClick={() => openSpaceDialog(space)} className="text-xs">
                   <PencilIcon size={16} />
                 </Button>
                 <Button variant="ghost" onClick={() => handleDeleteSpace(space)} className="text-xs text-red-500">
+                  <TrashIcon size={16} />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'spaces' && selectedSpace && (
+          <div className="grid gap-2">
+            <Button variant="ghost" onClick={() => setSelectedSpace(null)} className="w-fit text-xs">
+              <ArrowLeftIcon size={16} />
+            </Button>
+            <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
+            <Button variant="default" onClick={() => setShowMemberDialog(true)} className="w-full flex items-center gap-2 justify-center">
+              <PlusIcon size={16} /> Add Member
+            </Button>
+            {memberList.map((member) => (
+              <div key={member.id} className="flex items-center gap-2 p-3 border border-default rounded">
+                <div className="flex-1">
+                  <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
+                  <div className="text-xs text-light">{member.expand?.user?.email}</div>
+                </div>
+                <Button variant="ghost" onClick={() => handleRemoveMember(member)} className="text-xs text-red-500">
                   <TrashIcon size={16} />
                 </Button>
               </div>
@@ -184,7 +245,7 @@ export default function AdminPage() {
           <div className="grid gap-4">
             <Input placeholder="Name" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
-            <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{value: 'Member', label: 'Member'}, {value: 'Admin', label: 'Admin'}]} />
+            <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => setShowUserDialog(false)} className="flex-1">
                 Cancel
@@ -193,6 +254,18 @@ export default function AdminPage() {
                 Save
               </Button>
             </div>
+          </div>
+        </Dialog>
+
+        <Dialog open={showMemberDialog} onOpenChange={setShowMemberDialog} title="Add Member">
+          <Select value={selectedUserId} onChange={(value) => setSelectedUserId(value || '')} options={userList.map(u => ({value: u.id, label: u.name || u.email}))} placeholder="Select user" />
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => setShowMemberDialog(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button variant="default" onClick={handleAddMember} className="flex-1">
+              Add
+            </Button>
           </div>
         </Dialog>
       </div>

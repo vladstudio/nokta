@@ -48,7 +48,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  const showSidebar = location !== '/my' && !(isMobile && params?.chatId);
+  const showSidebar = !['/my', '/admin'].includes(location) && !(isMobile && params?.chatId);
 
   return (
     <div className={clsx("fixed inset-0 flex overflow-hidden", getBgClass())}>

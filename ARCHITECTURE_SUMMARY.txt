@@ -103,10 +103,10 @@ spaces
   - id, name
 
 space_members
-  - space→spaces, user→users, role (admin|member)
+  - space→spaces, user→users
 
 chats
-  - space, type (public|private), participants[]
+  - space, participants[]
   - name, last_message_at, last_message_sender
 
 messages

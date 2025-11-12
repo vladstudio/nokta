@@ -24,8 +24,8 @@ export interface SpaceMember {
   id: string;
   space: string;
   user: string;
-  role: 'admin' | 'member';
-  joined_at: string;
+  created: string;
+  updated: string;
   expand?: {
     user?: User;
   };

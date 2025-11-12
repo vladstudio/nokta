@@ -91,6 +91,14 @@ export const spaceMembers = {
     });
     return records;
   },
+
+  async add(spaceId: string, userId: string) {
+    return await pb.collection('space_members').create<SpaceMember>({ space: spaceId, user: userId });
+  },
+
+  async remove(memberId: string) {
+    await pb.collection('space_members').delete(memberId);
+  },
 };
 
 export const chats = {
