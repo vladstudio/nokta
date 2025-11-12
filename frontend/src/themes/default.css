@@ -47,7 +47,7 @@
   :root {
     /* Colors - Dark neutral palette */
     --color-bg-primary: oklch(0.28 0.012 256 / 1);
-    --color-bg-secondary: oklch(0.22 0.012 264 / 1);
+    --color-bg-secondary: oklch(0.24 0.012 264 / 1);
     --color-bg-hover: oklch(0.45 0.012 256 / 0.13);
     --color-bg-active: oklch(0.62 0.12 259 / 0.33);
 
