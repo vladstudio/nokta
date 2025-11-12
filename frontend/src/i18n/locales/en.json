@@ -114,17 +114,17 @@
   },
   "chatList": {
     "directMessage": "Direct Message",
-    "groupChat": "Group Chat",
+    "groupChat": "Chat",
     "noChats": "No chats available"
   },
   "chats": {
     "createChat": "Create Chat",
     "selectMembers": "Select members to add to the chat",
-    "groupName": "Group Name (Optional)",
-    "groupNamePlaceholder": "Enter group name...",
+    "groupName": "Chat Name (Optional)",
+    "groupNamePlaceholder": "Enter chat name...",
     "participants": "Participants",
     "background": "Background",
-    "leaveGroup": "Leave Group",
+    "leaveGroup": "Leave Chat",
     "leaveChat": "Leave Chat",
     "deleteChat": "Delete Chat",
     "confirmLeave": "Are you sure you want to leave this chat?",

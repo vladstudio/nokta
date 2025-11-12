@@ -114,17 +114,17 @@
   },
   "chatList": {
     "directMessage": "Личное сообщение",
-    "groupChat": "Групповой чат",
+    "groupChat": "Чат",
     "noChats": "Нет доступных чатов"
   },
   "chats": {
-    "createChat": "Создать группу",
+    "createChat": "Создать чат",
     "selectMembers": "Выберите участников для добавления в чат",
-    "groupName": "Название группы (необязательно)",
-    "groupNamePlaceholder": "Введите название группы...",
+    "groupName": "Название чата (необязательно)",
+    "groupNamePlaceholder": "Введите название чата...",
     "participants": "Участники",
     "background": "Фон",
-    "leaveGroup": "Покинуть группу",
+    "leaveGroup": "Покинуть чат",
     "leaveChat": "Покинуть чат",
     "deleteChat": "Удалить чат",
     "confirmLeave": "Вы уверены, что хотите покинуть этот чат?",
