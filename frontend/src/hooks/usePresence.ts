@@ -60,7 +60,8 @@ export function usePresence(userIds: string[]) {
     } catch (err) {
       console.error('Failed to fetch presence:', err);
     }
-  }, [userIdsKey, userIds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdsKey]);
 
   // Start heartbeat
   useEffect(() => {

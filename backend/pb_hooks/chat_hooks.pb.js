@@ -19,12 +19,15 @@ onRecordAfterCreateSuccess((e) => {
 
     participants.forEach((userId) => {
       try {
-        const existingStatus = $app.findFirstRecordByFilter(
+        // Check if read status already exists
+        $app.findFirstRecordByFilter(
           "chat_read_status",
           `user = {:userId} && chat = {:chatId}`,
           { userId, chatId }
         )
+        // If we get here, record exists - skip creation
       } catch (err) {
+        // Record doesn't exist, create it
         try {
           const readStatus = new Record(readStatusCollection)
           readStatus.set("user", userId)

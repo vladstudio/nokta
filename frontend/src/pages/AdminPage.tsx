@@ -90,11 +90,11 @@ export default function AdminPage() {
     setUserErrors([]);
     try {
       if (editingUser) {
-        await users.update(editingUser.id, { name: userName, email: userEmail, role: userRole });
+        await users.update(editingUser.id, { name: userName, role: userRole });
         toast.add({ title: 'User updated', data: { type: 'success' } });
       } else {
         const created = await users.create(userEmail, userName, userRole, userPassword || undefined);
-        const userId = created.user?.id || created.id;
+        const userId = created.user.id;
         await Promise.all(selectedSpaceIds.map(spaceId => spaceMembers.add(spaceId, userId)));
         if (!userPassword) {
           setGeneratedPassword(created.password);
@@ -108,8 +108,13 @@ export default function AdminPage() {
       setUserRole('Member');
       setEditingUser(null);
       loadUsers();
-    } catch (error: any) {
-      setUserErrors(error?.data?.data ? Object.entries(error.data.data).map(([key, e]: [string, any]) => `${key}: ${e?.message}`).filter(Boolean) : [error?.message || 'Failed to save user']);
+    } catch (error) {
+      const pbError = error as { data?: { data?: Record<string, { message?: string }> }; message?: string };
+      setUserErrors(
+        pbError?.data?.data
+          ? Object.entries(pbError.data.data).map(([key, e]) => `${key}: ${e?.message || 'Unknown error'}`).filter(Boolean)
+          : [pbError?.message || 'Failed to save user']
+      );
     }
   }, [userName, userEmail, userPassword, userRole, editingUser, selectedSpaceIds, loadUsers, toast]);
 

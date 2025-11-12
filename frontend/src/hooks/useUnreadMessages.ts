@@ -203,22 +203,16 @@ export function useUnreadMessages(
     // Set up subscriptions
     const setupSubscriptions = async () => {
       try {
-        // Subscribe to all messages across chats in this space
+        // Subscribe to all messages across chats in this space with a single subscription
         const currentChatIds = chats.map(c => c.id);
         if (currentChatIds.length > 0) {
-          // Subscribe to each chat individually
-          const unsubscribePromises = currentChatIds.map(chatId =>
-            messages.subscribe(chatId, handleNewMessage)
-          );
-          const unsubscribeFns = await Promise.all(unsubscribePromises);
+          const unsubscribeFn = await messages.subscribeToMultipleChats(currentChatIds, handleNewMessage);
 
           if (isMounted) {
-            messagesUnsubscribe = () => {
-              unsubscribeFns.forEach(fn => fn());
-            };
+            messagesUnsubscribe = unsubscribeFn;
           } else {
             // Component unmounted while subscribing, clean up immediately
-            unsubscribeFns.forEach(fn => fn());
+            unsubscribeFn();
           }
         }
 

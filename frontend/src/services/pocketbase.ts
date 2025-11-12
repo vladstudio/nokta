@@ -3,6 +3,18 @@ import type { User, Space, SpaceMember, Chat, Message, ChatReadStatus, PocketBas
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
+/**
+ * Generate a cryptographically secure random password
+ */
+function generateSecurePassword(length = 24): string {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  const randomValues = new Uint32Array(length);
+  crypto.getRandomValues(randomValues);
+  return Array.from(randomValues)
+    .map(value => charset[value % charset.length])
+    .join('');
+}
+
 // Disable auto-cancellation - app makes legitimate concurrent requests
 pb.autoCancellation(false);
 
@@ -36,7 +48,11 @@ export const auth = {
 export const users = {
   async getMany(ids: string[]) {
     if (!ids.length) return [];
-    return await pb.collection('users').getFullList<User>({ filter: ids.map(id => `id='${id}'`).join('||') });
+    const filterConditions = ids.map((_, index) => `id = {:id${index}}`).join(' || ');
+    const filterParams = Object.fromEntries(ids.map((id, index) => [`id${index}`, id]));
+    return await pb.collection('users').getFullList<User>({
+      filter: pb.filter(filterConditions, filterParams)
+    });
   },
 
   async updateBackground(userId: string, background: string) {
@@ -48,7 +64,7 @@ export const users = {
   },
 
   async create(email: string, name: string, role: 'Member' | 'Admin' = 'Member', password?: string) {
-    const pwd = password || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const pwd = password || generateSecurePassword();
     const user = await pb.collection('users').create<User>({ email, name, role, password: pwd, passwordConfirm: pwd, emailVisibility: true });
     return { user, password: pwd };
   },
@@ -246,14 +262,28 @@ export const messages = {
     });
   },
 
+  subscribeToMultipleChats(chatIds: string[], callback: (data: PocketBaseEvent<Message>) => void) {
+    if (chatIds.length === 0) {
+      return Promise.resolve(() => {});
+    }
+    const filterConditions = chatIds.map((_, index) => `chat = {:chatId${index}}`).join(' || ');
+    const filterParams = Object.fromEntries(chatIds.map((id, index) => [`chatId${index}`, id]));
+    return pb.collection('messages').subscribe('*', callback, {
+      filter: pb.filter(filterConditions, filterParams),
+    });
+  },
+
   unsubscribe(subscriptionId?: string) {
     return pb.collection('messages').unsubscribe(subscriptionId);
   },
 
   async toggleReaction(messageId: string, emoji: string) {
+    if (!auth.user?.id) {
+      throw new Error('User must be authenticated to react to messages');
+    }
     const msg = await pb.collection('messages').getOne<Message>(messageId);
     const reactions = { ...(msg.reactions || {}) };
-    const userId = auth.user!.id;
+    const userId = auth.user.id;
     if (!reactions[emoji]) reactions[emoji] = [];
     const idx = reactions[emoji].indexOf(userId);
     idx > -1 ? reactions[emoji].splice(idx, 1) : reactions[emoji].push(userId);
