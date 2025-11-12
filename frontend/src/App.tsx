@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
 import MySpacesPage from './pages/MySpacesPage';
 import MySettingsPage from './pages/MySettingsPage';
+import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import { LAST_SPACE_KEY } from './components/Sidebar';
@@ -87,6 +88,11 @@ function App() {
           <ConnectionBanner />
           <Switch>
             <Route path="/login" component={LoginPage} />
+            <Route path="/admin">
+              <ProtectedRoute>
+                <AdminPage />
+              </ProtectedRoute>
+            </Route>
             <Route path="/my/settings">
               <ProtectedRoute>
                 <MySettingsPage />

@@ -8,6 +8,7 @@ export interface User {
   theme?: 'default' | 'wooden';
   background?: string;
   birthday?: string;
+  role?: 'Member' | 'Admin';
   created: string;
   updated: string;
 }

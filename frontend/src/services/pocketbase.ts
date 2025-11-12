@@ -42,6 +42,23 @@ export const users = {
   async updateBackground(userId: string, background: string) {
     return await pb.collection('users').update<User>(userId, { background });
   },
+
+  async list() {
+    return await pb.collection('users').getFullList<User>({ sort: '-created' });
+  },
+
+  async create(email: string, name: string, role: 'Member' | 'Admin' = 'Member') {
+    const pwd = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    return await pb.collection('users').create<User>({ email, name, role, password: pwd, passwordConfirm: pwd, emailVisibility: true });
+  },
+
+  async update(userId: string, data: Partial<User>) {
+    return await pb.collection('users').update<User>(userId, data);
+  },
+
+  async delete(userId: string) {
+    await pb.collection('users').delete(userId);
+  },
 };
 
 export const spaces = {
@@ -51,6 +68,18 @@ export const spaces = {
 
   async getOne(id: string) {
     return await pb.collection('spaces').getOne<Space>(id);
+  },
+
+  async create(name: string) {
+    return await pb.collection('spaces').create<Space>({ name });
+  },
+
+  async update(spaceId: string, name: string) {
+    return await pb.collection('spaces').update<Space>(spaceId, { name });
+  },
+
+  async delete(spaceId: string) {
+    await pb.collection('spaces').delete(spaceId);
   },
 };
 
