@@ -5,81 +5,81 @@
 /* Light mode (default) */
 :root {
   /* Colors - Warm wooden palette */
-  --color-bg-primary: #fdfbf7;
-  --color-bg-secondary: #f5f1e8;
-  --color-bg-hover: #c9bda522;
-  --color-bg-active: #c8655533;
+  --color-bg-primary: oklch(0.99 0.01 80 / 1);
+  --color-bg-secondary: oklch(0.96 0.01 80 / 1);
+  --color-bg-hover: oklch(0.80 0.04 80 / 0.13);
+  --color-bg-active: oklch(0.62 0.13 30 / 0.20);
 
   /* Text colors */
-  --color-text-primary: #2d2416;
-  --color-text-secondary: #6b5d47;
+  --color-text-primary: oklch(0.27 0.03 80 / 1);
+  --color-text-secondary: oklch(0.49 0.04 80 / 1);
 
   /* Border colors */
-  --color-border-light: #ebe5d6;
-  --color-border-default: #ddd5c3;
-  --color-border-medium: #c9bda5;
+  --color-border-light: oklch(0.92 0.02 80 / 1);
+  --color-border-default: oklch(0.87 0.03 80 / 1);
+  --color-border-medium: oklch(0.80 0.04 80 / 1);
 
   /* Primary brand color - Warm brown */
-  --color-primary-50: #faf6f0;
-  --color-primary-100: #f0e6d4;
-  --color-primary-500: #a67c52;
-  --color-primary-600: #8b6642;
-  --color-primary-700: #6f5234;
+  --color-primary-50: oklch(0.97 0.01 78 / 1);
+  --color-primary-100: oklch(0.93 0.03 82 / 1);
+  --color-primary-500: oklch(0.62 0.08 65 / 1);
+  --color-primary-600: oklch(0.54 0.07 64 / 1);
+  --color-primary-700: oklch(0.46 0.06 66 / 1);
 
   /* Accent color - Forest green */
-  --color-accent-50: #f4f7f0;
-  --color-accent-500: #6b8e4e;
-  --color-accent-600: #567339;
+  --color-accent-50: oklch(0.97 0.01 125 / 1);
+  --color-accent-500: oklch(0.50 0.10 132 / 1);
+  --color-accent-600: oklch(0.40 0.09 130 / 1);
 
   /* Success color - Earthy green */
-  --color-success-50: #f0f5ed;
-  --color-success-500: #5a9367;
-  --color-success-600: #487850;
+  --color-success-50: oklch(0.96 0.01 133 / 1);
+  --color-success-500: oklch(0.61 0.09 150 / 1);
+  --color-success-600: oklch(0.53 0.08 148 / 1);
 
   /* Error color - Terra cotta */
-  --color-error-50: #fdf5f3;
-  --color-error-500: #c86555;
-  --color-error-600: #a84f3f;
+  --color-error-50: oklch(0.98 0.01 34 / 1);
+  --color-error-500: oklch(0.62 0.13 30 / 1);
+  --color-error-600: oklch(0.54 0.12 31 / 1);
 }
 
 /* Dark mode - Auto-switches based on OS preference */
 @media (prefers-color-scheme: dark) {
   :root {
     /* Colors - Dark wooden palette */
-    --color-bg-primary: #1a1410;
-    --color-bg-secondary: #0f0c08;
-    --color-bg-hover: #4d402a44;
-    --color-bg-active: #b4530955;
+    --color-bg-primary: oklch(0.25 0.01 60 / 1);
+    --color-bg-secondary: oklch(0.21 0.01 60 / 1);
+    --color-bg-hover: oklch(0.38 0.04 60 / 0.27);
+    --color-bg-active: oklch(0.56 0.15 50 / 0.33);
 
     /* Text colors */
-    --color-text-primary: #f5f1e8;
-    --color-text-secondary: #a89e8a;
+    --color-text-primary: oklch(0.96 0.01 80 / 1);
+    --color-text-secondary: oklch(0.70 0.03 80 / 1);
 
     /* Border colors */
-    --color-border-light: #2d2416;
-    --color-border-default: #3d3020;
-    --color-border-medium: #4d402a;
+    --color-border-light: oklch(0.27 0.03 70 / 1);
+    --color-border-default: oklch(0.32 0.03 70 / 1);
+    --color-border-medium: oklch(0.38 0.04 70 / 1);
 
     /* Primary brand color - Warm brown (brighter for dark) */
-    --color-primary-50: #3d3020;
-    --color-primary-100: #4d402a;
-    --color-primary-500: #92400e;
-    --color-primary-600: #b45309;
-    --color-primary-700: #d97706;
+    --color-primary-50: oklch(0.32 0.03 72 / 1);
+    --color-primary-100: oklch(0.38 0.04 80 / 1);
+    --color-primary-500: oklch(0.47 0.12 46 / 1);
+    --color-primary-600: oklch(0.56 0.15 49 / 1);
+    --color-primary-700: oklch(0.67 0.16 58 / 1);
 
     /* Accent color - Forest green (brighter for dark) */
-    --color-accent-50: #2d3828;
-    --color-accent-500: #8db970;
-    --color-accent-600: #7aa65c;
+    --color-accent-50: oklch(0.33 0.03 136 / 1);
+    --color-accent-500: oklch(0.74 0.11 133 / 1);
+    --color-accent-600: oklch(0.68 0.11 133 / 1);
 
     /* Success color - Earthy green (brighter for dark) */
-    --color-success-50: #2d3d30;
-    --color-success-500: #7bc088;
-    --color-success-600: #6aad77;
+    --color-success-50: oklch(0.34 0.03 150 / 1);
+    --color-success-500: oklch(0.75 0.11 149 / 1);
+    --color-success-600: oklch(0.69 0.10 149 / 1);
 
     /* Error color - Terra cotta (brighter for dark) */
-    --color-error-50: #3d2420;
-    --color-error-500: #e8897a;
-    --color-error-600: #d97667;
+    --color-error-50: oklch(0.29 0.04 29 / 1);
+    --color-error-500: oklch(0.73 0.12 29 / 1);
+    --color-error-600: oklch(0.67 0.13 29 / 1);
   }
 }
