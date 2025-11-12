@@ -48,6 +48,10 @@ export const users = {
     if (!ids.length) return [];
     return await pb.collection('users').getFullList<User>({ filter: ids.map(id => `id='${id}'`).join('||') });
   },
+
+  async updateBackground(userId: string, background: string) {
+    return await pb.collection('users').update<User>(userId, { background });
+  },
 };
 
 export const spaces = {
@@ -109,10 +113,6 @@ export const chats = {
     return await pb.collection('chats').update<Chat>(chatId, {
       participants: updatedParticipants,
     });
-  },
-
-  async updateBackground(chatId: string, background: string) {
-    return await pb.collection('chats').update<Chat>(chatId, { background });
   },
 
   subscribe(callback: (data: PocketBaseEvent<Chat>) => void) {

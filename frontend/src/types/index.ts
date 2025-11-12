@@ -6,6 +6,7 @@ export interface User {
   last_seen?: string;
   language?: 'en' | 'ru';
   theme?: 'default' | 'wooden';
+  background?: string;
   birthday?: string;
   created: string;
   updated: string;
@@ -42,7 +43,6 @@ export interface Chat {
   daily_room_url?: string;
   is_active_call?: boolean;
   call_participants?: string[];
-  background?: string;
   created?: string;
   updated?: string;
   unreadCount?: number; // Computed client-side, not from DB

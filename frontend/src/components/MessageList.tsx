@@ -1,9 +1,8 @@
-import { forwardRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea, Button } from '../ui';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
-import type { Message, Chat } from '../types';
+import type { Message } from '../types';
 
 interface DisplayMessage extends Message {
   isPending?: boolean;
@@ -18,7 +17,6 @@ interface MessageListProps {
   selectedMessageId: string | null;
   hasMoreAfter: boolean;
   currentUserId: string;
-  chat: Chat | null;
   onSelectMessage: (messageId: string | null) => void;
   onRetryMessage: (tempId: string) => void;
   onRetryUpload: (tempId: string) => void;
@@ -26,89 +24,72 @@ interface MessageListProps {
   onReaction: (messageId: string, emoji: string) => void;
   onJumpToPresent: () => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
-const MessageList = forwardRef<HTMLDivElement, MessageListProps>(
-  (
-    {
-      messages,
-      loadingOlder,
-      selectedMessageId,
-      hasMoreAfter,
-      currentUserId,
-      chat,
-      onSelectMessage,
-      onRetryMessage,
-      onRetryUpload,
-      onCancelUpload,
-      onReaction,
-      onJumpToPresent,
-      messagesEndRef,
-    },
-    ref
-  ) => {
-    const { t } = useTranslation();
+function MessageList({
+  messages,
+  loadingOlder,
+  selectedMessageId,
+  hasMoreAfter,
+  currentUserId,
+  onSelectMessage,
+  onRetryMessage,
+  onRetryUpload,
+  onCancelUpload,
+  onReaction,
+  onJumpToPresent,
+  messagesEndRef,
+  ref,
+}: MessageListProps) {
+  const { t } = useTranslation();
 
-    const bgStyle = useMemo(
-      () =>
-        chat?.background
-          ? { backgroundImage: `url(/patterns/${chat.background}.png)`, backgroundSize: '400px 400px', backgroundRepeat: 'repeat' }
-          : undefined,
-      [chat?.background]
-    );
-
-    return (
-      <ScrollArea ref={ref}>
-        <div
-          className="p-1 flex flex-col flex-1"
-          style={bgStyle}
-        >
-          {loadingOlder && (
-            <div className="flex justify-center p-2">
-              <LoadingSpinner size="sm" />
-            </div>
-          )}
-          {messages.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light">
-              <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
-              {t('chatWindow.noMessages')}
-            </div>
-          ) : (
-            messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                isOwn={message.sender === currentUserId}
-                currentUserId={currentUserId}
-                isSelected={selectedMessageId === message.id}
-                onSelect={() => onSelectMessage(selectedMessageId === message.id ? null : message.id)}
-                onRetry={message.type === 'text' ? onRetryMessage : onRetryUpload}
-                onCancelUpload={onCancelUpload}
-                onReactionClick={(emoji) => onReaction(message.id, emoji)}
-              />
-            ))
-          )}
-          {hasMoreAfter && (
-            <div className="flex justify-center p-4">
-              <Button
-                variant="default"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onJumpToPresent();
-                }}
-              >
-                {t('chatWindow.jumpToPresent')}
-              </Button>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-    );
-  }
-);
-
-MessageList.displayName = 'MessageList';
+  return (
+    <ScrollArea ref={ref}>
+      <div className="p-1 flex flex-col flex-1">
+        {loadingOlder && (
+          <div className="flex justify-center p-2">
+            <LoadingSpinner size="sm" />
+          </div>
+        )}
+        {messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light">
+            <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
+            {t('chatWindow.noMessages')}
+          </div>
+        ) : (
+          messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              isOwn={message.sender === currentUserId}
+              currentUserId={currentUserId}
+              isSelected={selectedMessageId === message.id}
+              onSelect={() => onSelectMessage(selectedMessageId === message.id ? null : message.id)}
+              onRetry={message.type === 'text' ? onRetryMessage : onRetryUpload}
+              onCancelUpload={onCancelUpload}
+              onReactionClick={(emoji) => onReaction(message.id, emoji)}
+            />
+          ))
+        )}
+        {hasMoreAfter && (
+          <div className="flex justify-center p-4">
+            <Button
+              variant="default"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onJumpToPresent();
+              }}
+            >
+              {t('chatWindow.jumpToPresent')}
+            </Button>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+    </ScrollArea>
+  );
+}
 
 export default MessageList;

@@ -31,6 +31,7 @@ export default function MyPage() {
   const [birthdayDay, setBirthdayDay] = useState<string>('');
   const [birthdayMonth, setBirthdayMonth] = useState<string>('');
   const [birthdayYear, setBirthdayYear] = useState<string>('');
+  const [background, setBackground] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export default function MyPage() {
       setEmail(currentUser.email);
       setLanguage(currentUser.language || 'en');
       setTheme(currentUser.theme || 'default');
+      setBackground(currentUser.background || '');
       setAvatarPreview(
         currentUser.avatar
           ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
@@ -93,6 +95,7 @@ export default function MyPage() {
       }
       if (language !== currentUser.language) formData.append('language', language);
       if (theme !== currentUser.theme) formData.append('theme', theme);
+      if (background !== currentUser.background) formData.append('background', background);
       if (avatar) formData.append('avatar', avatar);
       // Handle birthday - combine day, month, year into a date string
       if (birthdayDay && birthdayMonth && birthdayYear) {
@@ -241,6 +244,22 @@ export default function MyPage() {
           <div>
             <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
             <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
+          </div>
+          <div>
+            <FormLabel>{t('chats.background')}</FormLabel>
+            <div className="grid grid-cols-3 gap-2">
+              {[null, '1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+                <Button
+                  key={bg || 'none'}
+                  variant="outline"
+                  isSelected={background === (bg || '')}
+                  onClick={() => setBackground(bg || '')}
+                  className="aspect-square center p-1!"
+                >
+                  {bg ? <div className="w-full h-full" style={{ backgroundImage: `url(/patterns/${bg}-dark.png)`, backgroundSize: '50%' }} /> : <span className="text-xs text-light">None</span>}
+                </Button>
+              ))}
+            </div>
           </div>
           <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
             {saving ? t('common.loading') : t('common.save')}

@@ -574,7 +574,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-(--color-bg-secondary) min-h-0">
+    <div className="flex-1 flex flex-col min-h-0">
       <ChatHeader
         chat={chat}
         chatName={getChatName(chat)}
@@ -596,7 +596,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         selectedMessageId={selectedMessageId}
         hasMoreAfter={hasMoreAfter}
         currentUserId={currentUser?.id || ''}
-        chat={chat}
         onSelectMessage={setSelectedMessageId}
         onRetryMessage={handleRetryMessage}
         onRetryUpload={handleRetryUpload}
