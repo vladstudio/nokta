@@ -10,7 +10,6 @@ import { useMessageList } from '../hooks/useMessageList';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { messageQueue } from '../utils/messageQueue';
-import { messageCache } from '../utils/messageCache';
 import LoadingSpinner from './LoadingSpinner';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
@@ -47,7 +46,7 @@ const SCROLL_AT_BOTTOM_THRESHOLD = 150; // pixels from bottom
 const MAX_ANCHOR_SCROLL_RETRIES = 60; // ~1 second at 60fps
 const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
-export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar, onDeleteChat, onLeaveChat }: ChatWindowProps) {
+export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
@@ -234,15 +233,15 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   // Subscribe to chat updates
   useEffect(() => {
-    let subscriptionId: string | undefined;
+    let unsubscribe: (() => void) | undefined;
     chats.subscribe((data) => {
       if (data.record.id === chatId) {
         chats.getOne(chatId).then(setChat);
       }
-    }).then(id => { subscriptionId = id; });
+    }).then(unsub => { unsubscribe = unsub; });
 
     return () => {
-      if (subscriptionId) chats.unsubscribe(subscriptionId);
+      if (unsubscribe) unsubscribe();
     };
   }, [chatId]);
 

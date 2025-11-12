@@ -49,12 +49,12 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
       {onReact && (
         <>
           {QUICK_EMOJIS.map(emoji => (
-            <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl">{emoji}</Button>
+            <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl center">{emoji}</Button>
           ))}
-          <Popover trigger={<Button as="div" variant="ghost" size="icon" className="text-lg"><DotsThreeIcon weight="bold" size={20} className="text-accent" /></Button>}>
+          <Popover trigger={<Button as="div" variant="ghost" size="icon" className="text-xl center"><DotsThreeIcon weight="bold" size={20} className="text-accent" /></Button>}>
             <div className="grid grid-cols-8 gap-1">
               {MORE_EMOJIS.map(emoji => (
-                <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl">{emoji}</Button>
+                <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl center">{emoji}</Button>
               ))}
             </div>
           </Popover>
