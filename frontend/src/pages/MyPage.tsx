@@ -261,7 +261,7 @@ export default function MyPage() {
               ))}
             </div>
           </div>
-          <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full">
+          <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full center">
             {saving ? t('common.loading') : t('common.save')}
           </Button>
         </Card>
