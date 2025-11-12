@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { auth, spaces, users, spaceMembers } from '../services/pocketbase';
-import { Button, ScrollArea, Dialog, Input, RadioGroup, Select } from '../ui';
+import { spaces, users, spaceMembers } from '../services/pocketbase';
+import { Button, ScrollArea, Dialog, Input, RadioGroup, Select, useToastManager, Card } from '../ui';
 import type { Space, User, SpaceMember } from '../types';
 import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
+  const toast = useToastManager();
   const [activeTab, setActiveTab] = useState<'spaces' | 'users'>('spaces');
   const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [userList, setUserList] = useState<User[]>([]);
@@ -17,28 +18,34 @@ export default function AdminPage() {
   const [spaceName, setSpaceName] = useState('');
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
   const [userRole, setUserRole] = useState<'Member' | 'Admin'>('Member');
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [memberList, setMemberList] = useState<SpaceMember[]>([]);
   const [selectedUserId, setSelectedUserId] = useState('');
-
-  useEffect(() => {
-    if (auth.user?.role !== 'Admin') {
-      setLocation('/my');
-    }
-  }, [setLocation]);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'space' | 'user' | 'member'; item: any } | null>(null);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
 
   const loadSpaces = useCallback(() => {
-    spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
-  }, []);
+    spaces.list().then(setSpaceList).catch(() => {
+      toast.add({ title: 'Failed to load spaces', data: { type: 'error' } });
+      setSpaceList([]);
+    });
+  }, [toast]);
 
   const loadUsers = useCallback(() => {
-    users.list().then(setUserList).catch(() => setUserList([]));
-  }, []);
+    users.list().then(setUserList).catch(() => {
+      toast.add({ title: 'Failed to load users', data: { type: 'error' } });
+      setUserList([]);
+    });
+  }, [toast]);
 
   const loadMembers = useCallback((spaceId: string) => {
-    spaceMembers.list(spaceId).then(setMemberList).catch(() => setMemberList([]));
-  }, []);
+    spaceMembers.list(spaceId).then(setMemberList).catch(() => {
+      toast.add({ title: 'Failed to load members', data: { type: 'error' } });
+      setMemberList([]);
+    });
+  }, [toast]);
 
   useEffect(() => {
     loadSpaces();
@@ -57,49 +64,60 @@ export default function AdminPage() {
       setSpaceName('');
       setEditingSpace(null);
       loadSpaces();
+      toast.add({ title: editingSpace ? 'Space updated' : 'Space created', data: { type: 'success' } });
     } catch (error) {
-      console.error('Failed to save space:', error);
+      toast.add({ title: 'Failed to save space', data: { type: 'error' } });
     }
-  }, [spaceName, editingSpace, loadSpaces]);
+  }, [spaceName, editingSpace, loadSpaces, toast]);
 
-  const handleDeleteSpace = useCallback(async (space: Space) => {
-    if (!confirm(`Delete space "${space.name}"?`)) return;
+  const handleDeleteSpace = useCallback(async () => {
+    if (!confirmDelete || confirmDelete.type !== 'space') return;
     try {
-      await spaces.delete(space.id);
+      await spaces.delete(confirmDelete.item.id);
       loadSpaces();
+      toast.add({ title: 'Space deleted', data: { type: 'success' } });
     } catch (error) {
-      console.error('Failed to delete space:', error);
+      toast.add({ title: 'Failed to delete space', data: { type: 'error' } });
+    } finally {
+      setConfirmDelete(null);
     }
-  }, [loadSpaces]);
+  }, [confirmDelete, loadSpaces, toast]);
 
   const handleSaveUser = useCallback(async () => {
     if (!userName.trim() || !userEmail.trim()) return;
     try {
       if (editingUser) {
         await users.update(editingUser.id, { name: userName, email: userEmail, role: userRole });
+        toast.add({ title: 'User updated', data: { type: 'success' } });
       } else {
-        await users.create(userEmail, userName, userRole);
+        const { password } = await users.create(userEmail, userName, userRole, userPassword || undefined);
+        setGeneratedPassword(password);
+        toast.add({ title: 'User created', data: { type: 'success' } });
       }
       setShowUserDialog(false);
       setUserName('');
       setUserEmail('');
+      setUserPassword('');
       setUserRole('Member');
       setEditingUser(null);
       loadUsers();
-    } catch (error) {
-      console.error('Failed to save user:', error);
+    } catch (error: any) {
+      toast.add({ title: 'Failed to save user', description: error?.data?.password?.message || error?.message, data: { type: 'error' } });
     }
-  }, [userName, userEmail, userRole, editingUser, loadUsers]);
+  }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast]);
 
-  const handleDeleteUser = useCallback(async (user: User) => {
-    if (!confirm(`Delete user "${user.name || user.email}"?`)) return;
+  const handleDeleteUser = useCallback(async () => {
+    if (!confirmDelete || confirmDelete.type !== 'user') return;
     try {
-      await users.delete(user.id);
+      await users.delete(confirmDelete.item.id);
       loadUsers();
+      toast.add({ title: 'User deleted', data: { type: 'success' } });
     } catch (error) {
-      console.error('Failed to delete user:', error);
+      toast.add({ title: 'Failed to delete user', data: { type: 'error' } });
+    } finally {
+      setConfirmDelete(null);
     }
-  }, [loadUsers]);
+  }, [confirmDelete, loadUsers, toast]);
 
   const openSpaceDialog = useCallback((space?: Space) => {
     setEditingSpace(space || null);
@@ -111,6 +129,7 @@ export default function AdminPage() {
     setEditingUser(user || null);
     setUserName(user?.name || '');
     setUserEmail(user?.email || '');
+    setUserPassword('');
     setUserRole(user?.role || 'Member');
     setShowUserDialog(true);
   }, []);
@@ -126,36 +145,48 @@ export default function AdminPage() {
       await spaceMembers.add(selectedSpace.id, userId);
       setSelectedUserId('');
       loadMembers(selectedSpace.id);
+      toast.add({ title: 'Member added', data: { type: 'success' } });
     } catch (error) {
-      console.error('Failed to add member:', error);
+      toast.add({ title: 'Failed to add member', data: { type: 'error' } });
     }
-  }, [selectedSpace, loadMembers]);
+  }, [selectedSpace, loadMembers, toast]);
 
-  const handleRemoveMember = useCallback(async (member: SpaceMember) => {
-    if (!selectedSpace || !confirm(`Remove ${member.expand?.user?.name || 'user'} from space?`)) return;
+  const handleRemoveMember = useCallback(async () => {
+    if (!confirmDelete || confirmDelete.type !== 'member') return;
     try {
-      await spaceMembers.remove(member.id);
-      loadMembers(selectedSpace.id);
+      await spaceMembers.remove(confirmDelete.item.id);
+      if (selectedSpace) loadMembers(selectedSpace.id);
+      toast.add({ title: 'Member removed', data: { type: 'success' } });
     } catch (error) {
-      console.error('Failed to remove member:', error);
+      toast.add({ title: 'Failed to remove member', data: { type: 'error' } });
+    } finally {
+      setConfirmDelete(null);
     }
-  }, [selectedSpace, loadMembers]);
+  }, [confirmDelete, selectedSpace, loadMembers, toast]);
 
   return (
     <ScrollArea>
       <div className="mx-auto w-full max-w-2xl grid gap-4 p-6">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => setLocation('/my')} className="text-xs">
-            <ArrowLeftIcon size={16} />
+          <Button variant="ghost" size="icon" onClick={() => setLocation('/my')}>
+            <ArrowLeftIcon size={20} />
           </Button>
           <h2 className="font-semibold flex-1">Admin Panel</h2>
         </div>
 
-        <div className="flex gap-2 border-b border-default">
-          <Button variant="ghost" onClick={() => setActiveTab('spaces')} className={activeTab === 'spaces' ? 'border-b-2 border-accent' : ''}>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => setActiveTab('spaces')}
+            isSelected={activeTab === 'spaces'}
+          >
             Spaces
           </Button>
-          <Button variant="ghost" onClick={() => setActiveTab('users')} className={activeTab === 'users' ? 'border-b-2 border-accent' : ''}>
+          <Button
+            variant="ghost"
+            onClick={() => setActiveTab('users')}
+            isSelected={activeTab === 'users'}
+          >
             Users
           </Button>
         </div>
@@ -174,7 +205,7 @@ export default function AdminPage() {
                 <Button variant="ghost" onClick={() => openSpaceDialog(space)} className="text-xs">
                   <PencilIcon size={16} />
                 </Button>
-                <Button variant="ghost" onClick={() => handleDeleteSpace(space)} className="text-xs text-red-500">
+                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'space', item: space })} className="text-xs text-red-500">
                   <TrashIcon size={16} />
                 </Button>
               </div>
@@ -204,7 +235,7 @@ export default function AdminPage() {
                   <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
                   <div className="text-xs text-light">{member.expand?.user?.email}</div>
                 </div>
-                <Button variant="ghost" onClick={() => handleRemoveMember(member)} className="text-xs text-red-500">
+                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'member', item: member })} className="text-xs text-red-500">
                   <TrashIcon size={16} />
                 </Button>
               </div>
@@ -226,7 +257,7 @@ export default function AdminPage() {
                 <Button variant="ghost" onClick={() => openUserDialog(user)} className="text-xs">
                   <PencilIcon size={16} />
                 </Button>
-                <Button variant="ghost" onClick={() => handleDeleteUser(user)} className="text-xs text-red-500">
+                <Button variant="ghost" onClick={() => setConfirmDelete({ type: 'user', item: user })} className="text-xs text-red-500">
                   <TrashIcon size={16} />
                 </Button>
               </div>
@@ -250,6 +281,7 @@ export default function AdminPage() {
           <div className="grid gap-4">
             <Input placeholder="Name" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
+            {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
             <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => setShowUserDialog(false)} className="flex-1">
@@ -258,6 +290,25 @@ export default function AdminPage() {
               <Button variant="default" onClick={handleSaveUser} className="flex-1">
                 Save
               </Button>
+            </div>
+          </div>
+        </Dialog>
+
+        <Dialog open={!!generatedPassword} onOpenChange={() => setGeneratedPassword(null)} title="User Created">
+          <div className="grid gap-4">
+            <p className="text-sm">Password for new user:</p>
+            <Input value={generatedPassword || ''} readOnly />
+            <p className="text-xs text-light">Save this password - it won't be shown again.</p>
+            <Button variant="default" onClick={() => setGeneratedPassword(null)}>Close</Button>
+          </div>
+        </Dialog>
+
+        <Dialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)} title="Confirm Delete">
+          <div className="grid gap-4">
+            <p>Are you sure you want to delete this {confirmDelete?.type}?</p>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">Cancel</Button>
+              <Button variant="default" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember} className="flex-1">Delete</Button>
             </div>
           </div>
         </Dialog>

@@ -5,6 +5,7 @@ import { auth, spaces } from './services/pocketbase';
 import { requestNotificationPermission, getNotificationPermission } from './utils/notifications';
 import { ToastProvider } from './ui';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
@@ -90,7 +91,9 @@ function App() {
             <Route path="/login" component={LoginPage} />
             <Route path="/admin">
               <ProtectedRoute>
-                <AdminPage />
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
               </ProtectedRoute>
             </Route>
             <Route path="/my/settings">

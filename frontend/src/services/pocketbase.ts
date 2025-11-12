@@ -47,9 +47,10 @@ export const users = {
     return await pb.collection('users').getFullList<User>({ sort: '-created' });
   },
 
-  async create(email: string, name: string, role: 'Member' | 'Admin' = 'Member') {
-    const pwd = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    return await pb.collection('users').create<User>({ email, name, role, password: pwd, passwordConfirm: pwd, emailVisibility: true });
+  async create(email: string, name: string, role: 'Member' | 'Admin' = 'Member', password?: string) {
+    const pwd = password || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const user = await pb.collection('users').create<User>({ email, name, role, password: pwd, passwordConfirm: pwd, emailVisibility: true });
+    return { user, password: pwd };
   },
 
   async update(userId: string, data: Partial<User>) {
