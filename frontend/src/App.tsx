@@ -9,7 +9,8 @@ import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
-import MyPage from './pages/MyPage';
+import MySpacesPage from './pages/MySpacesPage';
+import MySettingsPage from './pages/MySettingsPage';
 import UIPage from './pages/UIPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -88,9 +89,14 @@ function App() {
           <Switch>
             <Route path="/login" component={LoginPage} />
             <Route path="/ui" component={UIPage} />
+            <Route path="/my/settings">
+              <ProtectedRoute>
+                <MySettingsPage />
+              </ProtectedRoute>
+            </Route>
             <Route path="/my">
               <ProtectedRoute>
-                <MyPage />
+                <MySpacesPage />
               </ProtectedRoute>
             </Route>
             <Route path="/spaces/:spaceId/chat/:chatId?">

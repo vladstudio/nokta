@@ -1,12 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { auth, spaces, pb } from '../services/pocketbase';
-import { LAST_SPACE_KEY } from '../components/Sidebar';
+import { auth, pb } from '../services/pocketbase';
 import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
-import type { Space } from '../types';
-import { ArrowRightIcon } from "@phosphor-icons/react";
 
 interface PocketBaseRecord {
   id: string;
@@ -15,11 +12,10 @@ interface PocketBaseRecord {
   [key: string]: unknown;
 }
 
-export default function MyPage() {
+export default function MySettingsPage() {
   const { t, i18n } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
-  const [spaceList, setSpaceList] = useState<Space[]>([]);
   const currentUser = auth.user;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,14 +31,6 @@ export default function MyPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSpaces = useCallback(() => {
-    spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
-  }, []);
-
-  useEffect(() => {
-    loadSpaces();
-  }, [loadSpaces]);
-
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || '');
@@ -55,7 +43,6 @@ export default function MyPage() {
           ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
           : null
       );
-      // Parse birthday if it exists
       if (currentUser.birthday) {
         const date = new Date(currentUser.birthday);
         setBirthdayDay(date.getDate().toString());
@@ -63,14 +50,8 @@ export default function MyPage() {
         setBirthdayYear(date.getFullYear().toString());
       }
     }
-    // Only run on mount - don't reset form when currentUser changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleSpaceClick = useCallback((space: Space) => {
-    localStorage.setItem(LAST_SPACE_KEY, space.id);
-    setLocation(`/spaces/${space.id}/chat`);
-  }, [setLocation]);
 
   const handleAvatarChange = (file: File | null) => {
     setAvatar(file);
@@ -97,12 +78,10 @@ export default function MyPage() {
       if (theme !== currentUser.theme) formData.append('theme', theme);
       if (background !== currentUser.background) formData.append('background', background);
       if (avatar) formData.append('avatar', avatar);
-      // Handle birthday - combine day, month, year into a date string
       if (birthdayDay && birthdayMonth && birthdayYear) {
         const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
         if (birthday !== currentUser.birthday) formData.append('birthday', birthday);
       } else if (currentUser.birthday) {
-        // Clear birthday if user removed it
         formData.append('birthday', '');
       }
       await pb.collection('users').update(currentUser.id, formData);
@@ -119,11 +98,6 @@ export default function MyPage() {
       setSaving(false);
     }
   };
-
-  const handleLogout = useCallback(() => {
-    auth.logout();
-    setLocation('/login');
-  }, [setLocation]);
 
   const languageOptions = useMemo(() => [
     { value: 'en' as const, label: t('languages.en') },
@@ -175,30 +149,6 @@ export default function MyPage() {
   return (
     <ScrollArea>
       <div className="mx-auto w-full max-w-md grid gap-4 p-6">
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold flex-1">{t('mySpacesPage.title')}</h2>
-          <Button variant="ghost" onClick={handleLogout} className="text-xs text-light">
-            {t('sidebar.logOut')}
-          </Button>
-        </div>
-        {spaceList.length > 0 ? (
-          <div className="space-y-1">
-            {spaceList.map((space) => (
-              <Button
-                variant="default"
-                key={space.id}
-                onClick={() => handleSpaceClick(space)}
-                className="w-full p-3! text-left font-normal! flex items-center gap-2"
-              >
-                <div className="flex-1">{space.name}</div>
-                <ArrowRightIcon size={20} className="text-accent" />
-              </Button>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('mySpacesPage.noSpaces')}</p>
-        )}
-        <hr />
         <h2 className="font-semibold">{t('userSettingsDialog.title')}</h2>
         <Card border shadow="sm" padding="lg" className="space-y-4">
           {error && <Alert variant="error">{error}</Alert>}
@@ -265,7 +215,6 @@ export default function MyPage() {
             {saving ? t('common.loading') : t('common.save')}
           </Button>
         </Card>
-
       </div>
     </ScrollArea>
   );
