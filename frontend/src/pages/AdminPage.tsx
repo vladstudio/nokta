@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { spaces, users, spaceMembers } from '../services/pocketbase';
-import { Button, ScrollArea, Dialog, Input, RadioGroup, Select, useToastManager, Card } from '../ui';
+import { Button, ScrollArea, Dialog, Input, RadioGroup, Select, useToastManager, Card, Checkbox } from '../ui';
 import type { Space, User, SpaceMember } from '../types';
 import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
 
@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ type: 'space' | 'user' | 'member'; item: any } | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [userErrors, setUserErrors] = useState<string[]>([]);
+  const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
 
   const loadSpaces = useCallback(() => {
     spaces.list().then(setSpaceList).catch(() => {
@@ -92,8 +93,10 @@ export default function AdminPage() {
         await users.update(editingUser.id, { name: userName, email: userEmail, role: userRole });
         toast.add({ title: 'User updated', data: { type: 'success' } });
       } else {
-        const { password } = await users.create(userEmail, userName, userRole, userPassword || undefined);
-        setGeneratedPassword(password);
+        const created = await users.create(userEmail, userName, userRole, userPassword || undefined);
+        const userId = created.user?.id || created.id;
+        await Promise.all(selectedSpaceIds.map(spaceId => spaceMembers.add(spaceId, userId)));
+        setGeneratedPassword(created.password);
         toast.add({ title: 'User created', data: { type: 'success' } });
       }
       setShowUserDialog(false);
@@ -104,11 +107,9 @@ export default function AdminPage() {
       setEditingUser(null);
       loadUsers();
     } catch (error: any) {
-      console.log('Error caught:', error);
-      console.log('Error data:', error?.data);
-      setUserErrors(error?.data ? Object.values(error.data).map((e: any) => e?.message).filter(Boolean) : [error?.message || 'Failed to save user']);
+      setUserErrors(error?.data?.data ? Object.entries(error.data.data).map(([key, e]: [string, any]) => `${key}: ${e?.message}`).filter(Boolean) : [error?.message || 'Failed to save user']);
     }
-  }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast]);
+  }, [userName, userEmail, userPassword, userRole, editingUser, selectedSpaceIds, loadUsers, toast]);
 
   const handleDeleteUser = useCallback(async () => {
     if (!confirmDelete || confirmDelete.type !== 'user') return;
@@ -136,6 +137,7 @@ export default function AdminPage() {
     setUserPassword('');
     setUserRole(user?.role || 'Member');
     setUserErrors([]);
+    setSelectedSpaceIds([]);
     setShowUserDialog(true);
   }, []);
 
@@ -202,7 +204,7 @@ export default function AdminPage() {
               <PlusIcon size={20} /> Add Space
             </Button>
             {spaceList.map((space) => (
-              <Card key={space.id} border padding="sm">
+              <Card key={space.id} border shadow="sm" padding="sm">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 font-medium">{space.name}</div>
                   <Button variant="ghost" size="icon" onClick={() => openMemberManagement(space)}>
@@ -226,18 +228,20 @@ export default function AdminPage() {
               <ArrowLeftIcon size={20} />
             </Button>
             <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
-            <Select
-              value={selectedUserId}
-              onChange={(value) => {
-                if (value) {
-                  handleAddMember(value);
-                }
-              }}
-              options={userList.filter(u => !memberList.some(m => m.user === u.id)).map(u => ({value: u.id, label: u.name || u.email}))}
-              placeholder="Add member..."
-            />
+            {userList.filter(u => !memberList.some(m => m.user === u.id)).length > 0 && (
+              <Select
+                value={selectedUserId}
+                onChange={(value) => {
+                  if (value) {
+                    handleAddMember(value);
+                  }
+                }}
+                options={userList.filter(u => !memberList.some(m => m.user === u.id)).map(u => ({ value: u.id, label: u.name || u.email }))}
+                placeholder="Add member..."
+              />
+            )}
             {memberList.map((member) => (
-              <Card key={member.id} border padding="sm">
+              <Card key={member.id} shadow="sm" border padding="sm">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
@@ -258,7 +262,7 @@ export default function AdminPage() {
               <PlusIcon size={20} /> Add User
             </Button>
             {userList.map((user) => (
-              <Card key={user.id} border padding="sm">
+              <Card key={user.id} shadow="sm" border padding="sm">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <div className="font-medium">{user.name || user.email}</div>
@@ -314,6 +318,20 @@ export default function AdminPage() {
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
             {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
             <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
+            {!editingUser && spaceList.length > 0 && (
+              <div className="grid gap-2">
+                <div className="text-sm font-medium">Spaces</div>
+                {spaceList.map(space => (
+                  <label key={space.id} className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={selectedSpaceIds.includes(space.id)}
+                      onCheckedChange={(checked) => setSelectedSpaceIds(prev => checked ? [...prev, space.id] : prev.filter(id => id !== space.id))}
+                    />
+                    <span className="text-sm">{space.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
             {userErrors.length > 0 && (
               <div className="text-sm text-red-600">
                 {userErrors.map((err, i) => <div key={i}>{err}</div>)}
