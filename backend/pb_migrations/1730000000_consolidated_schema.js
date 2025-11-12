@@ -479,10 +479,14 @@ migrate((app) => {
   }))
 
   users.fields.addAt(7, new Field({
-    name: "permissions",
-    type: "text",
-    required: false
+    name: "role",
+    type: "select",
+    required: true,
+    maxSelect: 1,
+    values: ["Member", "Admin"]
   }))
+
+  users.fields.getByName("role").default = "Member"
 
   users.listRule = '@request.auth.id != ""'
   users.viewRule = '@request.auth.id != ""'
@@ -521,7 +525,7 @@ migrate((app) => {
   const themeField = users.fields.getByName("theme")
   const birthdayField = users.fields.getByName("birthday")
   const backgroundField = users.fields.getByName("background")
-  const permissionsField = users.fields.getByName("permissions")
+  const roleField = users.fields.getByName("role")
 
   if (nameField) users.fields.removeById(nameField.id)
   if (avatarField) users.fields.removeById(avatarField.id)
@@ -530,7 +534,7 @@ migrate((app) => {
   if (themeField) users.fields.removeById(themeField.id)
   if (birthdayField) users.fields.removeById(birthdayField.id)
   if (backgroundField) users.fields.removeById(backgroundField.id)
-  if (permissionsField) users.fields.removeById(permissionsField.id)
+  if (roleField) users.fields.removeById(roleField.id)
 
   users.listRule = null
   users.viewRule = null

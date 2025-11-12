@@ -64,7 +64,7 @@ async function createUsers() {
       const record = await getOrCreate(
         'users',
         'email = {:email}',
-        { ...user, passwordConfirm: user.password, emailVisibility: true },
+        { ...user, passwordConfirm: user.password, emailVisibility: true, role: 'Member' },
         { email: user.email }
       );
       console.log(`✓ ${user.name} (${user.email})`);
@@ -73,6 +73,18 @@ async function createUsers() {
       console.error(`✗ Failed to create ${user.email}:`, error.message);
     }
   }
+
+  // Make Alice an admin
+  const alice = users.find(u => u.name === 'Alice');
+  if (alice) {
+    try {
+      await pb.collection('users').update(alice.id, { role: 'Admin' });
+      console.log('✓ Alice promoted to Admin');
+    } catch (error) {
+      console.error('✗ Failed to promote Alice:', error.message);
+    }
+  }
+
   return users;
 }
 

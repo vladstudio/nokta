@@ -12,16 +12,6 @@ export const auth = {
     return authData.record as unknown as User;
   },
 
-  async register(email: string, password: string, passwordConfirm: string, name?: string) {
-    const data: { email: string; password: string; passwordConfirm: string; name?: string } = {
-      email,
-      password,
-      passwordConfirm,
-    };
-    if (name) data.name = name;
-    return await pb.collection('users').create<User>(data);
-  },
-
   logout() {
     pb.authStore.clear();
   },
