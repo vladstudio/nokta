@@ -12,16 +12,10 @@ migrate((app) => {
   users.updateRule = '@request.auth.role = "Admin" || @request.auth.id = id'
   users.deleteRule = '@request.auth.role = "Admin"'
   app.save(users)
-}, (app) => {
-  // Rollback: restore original rules
-  const spaces = app.findCollectionByNameOrId("spaces")
-  spaces.updateRule = null
-  spaces.deleteRule = null
-  app.save(spaces)
 
-  const users = app.findCollectionByNameOrId("users")
-  users.createRule = null
-  users.updateRule = '@request.auth.id = id'
-  users.deleteRule = null
-  app.save(users)
+  // Update space_members collection to allow admin users to create and delete members
+  const spaceMembers = app.findCollectionByNameOrId("space_members")
+  spaceMembers.createRule = '@request.auth.role = "Admin"'
+  spaceMembers.deleteRule = '@request.auth.role = "Admin"'
+  app.save(spaceMembers)
 })

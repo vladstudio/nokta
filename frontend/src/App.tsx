@@ -10,8 +10,7 @@ import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SpacePage from './pages/SpacePage';
-import MySpacesPage from './pages/MySpacesPage';
-import MySettingsPage from './pages/MySettingsPage';
+import MyPage from './pages/MyPage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -96,14 +95,9 @@ function App() {
                 </AdminRoute>
               </ProtectedRoute>
             </Route>
-            <Route path="/my/settings">
-              <ProtectedRoute>
-                <MySettingsPage />
-              </ProtectedRoute>
-            </Route>
             <Route path="/my">
               <ProtectedRoute>
-                <MySpacesPage />
+                <MyPage />
               </ProtectedRoute>
             </Route>
             <Route path="/spaces/:spaceId/chat/:chatId?">

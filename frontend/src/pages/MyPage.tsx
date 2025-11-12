@@ -1,9 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { auth, pb } from '../services/pocketbase';
+import { auth, spaces, pb } from '../services/pocketbase';
+import { LAST_SPACE_KEY } from '../components/Sidebar';
 import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
+import type { Space } from '../types';
+import { ArrowRightIcon, ShieldCheckIcon } from "@phosphor-icons/react";
 
 interface PocketBaseRecord {
   id: string;
@@ -12,11 +15,16 @@ interface PocketBaseRecord {
   [key: string]: unknown;
 }
 
-export default function MySettingsPage() {
+export default function MyPage() {
   const { t, i18n } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
   const currentUser = auth.user;
+
+  // Spaces state
+  const [spaceList, setSpaceList] = useState<Space[]>([]);
+
+  // Settings state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,6 +38,14 @@ export default function MySettingsPage() {
   const [background, setBackground] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadSpaces = useCallback(() => {
+    spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
+  }, []);
+
+  useEffect(() => {
+    loadSpaces();
+  }, [loadSpaces]);
 
   useEffect(() => {
     if (currentUser) {
@@ -52,6 +68,16 @@ export default function MySettingsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSpaceClick = useCallback((space: Space) => {
+    localStorage.setItem(LAST_SPACE_KEY, space.id);
+    setLocation(`/spaces/${space.id}/chat`);
+  }, [setLocation]);
+
+  const handleLogout = useCallback(() => {
+    auth.logout();
+    setLocation('/login');
+  }, [setLocation]);
 
   const handleAvatarChange = (file: File | null) => {
     setAvatar(file);
@@ -91,7 +117,6 @@ export default function MySettingsPage() {
         title: t('userSettingsDialog.settingsSaved'),
         data: { type: 'success' },
       });
-      setLocation('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     } finally {
@@ -149,7 +174,40 @@ export default function MySettingsPage() {
   return (
     <ScrollArea>
       <div className="mx-auto w-full max-w-md grid gap-4 p-6">
-        <h2 className="font-semibold">{t('userSettingsDialog.title')}</h2>
+        {/* Header with logout and admin button */}
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold flex-1">{t('mySpacesPage.title')}</h2>
+          {auth.user?.role === 'Admin' && (
+            <Button variant="ghost" onClick={() => setLocation('/admin')} className="text-xs text-light">
+              <ShieldCheckIcon size={16} className="mr-1" /> Admin
+            </Button>
+          )}
+          <Button variant="ghost" onClick={handleLogout} className="text-xs text-light">
+            {t('sidebar.logOut')}
+          </Button>
+        </div>
+
+        {/* Spaces list */}
+        {spaceList.length > 0 ? (
+          <div className="space-y-1">
+            {spaceList.map((space) => (
+              <Button
+                variant="default"
+                key={space.id}
+                onClick={() => handleSpaceClick(space)}
+                className="w-full p-3! text-left font-normal! flex items-center gap-2"
+              >
+                <div className="flex-1">{space.name}</div>
+                <ArrowRightIcon size={20} className="text-accent" />
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-light font-medium text-center p-4 sm:p-8">{t('mySpacesPage.noSpaces')}</p>
+        )}
+
+        {/* Settings section */}
+        <h2 className="font-semibold mt-4">{t('userSettingsDialog.title')}</h2>
         <Card border shadow="sm" padding="lg" className="space-y-4">
           {error && <Alert variant="error">{error}</Alert>}
           <div>

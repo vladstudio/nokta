@@ -224,7 +224,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 .bg-pattern-8-light { background-image: url(/patterns/8-light.png); background-size: 400px 400px; background-repeat: repeat; }
 .bg-pattern-8-dark { background-image: url(/patterns/8-dark.png); background-size: 400px 400px; background-repeat: repeat; }
 
-/* Preview thumbnails for MySettingsPage (50% size, always dark) */
+/* Preview thumbnails for MyPage settings (50% size, always dark) */
 .bg-preview-1 { background-image: url(/patterns/1-dark.png); background-size: 50%; background-repeat: repeat; }
 .bg-preview-2 { background-image: url(/patterns/2-dark.png); background-size: 50%; background-repeat: repeat; }
 .bg-preview-3 { background-image: url(/patterns/3-dark.png); background-size: 50%; background-repeat: repeat; }

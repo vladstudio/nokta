@@ -96,7 +96,9 @@ export default function AdminPage() {
         const created = await users.create(userEmail, userName, userRole, userPassword || undefined);
         const userId = created.user?.id || created.id;
         await Promise.all(selectedSpaceIds.map(spaceId => spaceMembers.add(spaceId, userId)));
-        setGeneratedPassword(created.password);
+        if (!userPassword) {
+          setGeneratedPassword(created.password);
+        }
         toast.add({ title: 'User created', data: { type: 'success' } });
       }
       setShowUserDialog(false);
