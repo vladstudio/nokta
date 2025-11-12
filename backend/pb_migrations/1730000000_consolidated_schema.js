@@ -104,7 +104,7 @@ migrate((app) => {
 
   app.save(spaceMembers)
 
-  // Create chats collection
+  // Create chats collection (without type field, background removed)
   const chats = new Collection({
     name: "chats",
     type: "base"
@@ -121,14 +121,6 @@ migrate((app) => {
   }))
 
   chats.fields.addAt(1, new Field({
-    name: "type",
-    type: "select",
-    required: true,
-    maxSelect: 1,
-    values: ["public", "private"]
-  }))
-
-  chats.fields.addAt(2, new Field({
     name: "participants",
     type: "relation",
     required: false,
@@ -138,7 +130,7 @@ migrate((app) => {
     minSelect: 0
   }))
 
-  chats.fields.addAt(3, new Field({
+  chats.fields.addAt(2, new Field({
     name: "name",
     type: "text",
     required: false,
@@ -147,19 +139,19 @@ migrate((app) => {
     pattern: ""
   }))
 
-  chats.fields.addAt(4, new Field({
+  chats.fields.addAt(3, new Field({
     name: "last_message_at",
     type: "date",
     required: false
   }))
 
-  chats.fields.addAt(5, new Field({
+  chats.fields.addAt(4, new Field({
     name: "last_message_content",
     type: "text",
     required: false
   }))
 
-  chats.fields.addAt(6, new Field({
+  chats.fields.addAt(5, new Field({
     name: "last_message_sender",
     type: "relation",
     required: false,
@@ -167,7 +159,7 @@ migrate((app) => {
     maxSelect: 1
   }))
 
-  chats.fields.addAt(7, new Field({
+  chats.fields.addAt(6, new Field({
     name: "avatar",
     type: "file",
     required: false,
@@ -176,21 +168,21 @@ migrate((app) => {
     mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"]
   }))
 
-  chats.fields.addAt(8, new Field({
+  chats.fields.addAt(7, new Field({
     name: "created",
     type: "autodate",
     onCreate: true,
     onUpdate: false
   }))
 
-  chats.fields.addAt(9, new Field({
+  chats.fields.addAt(8, new Field({
     name: "updated",
     type: "autodate",
     onCreate: true,
     onUpdate: true
   }))
 
-  chats.fields.addAt(10, new Field({
+  chats.fields.addAt(9, new Field({
     name: "daily_room_url",
     type: "text",
     required: false,
@@ -199,19 +191,19 @@ migrate((app) => {
     pattern: ""
   }))
 
-  chats.fields.addAt(11, new Field({
+  chats.fields.addAt(10, new Field({
     name: "is_active_call",
     type: "bool",
     required: false
   }))
 
-  chats.fields.addAt(12, new Field({
+  chats.fields.addAt(11, new Field({
     name: "call_participants",
     type: "json",
     required: false
   }))
 
-  chats.fields.addAt(13, new Field({
+  chats.fields.addAt(12, new Field({
     name: "created_by",
     type: "relation",
     required: false,
@@ -225,11 +217,10 @@ migrate((app) => {
   chats.viewRule = '@request.auth.id != ""'
   chats.createRule = '@request.auth.id != ""'
   chats.updateRule = 'participants.id ?= @request.auth.id'
-  chats.deleteRule = 'created_by = @request.auth.id'
+  chats.deleteRule = '@request.auth.id != "" && participants.id ?= @request.auth.id'
 
   chats.indexes = [
     "CREATE INDEX idx_chats_space ON chats (space)",
-    "CREATE INDEX idx_chats_type ON chats (type)",
     "CREATE INDEX idx_chats_participants ON chats (participants)"
   ]
 
@@ -430,6 +421,12 @@ migrate((app) => {
   // Update users collection
   const users = app.findCollectionByNameOrId("users")
 
+  // Remove verified field if it exists
+  const verifiedField = users.fields.getByName("verified")
+  if (verifiedField) {
+    users.fields.removeById(verifiedField.id)
+  }
+
   users.fields.addAt(0, new Field({
     name: "name",
     type: "text",
@@ -475,6 +472,18 @@ migrate((app) => {
     required: false
   }))
 
+  users.fields.addAt(6, new Field({
+    name: "background",
+    type: "text",
+    required: false
+  }))
+
+  users.fields.addAt(7, new Field({
+    name: "permissions",
+    type: "text",
+    required: false
+  }))
+
   users.listRule = '@request.auth.id != ""'
   users.viewRule = '@request.auth.id != ""'
   users.updateRule = 'id = @request.auth.id'
@@ -511,6 +520,8 @@ migrate((app) => {
   const languageField = users.fields.getByName("language")
   const themeField = users.fields.getByName("theme")
   const birthdayField = users.fields.getByName("birthday")
+  const backgroundField = users.fields.getByName("background")
+  const permissionsField = users.fields.getByName("permissions")
 
   if (nameField) users.fields.removeById(nameField.id)
   if (avatarField) users.fields.removeById(avatarField.id)
@@ -518,6 +529,8 @@ migrate((app) => {
   if (languageField) users.fields.removeById(languageField.id)
   if (themeField) users.fields.removeById(themeField.id)
   if (birthdayField) users.fields.removeById(birthdayField.id)
+  if (backgroundField) users.fields.removeById(backgroundField.id)
+  if (permissionsField) users.fields.removeById(permissionsField.id)
 
   users.listRule = null
   users.viewRule = null
