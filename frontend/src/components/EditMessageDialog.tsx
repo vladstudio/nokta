@@ -25,7 +25,8 @@ export default function EditMessageDialog({
     }
   }, [open, initialContent]);
 
-  const handleSave = () => {
+  const handleSave = (e?: React.FormEvent) => {
+    e?.preventDefault();
     const trimmed = content.trim();
     if (trimmed && trimmed !== initialContent) {
       onSave(trimmed);
@@ -48,20 +49,22 @@ export default function EditMessageDialog({
           <Button variant="default" onClick={handleCancel}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={!content.trim()}>
+          <Button variant="primary" type="submit" form="edit-message-form" disabled={!content.trim()}>
             {t('common.save')}
           </Button>
         </>
       }
     >
-      <Input
-        as="textarea"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={4}
-        placeholder={t('messageInput.placeholder')}
-        autoFocus
-      />
+      <form id="edit-message-form" onSubmit={handleSave}>
+        <Input
+          as="textarea"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={4}
+          placeholder={t('messageInput.placeholder')}
+          autoFocus
+        />
+      </form>
     </Dialog>
   );
 }

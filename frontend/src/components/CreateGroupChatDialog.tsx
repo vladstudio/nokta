@@ -35,7 +35,8 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
     [members, auth.user?.id]
   );
 
-  const handleCreate = async () => {
+  const handleCreate = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!auth.user?.id) return;
     const isChatWithSelf = selectedUsers.length === 0;
     if (isChatWithSelf && !chatName.trim()) return;
@@ -65,13 +66,13 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
       footer={
         <>
           <Button variant="default" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-          <Button variant="primary" onClick={handleCreate} disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
+          <Button variant="primary" type="submit" form="create-chat-form" disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
             {creating ? t('common.creating') : t('common.create')}
           </Button>
         </>
       }
     >
-      <div className="grid gap-4">
+      <form id="create-chat-form" onSubmit={handleCreate} className="grid gap-4">
         <div>
           <FormLabel htmlFor="chatName">{t('chats.groupName')}</FormLabel>
           <Input
@@ -103,7 +104,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
             })}
           </div>
         </ScrollArea>
-      </div>
+      </form>
     </Dialog>
   );
 }

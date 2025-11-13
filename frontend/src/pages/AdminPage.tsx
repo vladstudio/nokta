@@ -54,7 +54,8 @@ export default function AdminPage() {
     loadUsers();
   }, [loadSpaces, loadUsers]);
 
-  const handleSaveSpace = useCallback(async () => {
+  const handleSaveSpace = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!spaceName.trim()) return;
     try {
       if (editingSpace) {
@@ -85,7 +86,8 @@ export default function AdminPage() {
     }
   }, [confirmDelete, loadSpaces, toast]);
 
-  const handleSaveUser = useCallback(async () => {
+  const handleSaveUser = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!userName.trim() || !userEmail.trim()) return;
     setUserErrors([]);
     try {
@@ -296,13 +298,15 @@ export default function AdminPage() {
               <Button variant="default" onClick={() => setShowSpaceDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSaveSpace}>
+              <Button variant="primary" type="submit" form="space-form">
                 Save
               </Button>
             </>
           }
         >
-          <Input placeholder="Space name" value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
+          <form id="space-form" onSubmit={handleSaveSpace}>
+            <Input placeholder="Space name" value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
+          </form>
         </Dialog>
 
         <Dialog
@@ -314,13 +318,13 @@ export default function AdminPage() {
               <Button variant="default" onClick={() => setShowUserDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSaveUser}>
+              <Button variant="primary" type="submit" form="user-form">
                 Save
               </Button>
             </>
           }
         >
-          <div className="grid gap-4">
+          <form id="user-form" onSubmit={handleSaveUser} className="grid gap-4">
             <Input placeholder="Name" value={userName} onChange={(e) => setUserName(e.target.value)} />
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
             {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
@@ -344,7 +348,7 @@ export default function AdminPage() {
                 {userErrors.map((err, i) => <div key={i}>{err}</div>)}
               </div>
             )}
-          </div>
+          </form>
         </Dialog>
 
         <Dialog

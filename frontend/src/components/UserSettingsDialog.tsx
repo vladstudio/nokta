@@ -57,7 +57,8 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!currentUser) return;
 
     setError(null);
@@ -120,13 +121,13 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           <Button variant="default" onClick={() => onOpenChange(false)} disabled={saving}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" onClick={handleSave} disabled={saving}>
+          <Button variant="primary" type="submit" form="user-settings-form" disabled={saving}>
             {saving ? t('common.loading') : t('common.save')}
           </Button>
         </>
       }
     >
-      <div className="space-y-4">
+      <form id="user-settings-form" onSubmit={handleSave} className="space-y-4">
         {error && <Alert variant="error">{error}</Alert>}
 
         <div>
@@ -191,7 +192,7 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
           <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
           <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
         </div>
-      </div>
+      </form>
     </Dialog>
   );
 }

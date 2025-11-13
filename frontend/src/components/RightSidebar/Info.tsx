@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrashIcon, SignOutIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
-import { Button, Dialog, Input } from '../../ui';
+import { Button, Dialog, Input, useToastManager } from '../../ui';
 import { chats } from '../../services/pocketbase';
 import { getChatDisplayName } from '../../utils/chatUtils';
 import type { Chat, User } from '../../types';
@@ -16,9 +16,11 @@ interface InfoProps {
 
 export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: InfoProps) {
   const { t } = useTranslation();
+  const toastManager = useToastManager();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [chatName, setChatName] = useState(() =>
     getChatDisplayName(chat, currentUser?.id, {
       directMessage: t('chatList.directMessage'),
@@ -45,10 +47,32 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
 
   const participants = chat.expand?.participants || [];
 
-  const handleSave = async () => {
-    if (!chatName.trim()) return;
-    await chats.update(chat.id, chatName.trim());
-    setIsEditing(false);
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const trimmedName = chatName.trim();
+    if (!trimmedName || trimmedName.length === 0) {
+      toastManager.add({
+        title: t('errors.invalidInput'),
+        description: t('chats.chatNameRequired'),
+        data: { type: 'error' },
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await chats.update(chat.id, trimmedName);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to rename chat:', err);
+      toastManager.add({
+        title: t('chats.failedToRename'),
+        description: t('errors.unexpectedError'),
+        data: { type: 'error' },
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -59,28 +83,37 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
     setIsEditing(false);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col p-4 gap-6">
       {/* Chat Name */}
-      <div className="flex flex-col gap-2">
+      <form onSubmit={handleSave} className="flex flex-col gap-2">
         <h4 className="text-xs font-semibold uppercase text-light">{t('chats.chatName')}</h4>
         <Input
           value={chatName}
           onChange={(e) => setChatName(e.target.value)}
           onFocus={() => setIsEditing(true)}
+          onKeyDown={handleKeyDown}
           placeholder={t('chats.chatName')}
+          disabled={isSaving}
         />
         {isEditing && (
           <div className="flex gap-2">
-            <Button variant="default" onClick={handleCancel} className="flex-1">
+            <Button type="button" variant="default" onClick={handleCancel} className="flex-1" disabled={isSaving}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={handleSave} className="flex-1">
-              {t('common.save')}
+            <Button type="submit" variant="primary" className="flex-1" disabled={isSaving}>
+              {isSaving ? t('common.saving') : t('common.save')}
             </Button>
           </div>
         )}
-      </div>
+      </form>
 
       {/* Participants */}
       <div className="flex flex-col gap-3">

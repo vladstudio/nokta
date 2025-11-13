@@ -88,7 +88,8 @@ export default function MyPage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!currentUser) return;
     setError(null);
     setSaving(true);
@@ -117,6 +118,7 @@ export default function MyPage() {
         title: t('userSettingsDialog.settingsSaved'),
         data: { type: 'success' },
       });
+      setLocation('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     } finally {
@@ -208,78 +210,82 @@ export default function MyPage() {
 
         {/* Settings section */}
         <h2 className="font-semibold mt-4">{t('userSettingsDialog.title')}</h2>
-        <Card border shadow="sm" padding="lg" className="space-y-4">
-          {error && <Alert variant="error">{error}</Alert>}
-          <div>
-            <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
-            <div className="flex items-center gap-4">
-              <div className="shrink-0">
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
-                ) : (
-                  <UserAvatar user={currentUser} size={80} />
-                )}
-              </div>
-              <div className="flex-1">
-                <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
+        <Card border shadow="sm" padding="lg">
+          <form onSubmit={handleSave} className="space-y-4">
+            {error && <Alert variant="error">{error}</Alert>}
+            <div>
+              <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
+              <div className="flex items-center gap-4">
+                <div className="shrink-0">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
+                  ) : (
+                    <UserAvatar user={currentUser} size={80} />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
+                </div>
               </div>
             </div>
-          </div>
-          <div>
-            <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
-            <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('userSettingsDialog.namePlaceholder')} />
-          </div>
-          <div>
-            <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('userSettingsDialog.emailPlaceholder')} />
-          </div>
-          <div>
-            <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
-          </div>
-          <div>
-            <FormLabel>{t('userSettingsDialog.birthday')}</FormLabel>
-            <div className="flex gap-2">
-              <Select value={birthdayDay} onChange={(v) => setBirthdayDay(v || '')} options={dayOptions} className="flex-1" />
-              <Select value={birthdayMonth} onChange={(v) => setBirthdayMonth(v || '')} options={monthOptions} className="flex-1" />
-              <Select value={birthdayYear} onChange={(v) => setBirthdayYear(v || '')} options={yearOptions} className="flex-1" />
+            <div>
+              <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
+              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('userSettingsDialog.namePlaceholder')} />
             </div>
-          </div>
-          <div>
-            <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-            <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
-          </div>
-          <div>
-            <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
-            <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
-          </div>
-          <div>
-            <FormLabel>{t('chats.background')}</FormLabel>
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="outline"
-                isSelected={background === ''}
-                onClick={() => setBackground('')}
-                className="aspect-square center p-1!"
-              >
-                <span className="text-xs text-light">None</span>
-              </Button>
-              {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+            <div>
+              <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('userSettingsDialog.emailPlaceholder')} />
+            </div>
+            <div>
+              <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
+            </div>
+            <div>
+              <FormLabel>{t('userSettingsDialog.birthday')}</FormLabel>
+              <div className="flex gap-2">
+                <Select value={birthdayDay} onChange={(v) => setBirthdayDay(v || '')} options={dayOptions} className="flex-1" />
+                <Select value={birthdayMonth} onChange={(v) => setBirthdayMonth(v || '')} options={monthOptions} className="flex-1" />
+                <Select value={birthdayYear} onChange={(v) => setBirthdayYear(v || '')} options={yearOptions} className="flex-1" />
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
+              <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+            </div>
+            <div>
+              <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
+              <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
+            </div>
+            <div>
+              <FormLabel>{t('chats.background')}</FormLabel>
+              <div className="grid grid-cols-3 gap-2">
                 <Button
-                  key={bg}
+                  type="button"
                   variant="outline"
-                  isSelected={background === bg}
-                  onClick={() => setBackground(bg)}
+                  isSelected={background === ''}
+                  onClick={() => setBackground('')}
                   className="aspect-square center p-1!"
                 >
-                  <div className={`w-full h-full bg-preview-${bg}`} />
+                  <span className="text-xs text-light">None</span>
                 </Button>
-              ))}
+                {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+                  <Button
+                    key={bg}
+                    type="button"
+                    variant="outline"
+                    isSelected={background === bg}
+                    onClick={() => setBackground(bg)}
+                    className="aspect-square center p-1!"
+                  >
+                    <div className={`w-full h-full bg-preview-${bg}`} />
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
-          <Button variant="primary" onClick={handleSave} disabled={saving} className="w-full center">
-            {saving ? t('common.loading') : t('common.save')}
-          </Button>
+            <Button type="submit" variant="primary" disabled={saving} className="w-full center">
+              {saving ? t('common.loading') : t('common.save')}
+            </Button>
+          </form>
         </Card>
       </div>
     </ScrollArea>
