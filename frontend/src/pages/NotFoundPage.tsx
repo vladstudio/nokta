@@ -12,8 +12,8 @@ function NotFoundPage() {
         <p className="text-lg">
           {t('notFound.message', 'Page not found')}
         </p>
-        <Link href="/my" className="inline-block px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors">
-          {t('notFound.goHome', 'Go to My Spaces')}
+        <Link href="/" className="link">
+          {t('notFound.goHome', 'Go Home')}
         </Link>
       </div>
     </div>

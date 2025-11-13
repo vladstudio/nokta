@@ -90,9 +90,15 @@ h3, h4 {
 }
 
 /* A elements that don't have a class get default styles */
-a:not([class]) {
+a:not([class]), .link {
+  text-decoration: underline;
   text-decoration-skip-ink: auto;
+  text-underline-offset: 0.15em;
+  text-decoration-color: var(--color-border-medium);
   color: currentColor;
+}
+a:not([class]):hover, .link:hover {
+  text-decoration-color: var(--color-accent-500);
 }
 
 
