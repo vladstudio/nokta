@@ -47,14 +47,16 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
 
       {/* Actions */}
       <div className="flex flex-col gap-2 border-t pt-4 border-(--color-border-default)">
-        <Button
-          variant="default"
-          onClick={() => setLeaveDialogOpen(true)}
-          className="w-full flex items-center gap-2 justify-start"
-        >
-          <SignOutIcon size={20} />
-          {t('chats.leaveChat')}
-        </Button>
+        {chat.participants.length > 1 && (
+          <Button
+            variant="default"
+            onClick={() => setLeaveDialogOpen(true)}
+            className="w-full flex items-center gap-2 justify-start"
+          >
+            <SignOutIcon size={20} />
+            {t('chats.leaveChat')}
+          </Button>
+        )}
         <Button
           variant="default"
           onClick={() => setDeleteDialogOpen(true)}

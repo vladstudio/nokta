@@ -39,20 +39,22 @@ const ChatListItem = memo(({ chat, isSelected, unreadCount, onSelectChat, getCha
       isSelected={isSelected}
       className="w-full p-2! text-left flex items-center gap-2"
     >
-      <div className="relative shrink-0">
-        {chat.participants.length === 2 ? (
-          <UserAvatar user={getOtherParticipant(chat)} size={40} />
-        ) : (
-          <ChatAvatar chat={chat} size={40} />
-        )}
-        {getOnlineStatus(chat) !== null && (
-          <OnlineIndicator
-            isOnline={getOnlineStatus(chat)!}
-            className="absolute! bottom-0 right-0"
-            title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
-          />
-        )}
-      </div>
+      {chat.participants.length > 1 && (
+        <div className="relative shrink-0">
+          {chat.participants.length === 2 ? (
+            <UserAvatar user={getOtherParticipant(chat)} size={40} />
+          ) : (
+            <ChatAvatar chat={chat} size={40} />
+          )}
+          {getOnlineStatus(chat) !== null && (
+            <OnlineIndicator
+              isOnline={getOnlineStatus(chat)!}
+              className="absolute! bottom-0 right-0"
+              title={getOnlineStatus(chat) ? t('presence.online') : t('presence.offline')}
+            />
+          )}
+        </div>
+      )}
       <div className="flex-1 grid min-w-0">
         <div className={`text-sm truncate ${hasUnread ? 'font-semibold text-(--color-text-primary)' : 'font-medium text-(--color-text-primary)'}`}>
           {getChatName(chat)}

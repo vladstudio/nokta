@@ -99,7 +99,7 @@ export default function ChatHeader({
         >
           <MagnifyingGlassIcon size={20} className="text-accent" />
         </Button>
-        {isVideoCallsEnabled && (
+        {isVideoCallsEnabled && chat && chat.participants.length > 1 && (
           <Button
             onClick={onStartCall}
             variant="ghost"

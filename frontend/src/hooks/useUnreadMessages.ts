@@ -54,6 +54,7 @@ export function useUnreadMessages(
 
         await Promise.all(
           chats.map(async (chat) => {
+            if (chat.participants.length === 1) return;
             const lastReadAt = readStatusMap.get(chat.id);
 
             if (lastReadAt) {
@@ -101,6 +102,10 @@ export function useUnreadMessages(
         if (message.sender === userId) {
           return;
         }
+
+        // Don't increment unread for chat with self
+        const chat = chatsRef.current.find(c => c.id === message.chat);
+        if (chat?.participants.length === 1) return;
 
         // Don't increment/notify if user is actively viewing this chat
         const isViewingChat = message.chat === currentChatIdRef.current;

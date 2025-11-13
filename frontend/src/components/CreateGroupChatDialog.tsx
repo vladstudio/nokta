@@ -36,10 +36,13 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
   );
 
   const handleCreate = async () => {
-    if (selectedUsers.length === 0 || !auth.user?.id) return;
+    if (!auth.user?.id) return;
+    const isChatWithSelf = selectedUsers.length === 0;
+    if (isChatWithSelf && !chatName.trim()) return;
     setCreating(true);
     try {
-      const chat = await chats.create(spaceId, [...selectedUsers, auth.user.id], chatName.trim() || undefined);
+      const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
+      const chat = await chats.create(spaceId, participants, chatName.trim() || undefined);
       onOpenChange(false);
       onChatCreated?.(chat.id);
     } catch (error) {
@@ -62,7 +65,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
       footer={
         <>
           <Button variant="default" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-          <Button variant="primary" onClick={handleCreate} disabled={creating || selectedUsers.length === 0}>
+          <Button variant="primary" onClick={handleCreate} disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
             {creating ? t('common.creating') : t('common.create')}
           </Button>
         </>
