@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
 import { Button, useToastManager } from '../ui';
 import VideoPlayer from './VideoPlayer';
+import { PlayIcon, PauseIcon } from '@phosphor-icons/react';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -30,6 +31,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   const toastManager = useToastManager();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
   const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
+  const [isPlayingVoice, setIsPlayingVoice] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!message.reactions) return;
@@ -123,11 +126,52 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     );
   };
 
+  const renderVoiceMessage = () => {
+    if (!message.file) return null;
+
+    const voiceUrl = messagesAPI.getFileURL(message);
+    const duration = message.content || '0:00';
+
+    const togglePlayback = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!audioRef.current) return;
+
+      if (isPlayingVoice) {
+        audioRef.current.pause();
+        setIsPlayingVoice(false);
+      } else {
+        audioRef.current.play().catch((error) => {
+          console.error('Failed to play voice message:', error);
+          setIsPlayingVoice(false);
+        });
+        setIsPlayingVoice(true);
+      }
+    };
+
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={togglePlayback}
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-(--color-bg-hover) hover:bg-(--color-bg-active) transition-colors"
+        >
+          {isPlayingVoice ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+        </button>
+        <span className="text-sm">{duration}</span>
+        <audio
+          ref={audioRef}
+          src={voiceUrl}
+          onEnded={() => setIsPlayingVoice(false)}
+          className="hidden"
+        />
+      </div>
+    );
+  };
+
   const renderContent = () => {
-    if (message.isPending && (message.type === 'image' || message.type === 'file' || message.type === 'video')) {
+    if (message.isPending && (message.type === 'image' || message.type === 'file' || message.type === 'video' || message.type === 'voice')) {
       return renderUploadingState();
     }
-    if (message.isFailed && (message.type === 'image' || message.type === 'file' || message.type === 'video')) {
+    if (message.isFailed && (message.type === 'image' || message.type === 'file' || message.type === 'video' || message.type === 'voice')) {
       return renderFailedState();
     }
     if (message.type === 'text') {
@@ -138,6 +182,9 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     }
     if (message.type === 'video' && message.file) {
       return renderVideoMessage();
+    }
+    if (message.type === 'voice' && message.file) {
+      return renderVoiceMessage();
     }
     if (message.type === 'file' && message.file) {
       return renderFileMessage();
@@ -190,9 +237,29 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           {message.reactions && Object.keys(message.reactions).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {Object.entries(message.reactions).map(([emoji, userIds]) => (
-                <Button key={emoji} variant="ghost" size="icon" isSelected={userIds.includes(currentUserId)} disabled={isOwn} onClick={(e) => { e.stopPropagation(); onReactionClick?.(emoji); }} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs">
+                <Button
+                  key={emoji}
+                  variant="ghost"
+                  size="icon"
+                  isSelected={userIds.includes(currentUserId)}
+                  disabled={isOwn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReactionClick?.(emoji);
+                  }}
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs"
+                >
                   <span className="text-base">{emoji}</span>
-                  <div className="flex -space-x-1">{userIds.slice(0, 4).map(uid => <UserAvatar key={uid} user={reactionUsers[uid]} size={16} className="border rounded-full! border-white" />)}</div>
+                  <div className="flex -space-x-1">
+                    {userIds.slice(0, 4).map(uid => (
+                      <UserAvatar
+                        key={uid}
+                        user={reactionUsers[uid]}
+                        size={16}
+                        className="border rounded-full! border-white"
+                      />
+                    ))}
+                  </div>
                   {userIds.length > 4 && <span className="text-light ml-0.5">+{userIds.length - 4}</span>}
                 </Button>
               ))}

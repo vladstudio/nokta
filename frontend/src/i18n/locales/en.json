@@ -18,7 +18,11 @@
     "processing": "Processing...",
     "noConnection": "No connection",
     "info": "Info",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "rerecord": "Re-record"
   },
   "sidebar": {
     "mySpaces": "My Spaces",
@@ -44,6 +48,7 @@
   "addActions": {
     "image": "Image",
     "video": "Video",
+    "voice": "Voice",
     "file": "File"
   },
   "imageCrop": {
@@ -207,7 +212,12 @@
     "couldNotDeleteMessage": "Could not delete message. Please try again.",
     "copyFailed": "Copy failed",
     "couldNotCopyToClipboard": "Could not copy to clipboard",
-    "videoError": "Video playback error"
+    "videoError": "Video playback error",
+    "voiceMessage": "Voice Message",
+    "micAccessDenied": "Microphone access denied",
+    "recordingFailed": "Recording failed",
+    "voiceRecorded": "Voice recorded",
+    "cannotRecordOffline": "Cannot record voice messages while offline"
   },
   "presence": {
     "online": "Online",

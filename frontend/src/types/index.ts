@@ -57,7 +57,7 @@ export interface Message {
   id: string;
   chat: string;
   sender: string | null;
-  type: 'text' | 'image' | 'file' | 'video';
+  type: 'text' | 'image' | 'file' | 'video' | 'voice';
   content: string;
   file?: string;
   reactions?: Record<string, string[]>;

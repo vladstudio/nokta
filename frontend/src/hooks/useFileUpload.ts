@@ -1,10 +1,13 @@
 import { useState, useRef } from 'react';
 import { messages as messagesAPI } from '../services/pocketbase';
 
+// Store duration for voice messages
+const voiceDurations = new Map<string, string>();
+
 export interface UploadingFile {
   tempId: string;
   chatId: string;
-  type: 'image' | 'file' | 'video';
+  type: 'image' | 'file' | 'video' | 'voice';
   file: File;
   progress: number;
   status: 'uploading' | 'failed';
@@ -16,7 +19,7 @@ export interface UseFileUploadReturn {
   fileInputType: 'image' | 'file';
   handleFileSelect: (type: 'image' | 'file') => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  uploadFiles: (files: File[], type: 'image' | 'file' | 'video') => Promise<void>;
+  uploadFiles: (files: File[], type: 'image' | 'file' | 'video' | 'voice', duration?: string) => Promise<void>;
   handleCancelUpload: (tempId: string) => void;
   handleRetryUpload: (tempId: string) => void;
 }
@@ -54,7 +57,8 @@ export function useFileUpload(
     }, 100);
 
     try {
-      await messagesAPI.createWithFile(chatId, upload.type, upload.file);
+      const caption = upload.type === 'voice' ? voiceDurations.get(upload.tempId) : undefined;
+      await messagesAPI.createWithFile(chatId, upload.type, upload.file, caption);
 
       clearInterval(progressInterval);
       setUploadingFiles(prev =>
@@ -64,6 +68,7 @@ export function useFileUpload(
       setTimeout(() => {
         setUploadingFiles(prev => prev.filter(u => u.tempId !== upload.tempId));
         uploadAbortControllers.current.delete(upload.tempId);
+        if (upload.type === 'voice') voiceDurations.delete(upload.tempId);
       }, 500);
     } catch (err) {
       clearInterval(progressInterval);
@@ -74,6 +79,8 @@ export function useFileUpload(
         )
       );
       uploadAbortControllers.current.delete(upload.tempId);
+      // Cleanup voice duration on failure to prevent memory leak
+      if (upload.type === 'voice') voiceDurations.delete(upload.tempId);
     }
   };
 
@@ -117,6 +124,8 @@ export function useFileUpload(
     uploadAbortControllers.current.get(tempId)?.abort();
     setUploadingFiles(prev => prev.filter(u => u.tempId !== tempId));
     uploadAbortControllers.current.delete(tempId);
+    // Cleanup voice duration on cancel to prevent memory leak
+    voiceDurations.delete(tempId);
   };
 
   const handleRetryUpload = (tempId: string) => {
@@ -132,7 +141,7 @@ export function useFileUpload(
     uploadFile(upload);
   };
 
-  const uploadFiles = async (files: File[], type: 'image' | 'file' | 'video') => {
+  const uploadFiles = async (files: File[], type: 'image' | 'file' | 'video' | 'voice', duration?: string) => {
     if (files.length === 0) return;
 
     if (!isOnline) {
@@ -159,6 +168,11 @@ export function useFileUpload(
       progress: 0,
       status: 'uploading' as const,
     }));
+
+    // Store duration for voice messages using tempId as key
+    if (type === 'voice' && duration) {
+      uploads.forEach(upload => voiceDurations.set(upload.tempId, duration));
+    }
 
     setUploadingFiles(prev => [...prev, ...uploads]);
     uploads.forEach(upload => uploadFile(upload));

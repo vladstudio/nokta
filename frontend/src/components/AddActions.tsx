@@ -1,15 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui';
-import { FileIcon, ImageIcon, VideoIcon, XIcon } from "@phosphor-icons/react";
+import { FileIcon, ImageIcon, VideoIcon, XIcon, MicrophoneIcon } from "@phosphor-icons/react";
 
 interface AddActionsProps {
   onCancel: () => void;
   onImageSelect: () => void;
   onVideoSelect: () => void;
   onFileSelect: () => void;
+  onVoiceSelect: () => void;
 }
 
-export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onFileSelect }: AddActionsProps) {
+export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onFileSelect, onVoiceSelect }: AddActionsProps) {
   const { t } = useTranslation();
 
   return (
@@ -25,6 +26,10 @@ export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onF
       <Button variant="ghost" onClick={onVideoSelect}>
         <VideoIcon size={20} className="text-accent" />
         {t('addActions.video')}
+      </Button>
+      <Button variant="ghost" onClick={onVoiceSelect}>
+        <MicrophoneIcon size={20} className="text-accent" />
+        {t('addActions.voice')}
       </Button>
       <Button variant="ghost" onClick={onFileSelect}>
         <FileIcon size={20} className="text-accent" />

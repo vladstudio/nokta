@@ -12,7 +12,7 @@
         "clsx": "^2.1.1",
         "i18next": "^25.6.1",
         "jotai": "^2.15.1",
-        "mediabunny": "^1.24.5",
+        "mediabunny": "^1.24.6",
         "pocketbase": "^0.26.3",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
@@ -355,7 +355,7 @@
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
-    "mediabunny": ["mediabunny@1.24.5", "", { "dependencies": { "@types/dom-mediacapture-transform": "^0.1.11", "@types/dom-webcodecs": "0.1.13" } }, "sha512-4Sd5x8WXQiuDKZcJDAiQjyD0Lg/cg9p+dBShCM02F1pMvKdB9R6+WHZ9NFCFSqViVPX2fYSu95ZIpBUg9+TwTQ=="],
+    "mediabunny": ["mediabunny@1.24.6", "", { "dependencies": { "@types/dom-mediacapture-transform": "^0.1.11", "@types/dom-webcodecs": "0.1.13" } }, "sha512-GODsNvKeig2Zhj2NCABBskVgJS1IMltP0uX/I0ltFksPCHpshreZhJEMwc903YbgdsW3RT7e6uvLX6UtlmeIkQ=="],
 
     "mitt": ["mitt@3.0.1", "", {}, "sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw=="],
 

@@ -18,6 +18,7 @@ import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
 import ImageCropDialog from './ImageCropDialog';
 import VideoCompressionDialog from './VideoCompressionDialog';
+import VoiceRecorder from './VoiceRecorder';
 import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
@@ -133,6 +134,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [isCreatingCall, setIsCreatingCall] = useState(false);
   const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
   const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
+  const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -224,6 +226,21 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const handleVideoCompressionComplete = (compressedFile: File, _metadata: VideoMetadata) => {
     uploadFiles([compressedFile], 'video');
     setVideoCompressionDialogFile(null);
+  };
+
+  const handleVoiceSelect = () => {
+    if (!isOnline) {
+      toastManager.add({ title: t('common.noConnection'), description: t('messages.cannotRecordOffline'), data: { type: 'error' } });
+      return;
+    }
+    setVoiceRecorderOpen(true);
+    setShowAddActions(false);
+  };
+
+  const handleVoiceSend = (blob: Blob, duration: number) => {
+    const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
+    const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+    uploadFiles([file], 'voice', durationStr);
   };
 
   // Load chat data
@@ -618,6 +635,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
           handleFileSelect('file');
           setShowAddActions(false);
         }}
+        onVoiceSelect={handleVoiceSelect}
         onShowAddActions={() => setShowAddActions(true)}
         onCancelMessageSelection={() => setSelectedMessageId(null)}
         onPasteImage={setCropDialogFile}
@@ -687,6 +705,13 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
           onComplete={handleVideoCompressionComplete}
         />
       )}
+
+      {/* Voice Recorder Dialog */}
+      <VoiceRecorder
+        open={voiceRecorderOpen}
+        onOpenChange={setVoiceRecorderOpen}
+        onSend={handleVoiceSend}
+      />
     </div>
   );
 }

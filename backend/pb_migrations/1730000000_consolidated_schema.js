@@ -249,7 +249,7 @@ migrate((app) => {
     type: "select",
     required: true,
     maxSelect: 1,
-    values: ["text", "image", "file", "video"]
+    values: ["text", "image", "file", "video", "voice"]
   }))
 
   messages.fields.addAt(3, new Field({

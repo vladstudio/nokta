@@ -18,7 +18,11 @@
     "processing": "Обработка...",
     "noConnection": "Нет соединения",
     "info": "Инфо",
-    "comingSoon": "Скоро будет"
+    "comingSoon": "Скоро будет",
+    "pause": "Пауза",
+    "resume": "Продолжить",
+    "stop": "Стоп",
+    "rerecord": "Перезаписать"
   },
   "sidebar": {
     "mySpaces": "Мои пространства",
@@ -44,6 +48,7 @@
   "addActions": {
     "image": "Изображение",
     "video": "Видео",
+    "voice": "Голос",
     "file": "Файл"
   },
   "imageCrop": {
@@ -207,7 +212,12 @@
     "couldNotDeleteMessage": "Не удалось удалить сообщение. Попробуйте снова.",
     "copyFailed": "Не удалось скопировать",
     "couldNotCopyToClipboard": "Не удалось скопировать в буфер обмена",
-    "videoError": "Ошибка воспроизведения видео"
+    "videoError": "Ошибка воспроизведения видео",
+    "voiceMessage": "Голосовое сообщение",
+    "micAccessDenied": "Доступ к микрофону запрещен",
+    "recordingFailed": "Ошибка записи",
+    "voiceRecorded": "Голос записан",
+    "cannotRecordOffline": "Невозможно записать голосовое сообщение без подключения к сети"
   },
   "presence": {
     "online": "В сети",
