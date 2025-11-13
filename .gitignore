@@ -19,7 +19,9 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
+# AI
 CLAUDE.md
+.claude/*
 
 # Editor directories and files
 .vscode/*
