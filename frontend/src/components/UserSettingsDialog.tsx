@@ -118,10 +118,10 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       description={t('userSettingsDialog.description')}
       footer={
         <>
-          <Button variant="default" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)} disabled={saving}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" type="submit" form="user-settings-form" disabled={saving}>
+          <Button variant="primary" className="flex-1 center" type="submit" form="user-settings-form" disabled={saving}>
             {saving ? t('common.loading') : t('common.save')}
           </Button>
         </>
@@ -151,29 +151,29 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         </div>
 
         <div>
-          <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
+          <FormLabel htmlFor="name">{t('common.name')}</FormLabel>
           <Input
             id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t('userSettingsDialog.namePlaceholder')}
+            placeholder={t('common.name')}
           />
         </div>
 
         <div>
-          <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
+          <FormLabel htmlFor="email">{t('common.email')}</FormLabel>
           <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('userSettingsDialog.emailPlaceholder')}
+            placeholder={t('common.email')}
           />
         </div>
 
         <div>
-          <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
+          <FormLabel htmlFor="password">{t('common.password')}</FormLabel>
           <Input
             id="password"
             type="password"

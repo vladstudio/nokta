@@ -70,7 +70,7 @@ export default function CallView({ show, chat }: CallViewProps) {
       <div className={show ? 'flex items-center justify-center h-full bg-black text-white' : 'hidden'}>
         <div className="text-center">
           <p className="text-xl mb-2">{t('calls.callRoomNotAvailable')}</p>
-          <p className="text-sm text-light">{t('calls.tryStartingCallAgain')}</p>
+          <p className="text-sm text-light">{t('errors.pleaseTryAgain')}</p>
         </div>
       </div>
     );
@@ -135,7 +135,7 @@ export default function CallView({ show, chat }: CallViewProps) {
               <div className="mb-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto" />
               </div>
-              <p className="text-lg">{t('calls.joiningCall')}</p>
+              <p className="text-lg">{t('calls.joining')}</p>
             </div>
           </div>
         )}
@@ -150,7 +150,7 @@ export default function CallView({ show, chat }: CallViewProps) {
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-(--color-bg-primary) text-black rounded hover:bg-(--color-bg-active)"
               >
-                {t('calls.reloadAndTryAgain')}
+                {t('common.tryAgain')}
               </button>
             </div>
           </div>

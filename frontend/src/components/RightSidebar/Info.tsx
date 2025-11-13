@@ -105,10 +105,10 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
         />
         {isEditing && (
           <div className="flex gap-2">
-            <Button type="button" variant="default" onClick={handleCancel} className="flex-1" disabled={isSaving}>
+            <Button type="button" variant="outline" className="flex-1 center" onClick={handleCancel} disabled={isSaving}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" variant="primary" className="flex-1" disabled={isSaving}>
+            <Button type="submit" variant="primary" className="flex-1 center" disabled={isSaving}>
               {isSaving ? t('common.saving') : t('common.save')}
             </Button>
           </div>
@@ -161,10 +161,10 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
         description={t('chats.confirmDeleteForAll')}
         footer={
           <>
-            <Button variant="default" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" className="flex-1 center" onClick={() => setDeleteDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={() => { setDeleteDialogOpen(false); onDeleteChat(); }}>
+            <Button variant="primary" className="flex-1 center" onClick={() => { setDeleteDialogOpen(false); onDeleteChat(); }}>
               {t('common.delete')}
             </Button>
           </>
@@ -181,10 +181,10 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
         description={t('chats.confirmLeave')}
         footer={
           <>
-            <Button variant="default" onClick={() => setLeaveDialogOpen(false)}>
+            <Button variant="outline" className="flex-1 center" onClick={() => setLeaveDialogOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={() => { setLeaveDialogOpen(false); onLeaveChat(); }}>
+            <Button variant="primary" className="flex-1 center" onClick={() => { setLeaveDialogOpen(false); onLeaveChat(); }}>
               {t('common.leave')}
             </Button>
           </>

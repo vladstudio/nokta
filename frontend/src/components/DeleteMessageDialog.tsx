@@ -30,10 +30,10 @@ export default function DeleteMessageDialog({
       description={t('deleteMessageDialog.description')}
       footer={
         <>
-          <Button variant="default" onClick={handleCancel}>
+          <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" onClick={handleDelete}>
+          <Button variant="primary" className="flex-1 center" onClick={handleDelete}>
             {t('common.delete')}
           </Button>
         </>

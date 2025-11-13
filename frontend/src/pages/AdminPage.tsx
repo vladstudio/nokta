@@ -295,10 +295,10 @@ export default function AdminPage() {
           title={editingSpace ? 'Edit Space' : 'Add Space'}
           footer={
             <>
-              <Button variant="default" onClick={() => setShowSpaceDialog(false)}>
+              <Button variant="outline" className="flex-1 center" onClick={() => setShowSpaceDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" type="submit" form="space-form">
+              <Button variant="primary" className="flex-1 center" type="submit" form="space-form">
                 Save
               </Button>
             </>
@@ -315,10 +315,10 @@ export default function AdminPage() {
           title={editingUser ? 'Edit User' : 'Add User'}
           footer={
             <>
-              <Button variant="default" onClick={() => setShowUserDialog(false)}>
+              <Button variant="outline" className="flex-1 center" onClick={() => setShowUserDialog(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" type="submit" form="user-form">
+              <Button variant="primary" className="flex-1 center" type="submit" form="user-form">
                 Save
               </Button>
             </>
@@ -374,10 +374,10 @@ export default function AdminPage() {
           title="Confirm Delete"
           footer={
             <>
-              <Button variant="default" onClick={() => setConfirmDelete(null)}>
+              <Button variant="outline" className="flex-1 center" onClick={() => setConfirmDelete(null)}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember}>
+              <Button variant="primary" className="flex-1 center" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember}>
                 Delete
               </Button>
             </>

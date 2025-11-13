@@ -3,7 +3,6 @@
     "loading": "Loading...",
     "cancel": "Cancel",
     "save": "Save",
-    "saving": "Saving...",
     "delete": "Delete",
     "send": "Send",
     "you": "You",
@@ -13,7 +12,6 @@
     "copy": "Copy",
     "edit": "Edit",
     "create": "Create",
-    "creating": "Creating...",
     "leave": "Leave",
     "add": "Add",
     "processing": "Processing...",
@@ -23,7 +21,11 @@
     "pause": "Pause",
     "resume": "Resume",
     "stop": "Stop",
-    "rerecord": "Re-record"
+    "rerecord": "Re-record",
+    "tryAgain": "Try Again",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name"
   },
   "sidebar": {
     "mySpaces": "My Spaces",
@@ -32,7 +34,6 @@
     "selectSpace": "Select space"
   },
   "chatWindow": {
-    "loadingMessages": "Loading messages...",
     "noMessages": "No messages yet. Start the conversation!",
     "isTyping": "is typing...",
     "areTyping": "are typing...",
@@ -71,10 +72,8 @@
     "qualityVHQ": "Very High",
     "estimatedSize": "est.",
     "compressing": "Compressing",
-    "loadingVideo": "Loading video...",
     "compressionFailed": "Compression failed",
-    "formatNotSupported": "This video format is not supported",
-    "tryAgain": "Try Again"
+    "formatNotSupported": "Video format not supported"
   },
   "videoUpload": {
     "invalidType": "Invalid file type",
@@ -100,11 +99,8 @@
   },
   "userSettingsDialog": {
     "title": "My Settings",
-    "description": "Update your profile information",
+    "description": "Update your profile",
     "avatar": "Avatar",
-    "name": "Name",
-    "email": "Email",
-    "password": "Password",
     "birthday": "Birthday",
     "day": "Day",
     "month": "Month",
@@ -112,11 +108,7 @@
     "language": "Language",
     "theme": "Theme",
     "leaveBlankPassword": "Leave blank to keep current",
-    "namePlaceholder": "Enter your name",
-    "emailPlaceholder": "Enter your email",
-    "passwordPlaceholder": "Enter new password",
-    "settingsSaved": "Settings saved",
-    "settingsSavedDesc": "Your profile has been updated successfully"
+    "settingsSaved": "Settings saved"
   },
   "chatList": {
     "directMessage": "Direct Message",
@@ -125,9 +117,9 @@
   },
   "chats": {
     "createChat": "Create Chat",
-    "selectMembers": "Select members to add to the chat",
+    "selectMembers": "Select members",
     "groupName": "Chat Name (Optional)",
-    "groupNamePlaceholder": "Enter chat name...",
+    "groupNamePlaceholder": "Enter name...",
     "participants": "Participants",
     "background": "Background",
     "leaveGroup": "Leave Chat",
@@ -135,25 +127,21 @@
     "deleteChat": "Delete Chat",
     "renameChat": "Rename Chat",
     "chatName": "Chat Name",
-    "chatNameRequired": "Chat name cannot be empty",
-    "failedToRename": "Failed to rename chat",
-    "confirmLeave": "Are you sure you want to leave this chat?",
-    "confirmDelete": "Are you sure you want to delete this chat? This action cannot be undone.",
-    "confirmDeleteForAll": "This will delete the chat for ALL participants. This action cannot be undone.",
+    "chatNameRequired": "Name required",
+    "failedToRename": "Failed to rename",
+    "confirmLeave": "Leave this chat?",
+    "confirmDelete": "Delete this chat? Cannot be undone.",
+    "confirmDeleteForAll": "Delete for ALL participants? Cannot be undone.",
     "chatDeleted": "Chat deleted",
-    "failedToDelete": "Failed to delete chat",
-    "leftChat": "You left the chat",
-    "failedToLeave": "Failed to leave chat",
-    "failedToCreate": "Failed to create chat",
-    "couldNotCreateChat": "Could not create chat. Please try again."
+    "failedToDelete": "Failed to delete",
+    "leftChat": "Left chat",
+    "failedToLeave": "Failed to leave",
+    "failedToCreate": "Failed to create"
   },
   "connectionBanner": {
     "offline": "You are offline. Messages will be sent when connection is restored."
   },
   "loginPage": {
-    "emailAddress": "Email address",
-    "password": "Password",
-    "pleaseWait": "Please wait...",
     "signIn": "Sign in"
   },
   "mySpacesPage": {
@@ -189,40 +177,32 @@
   },
   "calls": {
     "general": "General",
-    "activeCallInProgress": "Active call in progress",
+    "activeCallInProgress": "Call in progress",
     "activeCall": "Active Call",
     "inCall": "In Call",
     "joining": "Joining...",
-    "joinCall": "Join Call",
-    "failedToJoinCall": "Failed to join call",
-    "couldNotJoinCall": "Could not join the call. Please try again.",
-    "failedToStartCall": "Failed to start call",
-    "couldNotStartCall": "Could not start the call. Please try again.",
+    "joinCall": "Join",
+    "failedToJoinCall": "Failed to join",
+    "failedToStartCall": "Failed to start",
     "leaveCurrentCallFirst": "Leave current call first",
-    "startACall": "Start a call",
+    "startACall": "Start call",
     "starting": "Starting...",
     "call": "Call",
-    "callRoomNotAvailable": "Call room not available",
-    "tryStartingCallAgain": "Please try starting the call again",
-    "joiningCall": "Joining call...",
-    "reloadAndTryAgain": "Reload and try again"
+    "callRoomNotAvailable": "Call unavailable"
   },
   "messages": {
-    "selectChatToStart": "Select a chat to start messaging",
-    "messageUpdatedSuccess": "Your message has been updated successfully",
-    "failedToUpdateMessage": "Failed to update message",
-    "couldNotUpdateMessage": "Could not update message. Please try again.",
-    "messageDeletedSuccess": "Your message has been deleted successfully",
-    "failedToDeleteMessage": "Failed to delete message",
-    "couldNotDeleteMessage": "Could not delete message. Please try again.",
+    "selectChatToStart": "Select a chat",
+    "messageUpdatedSuccess": "Message updated",
+    "failedToUpdateMessage": "Failed to update",
+    "messageDeletedSuccess": "Message deleted",
+    "failedToDeleteMessage": "Failed to delete",
     "copyFailed": "Copy failed",
-    "couldNotCopyToClipboard": "Could not copy to clipboard",
-    "videoError": "Video playback error",
+    "videoError": "Video error",
     "voiceMessage": "Voice Message",
-    "micAccessDenied": "Microphone access denied",
+    "micAccessDenied": "Mic access denied",
     "recordingFailed": "Recording failed",
-    "voiceRecorded": "Voice recorded",
-    "cannotRecordOffline": "Cannot record voice messages while offline"
+    "voiceRecorded": "Recorded",
+    "cannotRecordOffline": "Cannot record offline"
   },
   "presence": {
     "online": "Online",
@@ -236,24 +216,25 @@
   },
   "errors": {
     "authenticationFailed": "Authentication failed",
-    "unexpectedError": "An unexpected error occurred",
-    "failedToUpdateSettings": "Failed to update settings",
-    "invalidInput": "Invalid input"
+    "unexpectedError": "Unexpected error",
+    "failedToUpdateSettings": "Failed to update",
+    "invalidInput": "Invalid input",
+    "pleaseTryAgain": "Please try again"
   },
   "app": {
     "logoAlt": "Talk"
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search messages...",
-    "label": "Search messages",
+    "placeholder": "Search...",
+    "label": "Search",
     "toggleSearch": "Toggle search",
-    "noResults": "No messages found",
-    "emptyState": "Enter a search query to find messages"
+    "noResults": "No results",
+    "emptyState": "Enter query"
   },
   "notFound": {
-    "message": "Page not found",
-    "description": "The page you are looking for does not exist.",
-    "goHome": "Go to My Spaces"
+    "message": "Not found",
+    "description": "Page does not exist",
+    "goHome": "My Spaces"
   }
 }

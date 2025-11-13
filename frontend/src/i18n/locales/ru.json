@@ -3,7 +3,6 @@
     "loading": "Загрузка...",
     "cancel": "Отмена",
     "save": "Сохранить",
-    "saving": "Сохранение...",
     "delete": "Удалить",
     "send": "Отправить",
     "you": "Вы",
@@ -13,7 +12,6 @@
     "copy": "Копировать",
     "edit": "Изменить",
     "create": "Создать",
-    "creating": "Создание...",
     "leave": "Выйти",
     "add": "Добавить",
     "processing": "Обработка...",
@@ -23,7 +21,11 @@
     "pause": "Пауза",
     "resume": "Продолжить",
     "stop": "Стоп",
-    "rerecord": "Перезаписать"
+    "rerecord": "Перезаписать",
+    "tryAgain": "Попробовать снова",
+    "email": "Email",
+    "password": "Пароль",
+    "name": "Имя"
   },
   "sidebar": {
     "mySpaces": "Мои пространства",
@@ -32,7 +34,6 @@
     "selectSpace": "Выберите пространство"
   },
   "chatWindow": {
-    "loadingMessages": "Загрузка сообщений...",
     "noMessages": "Пока нет сообщений. Начните разговор!",
     "isTyping": "печатает...",
     "areTyping": "печатают...",
@@ -71,10 +72,8 @@
     "qualityVHQ": "Очень высокое",
     "estimatedSize": "прибл.",
     "compressing": "Сжатие",
-    "loadingVideo": "Загрузка видео...",
     "compressionFailed": "Ошибка сжатия",
-    "formatNotSupported": "Этот формат видео не поддерживается",
-    "tryAgain": "Попробовать снова"
+    "formatNotSupported": "Формат не поддерживается"
   },
   "videoUpload": {
     "invalidType": "Неверный тип файла",
@@ -100,11 +99,8 @@
   },
   "userSettingsDialog": {
     "title": "Мои настройки",
-    "description": "Обновите информацию вашего профиля",
+    "description": "Обновите профиль",
     "avatar": "Аватар",
-    "name": "Имя",
-    "email": "Email",
-    "password": "Пароль",
     "birthday": "День рождения",
     "day": "День",
     "month": "Месяц",
@@ -112,11 +108,7 @@
     "language": "Язык",
     "theme": "Тема",
     "leaveBlankPassword": "Оставьте пустым, чтобы не менять",
-    "namePlaceholder": "Введите ваше имя",
-    "emailPlaceholder": "Введите ваш email",
-    "passwordPlaceholder": "Введите новый пароль",
-    "settingsSaved": "Настройки сохранены",
-    "settingsSavedDesc": "Ваш профиль успешно обновлен"
+    "settingsSaved": "Настройки сохранены"
   },
   "chatList": {
     "directMessage": "Личное сообщение",
@@ -125,9 +117,9 @@
   },
   "chats": {
     "createChat": "Создать чат",
-    "selectMembers": "Выберите участников для добавления в чат",
+    "selectMembers": "Выберите участников",
     "groupName": "Название чата (необязательно)",
-    "groupNamePlaceholder": "Введите название чата...",
+    "groupNamePlaceholder": "Введите название...",
     "participants": "Участники",
     "background": "Фон",
     "leaveGroup": "Покинуть чат",
@@ -135,25 +127,21 @@
     "deleteChat": "Удалить чат",
     "renameChat": "Переименовать чат",
     "chatName": "Название чата",
-    "chatNameRequired": "Название чата не может быть пустым",
-    "failedToRename": "Не удалось переименовать чат",
-    "confirmLeave": "Вы уверены, что хотите покинуть этот чат?",
-    "confirmDelete": "Вы уверены, что хотите удалить этот чат? Это действие нельзя отменить.",
-    "confirmDeleteForAll": "Это удалит чат для ВСЕХ участников. Это действие нельзя отменить.",
+    "chatNameRequired": "Требуется название",
+    "failedToRename": "Не удалось переименовать",
+    "confirmLeave": "Покинуть чат?",
+    "confirmDelete": "Удалить чат? Нельзя отменить.",
+    "confirmDeleteForAll": "Удалить для ВСЕХ? Нельзя отменить.",
     "chatDeleted": "Чат удален",
-    "failedToDelete": "Не удалось удалить чат",
-    "leftChat": "Вы покинули чат",
-    "failedToLeave": "Не удалось покинуть чат",
-    "failedToCreate": "Не удалось создать чат",
-    "couldNotCreateChat": "Не удалось создать чат. Пожалуйста, попробуйте еще раз."
+    "failedToDelete": "Не удалось удалить",
+    "leftChat": "Чат покинут",
+    "failedToLeave": "Не удалось покинуть",
+    "failedToCreate": "Не удалось создать"
   },
   "connectionBanner": {
     "offline": "Вы не в сети. Сообщения будут отправлены при восстановлении соединения."
   },
   "loginPage": {
-    "emailAddress": "Адрес электронной почты",
-    "password": "Пароль",
-    "pleaseWait": "Пожалуйста, подождите...",
     "signIn": "Войти"
   },
   "mySpacesPage": {
@@ -189,40 +177,32 @@
   },
   "calls": {
     "general": "Общий",
-    "activeCallInProgress": "Активный звонок",
+    "activeCallInProgress": "Идет звонок",
     "activeCall": "Активный звонок",
     "inCall": "В звонке",
     "joining": "Подключение...",
     "joinCall": "Присоединиться",
     "failedToJoinCall": "Не удалось присоединиться",
-    "couldNotJoinCall": "Не удалось присоединиться к звонку. Попробуйте снова.",
-    "failedToStartCall": "Не удалось начать звонок",
-    "couldNotStartCall": "Не удалось начать звонок. Попробуйте снова.",
+    "failedToStartCall": "Не удалось начать",
     "leaveCurrentCallFirst": "Сначала завершите текущий звонок",
     "startACall": "Начать звонок",
     "starting": "Запуск...",
     "call": "Звонок",
-    "callRoomNotAvailable": "Комната звонка недоступна",
-    "tryStartingCallAgain": "Попробуйте начать звонок снова",
-    "joiningCall": "Подключение к звонку...",
-    "reloadAndTryAgain": "Перезагрузите и попробуйте снова"
+    "callRoomNotAvailable": "Звонок недоступен"
   },
   "messages": {
-    "selectChatToStart": "Выберите чат, чтобы начать общение",
-    "messageUpdatedSuccess": "Ваше сообщение успешно обновлено",
-    "failedToUpdateMessage": "Не удалось обновить сообщение",
-    "couldNotUpdateMessage": "Не удалось обновить сообщение. Попробуйте снова.",
-    "messageDeletedSuccess": "Ваше сообщение успешно удалено",
-    "failedToDeleteMessage": "Не удалось удалить сообщение",
-    "couldNotDeleteMessage": "Не удалось удалить сообщение. Попробуйте снова.",
+    "selectChatToStart": "Выберите чат",
+    "messageUpdatedSuccess": "Сообщение обновлено",
+    "failedToUpdateMessage": "Не удалось обновить",
+    "messageDeletedSuccess": "Сообщение удалено",
+    "failedToDeleteMessage": "Не удалось удалить",
     "copyFailed": "Не удалось скопировать",
-    "couldNotCopyToClipboard": "Не удалось скопировать в буфер обмена",
-    "videoError": "Ошибка воспроизведения видео",
+    "videoError": "Ошибка видео",
     "voiceMessage": "Голосовое сообщение",
     "micAccessDenied": "Доступ к микрофону запрещен",
     "recordingFailed": "Ошибка записи",
-    "voiceRecorded": "Голос записан",
-    "cannotRecordOffline": "Невозможно записать голосовое сообщение без подключения к сети"
+    "voiceRecorded": "Записано",
+    "cannotRecordOffline": "Запись недоступна без сети"
   },
   "presence": {
     "online": "В сети",
@@ -236,24 +216,25 @@
   },
   "errors": {
     "authenticationFailed": "Ошибка аутентификации",
-    "unexpectedError": "Произошла непредвиденная ошибка",
-    "failedToUpdateSettings": "Не удалось обновить настройки",
-    "invalidInput": "Неверный ввод"
+    "unexpectedError": "Непредвиденная ошибка",
+    "failedToUpdateSettings": "Не удалось обновить",
+    "invalidInput": "Неверный ввод",
+    "pleaseTryAgain": "Пожалуйста, попробуйте снова"
   },
   "app": {
     "logoAlt": "Talk"
   },
   "search": {
     "title": "Поиск",
-    "placeholder": "Поиск сообщений...",
-    "label": "Поиск сообщений",
+    "placeholder": "Поиск...",
+    "label": "Поиск",
     "toggleSearch": "Показать/скрыть поиск",
-    "noResults": "Сообщения не найдены",
-    "emptyState": "Введите запрос для поиска сообщений"
+    "noResults": "Ничего не найдено",
+    "emptyState": "Введите запрос"
   },
   "notFound": {
-    "message": "Страница не найдена",
-    "description": "Страница, которую вы ищете, не существует.",
-    "goHome": "Перейти к моим пространствам"
+    "message": "Не найдено",
+    "description": "Страница не существует",
+    "goHome": "Мои пространства"
   }
 }

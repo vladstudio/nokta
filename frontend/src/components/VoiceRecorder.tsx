@@ -209,11 +209,11 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
       maxWidth="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={handleCancel}>
+          <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
             <XIcon size={20} />
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSend} disabled={!audioBlob}>
+          <Button variant="primary" className="flex-1 center" onClick={handleSend} disabled={!audioBlob}>
             <PaperPlaneRightIcon size={20} />
             {t('common.send')}
           </Button>
@@ -243,24 +243,25 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
           {(state === 'recording' || state === 'paused') && (
             <>
               <Button
-                variant="ghost"
+                variant="outline"
+                className="flex-1 center"
                 onClick={state === 'recording' ? pauseRecording : resumeRecording}
               >
                 {state === 'recording' ? <PauseIcon size={20} /> : <MicrophoneIcon size={20} />}
                 {state === 'recording' ? t('common.pause') : t('common.resume')}
               </Button>
-              <Button variant="primary" onClick={stopRecording}>
+              <Button variant="primary" className="flex-1 center" onClick={stopRecording}>
                 {t('common.stop')}
               </Button>
             </>
           )}
           {state === 'stopped' && (
             <>
-              <Button variant="ghost" onClick={togglePlayback}>
+              <Button variant="outline" className="flex-1 center" onClick={togglePlayback}>
                 {isPlaying ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
                 Play
               </Button>
-              <Button variant="ghost" onClick={rerecord}>
+              <Button variant="outline" className="flex-1 center" onClick={rerecord}>
                 <ArrowClockwiseIcon size={20} />
                 Re-record
               </Button>

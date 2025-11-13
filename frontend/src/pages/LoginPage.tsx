@@ -35,12 +35,12 @@ export default function LoginPage() {
         <img src="/favicon.svg" alt="Logo" className="w-20 h-20 m-8" />
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="sr-only">{t('loginPage.emailAddress')}</label>
-            <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('loginPage.emailAddress')} />
+            <label htmlFor="email" className="sr-only">{t('common.email')}</label>
+            <Input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('common.email')} />
           </div>
           <div>
-            <label htmlFor="password" className="sr-only">{t('loginPage.password')}</label>
-            <Input id="password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('loginPage.password')} />
+            <label htmlFor="password" className="sr-only">{t('common.password')}</label>
+            <Input id="password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('common.password')} />
           </div>
 
           {error && (
@@ -49,7 +49,7 @@ export default function LoginPage() {
 
           <div>
             <Button type="submit" disabled={loading} className="w-full center">
-              {loading ? t('loginPage.pleaseWait') : t('loginPage.signIn')}
+              {loading ? t('common.loading') : t('loginPage.signIn')}
             </Button>
           </div>
         </form>

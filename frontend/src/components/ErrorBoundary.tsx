@@ -28,14 +28,14 @@ function ErrorBoundaryContent({ hasError, error, onReset }: { hasError: boolean;
             <Button
               onClick={onReset}
               variant="primary"
-              className="w-full"
+              className="w-full center"
             >
               {t('errorBoundary.tryAgain')}
             </Button>
             <Button
               onClick={() => window.location.href = '/'}
-              variant="default"
-              className="w-full"
+              variant="outline"
+              className="w-full center"
             >
               {t('errorBoundary.goHome')}
             </Button>

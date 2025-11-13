@@ -229,15 +229,15 @@ export default function MyPage() {
               </div>
             </div>
             <div>
-              <FormLabel htmlFor="name">{t('userSettingsDialog.name')}</FormLabel>
-              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('userSettingsDialog.namePlaceholder')} />
+              <FormLabel htmlFor="name">{t('common.name')}</FormLabel>
+              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('common.name')} />
             </div>
             <div>
-              <FormLabel htmlFor="email">{t('userSettingsDialog.email')}</FormLabel>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('userSettingsDialog.emailPlaceholder')} />
+              <FormLabel htmlFor="email">{t('common.email')}</FormLabel>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('common.email')} />
             </div>
             <div>
-              <FormLabel htmlFor="password">{t('userSettingsDialog.password')}</FormLabel>
+              <FormLabel htmlFor="password">{t('common.password')}</FormLabel>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
             </div>
             <div>

@@ -181,7 +181,7 @@ export default function Sidebar() {
       console.error('Failed to join call:', error);
       toastManager.add({
         title: t('calls.failedToJoinCall'),
-        description: t('calls.couldNotJoinCall'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' }
       });
     } finally {

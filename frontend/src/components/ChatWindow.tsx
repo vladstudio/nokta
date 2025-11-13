@@ -425,7 +425,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       console.error('Failed to update message:', err);
       toastManager.add({
         title: t('messages.failedToUpdateMessage'),
-        description: t('messages.couldNotUpdateMessage'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' },
       });
     }
@@ -450,7 +450,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       console.error('Failed to delete message:', err);
       toastManager.add({
         title: t('messages.failedToDeleteMessage'),
-        description: t('messages.couldNotDeleteMessage'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' },
       });
     }
@@ -477,7 +477,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       console.error('Copy failed:', err);
       toastManager.add({
         title: t('messages.copyFailed'),
-        description: t('messages.couldNotCopyToClipboard'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' },
       });
     }
@@ -496,7 +496,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       console.error('Failed to start call:', error);
       toastManager.add({
         title: t('calls.failedToStartCall'),
-        description: t('calls.couldNotStartCall'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' }
       });
     } finally {
@@ -562,7 +562,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-primary)">
         <LoadingSpinner size="sm" />
-        <div className="text-light text-sm">{t('chatWindow.loadingMessages')}</div>
+        <div className="text-light text-sm">{t('common.loading')}</div>
       </div>
     );
   }

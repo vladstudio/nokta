@@ -50,7 +50,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
       console.error('Failed to create chat:', error);
       toastManager.add({
         title: t('chats.failedToCreate'),
-        description: t('chats.couldNotCreateChat'),
+        description: t('errors.pleaseTryAgain'),
         data: { type: 'error' },
       });
     } finally {
@@ -65,8 +65,8 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
       title={t('chats.createChat')}
       footer={
         <>
-          <Button variant="default" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-          <Button variant="primary" type="submit" form="create-chat-form" disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
+          <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
+          <Button variant="primary" className="flex-1 center" type="submit" form="create-chat-form" disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
             {creating ? t('common.creating') : t('common.create')}
           </Button>
         </>
@@ -82,8 +82,8 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
             placeholder={t('chats.groupNamePlaceholder')}
           />
         </div>
-        <ScrollArea className="max-h-[300px]">
-          <div className="grid gap-2">
+        <ScrollArea className="max-h-[50dvh]">
+          <div className="grid">
             {availableMembers.map(member => {
               const user = member.expand?.user;
               if (!user) return null;
@@ -97,7 +97,7 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
                       );
                     }}
                   />
-                  <UserAvatar user={user} size={32} />
+                  <UserAvatar user={user} size={20} />
                   <span className="text-sm">{user.name || user.email}</span>
                 </label>
               );
