@@ -181,12 +181,8 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
    MOBILE RESPONSIVE
    =================================== */
 @media (max-width: 768px) {
-  .sidebar {
+  .sidebar, .right-sidebar {
     width: 100%;
-  }
-
-  .right-sidebar {
-    display: none;
   }
 
   .chat-list {

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { XIcon } from '@phosphor-icons/react';
+import { XIcon, ArrowLeftIcon } from '@phosphor-icons/react';
 import { Button } from '../ui';
 import Search from './RightSidebar/Search';
 import Info from './RightSidebar/Info';
@@ -15,9 +15,10 @@ interface RightSidebarProps {
   onClose: () => void;
   onDeleteChat: () => void;
   onLeaveChat: () => void;
+  isMobile: boolean;
 }
 
-export default function RightSidebar({ chatId, chat, currentUser, view, onClose, onDeleteChat, onLeaveChat }: RightSidebarProps) {
+export default function RightSidebar({ chatId, chat, currentUser, view, onClose, onDeleteChat, onLeaveChat, isMobile }: RightSidebarProps) {
   const { t } = useTranslation();
 
   const titles = {
@@ -28,10 +29,19 @@ export default function RightSidebar({ chatId, chat, currentUser, view, onClose,
   return (
     <div className="right-sidebar">
       <div className="w-full p-2 flex items-center justify-between gap-2 bg-(--color-bg-primary)">
-        <h3 className="font-semibold pl-2">{titles[view]}</h3>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <XIcon size={20} className="text-accent" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {isMobile && (
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <ArrowLeftIcon size={20} className="text-accent" />
+            </Button>
+          )}
+          <h3 className="font-semibold pl-2">{titles[view]}</h3>
+        </div>
+        {!isMobile && (
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <XIcon size={20} className="text-accent" />
+          </Button>
+        )}
       </div>
 
       {view === 'search' && <Search chatId={chatId} />}

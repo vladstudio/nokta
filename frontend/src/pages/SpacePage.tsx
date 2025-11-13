@@ -170,8 +170,39 @@ export default function SpacePage() {
 
   if (isMobile && !chatId) return null;
 
-  const showRightSidebarPanel = rightSidebarView && chatId && !isMobile;
+  // Mobile: show only one component at a time
+  if (isMobile) {
+    if (showCallView && activeCallChat) {
+      return <CallView show={showCallView} chat={activeCallChat} />;
+    }
+    if (rightSidebarView && chatId) {
+      return (
+        <RightSidebar
+          chatId={chatId}
+          chat={chat}
+          currentUser={currentUser}
+          view={rightSidebarView}
+          onClose={() => setRightSidebarView(null)}
+          onDeleteChat={handleDeleteChat}
+          onLeaveChat={handleLeaveChat}
+          isMobile={isMobile}
+        />
+      );
+    }
+    return (
+      <ChatWindow
+        key={chatId || 'empty'}
+        chatId={chatId}
+        chat={chat}
+        rightSidebarView={rightSidebarView}
+        onToggleRightSidebar={setRightSidebarView}
+        onDeleteChat={handleDeleteChat}
+        onLeaveChat={handleLeaveChat}
+      />
+    );
+  }
 
+  // Desktop: show all components
   return (
     <>
       {isVideoCallsEnabled && activeCallChat && (
@@ -189,7 +220,7 @@ export default function SpacePage() {
             onLeaveChat={handleLeaveChat}
           />
         </div>
-        {showRightSidebarPanel && (
+        {rightSidebarView && chatId && (
           <RightSidebar
             chatId={chatId}
             chat={chat}
@@ -198,6 +229,7 @@ export default function SpacePage() {
             onClose={() => setRightSidebarView(null)}
             onDeleteChat={handleDeleteChat}
             onLeaveChat={handleLeaveChat}
+            isMobile={false}
           />
         )}
       </div>
