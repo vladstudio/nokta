@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrashIcon, SignOutIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
-import { Button, Dialog } from '../../ui';
+import { Button, Dialog, Input } from '../../ui';
+import { chats } from '../../services/pocketbase';
+import { getChatDisplayName } from '../../utils/chatUtils';
 import type { Chat, User } from '../../types';
 
 interface InfoProps {
@@ -16,6 +18,22 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
   const { t } = useTranslation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [chatName, setChatName] = useState(() =>
+    getChatDisplayName(chat, currentUser?.id, {
+      directMessage: t('chatList.directMessage'),
+      groupChat: t('chatList.groupChat'),
+    })
+  );
+
+  useEffect(() => {
+    if (chat && !isEditing) {
+      setChatName(getChatDisplayName(chat, currentUser?.id, {
+        directMessage: t('chatList.directMessage'),
+        groupChat: t('chatList.groupChat'),
+      }));
+    }
+  }, [chat?.name, chat?.id, currentUser?.id, t]);
 
   if (!chat) {
     return (
@@ -27,8 +45,43 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
 
   const participants = chat.expand?.participants || [];
 
+  const handleSave = async () => {
+    if (!chatName.trim()) return;
+    await chats.update(chat.id, chatName.trim());
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setChatName(getChatDisplayName(chat, currentUser?.id, {
+      directMessage: t('chatList.directMessage'),
+      groupChat: t('chatList.groupChat'),
+    }));
+    setIsEditing(false);
+  };
+
   return (
     <div className="flex-1 flex flex-col p-4 gap-6">
+      {/* Chat Name */}
+      <div className="flex flex-col gap-2">
+        <h4 className="text-xs font-semibold uppercase text-light">{t('chats.chatName')}</h4>
+        <Input
+          value={chatName}
+          onChange={(e) => setChatName(e.target.value)}
+          onFocus={() => setIsEditing(true)}
+          placeholder={t('chats.chatName')}
+        />
+        {isEditing && (
+          <div className="flex gap-2">
+            <Button variant="default" onClick={handleCancel} className="flex-1">
+              {t('common.cancel')}
+            </Button>
+            <Button variant="primary" onClick={handleSave} className="flex-1">
+              {t('common.save')}
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Participants */}
       <div className="flex flex-col gap-3">
         <h4 className="text-xs font-semibold uppercase text-light">{t('chats.participants')}</h4>

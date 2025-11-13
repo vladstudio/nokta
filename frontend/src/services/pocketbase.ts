@@ -147,6 +147,10 @@ export const chats = {
     });
   },
 
+  async update(chatId: string, name: string) {
+    return await pb.collection('chats').update<Chat>(chatId, { name });
+  },
+
   async delete(chatId: string) {
     await pb.collection('chats').delete(chatId);
   },

@@ -10,6 +10,7 @@ import { useMessageList } from '../hooks/useMessageList';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { messageQueue } from '../utils/messageQueue';
+import { getChatDisplayName } from '../utils/chatUtils';
 import LoadingSpinner from './LoadingSpinner';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
@@ -69,29 +70,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [chat, setChat] = useState<Chat | null>(externalChat);
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
-
-  // Get chat name (same logic as ChatList)
-  const getChatName = (chat: Chat | null) => {
-    if (!chat) return t('chatWindow.defaultChatName');
-
-    // Use explicit name if provided
-    if (chat.name) {
-      return chat.name;
-    }
-
-    // Fallback: show other participants' names
-    if (chat.expand?.participants) {
-      const otherParticipants = chat.expand.participants.filter(
-        (p) => p.id !== currentUser?.id
-      );
-      if (otherParticipants.length > 0) {
-        return otherParticipants.map((p) => p.name || p.email).join(', ');
-      }
-    }
-
-    // Default fallback
-    return chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat');
-  };
 
   // Parse anchor message from URL param
   const anchorMessageId = useMemo(() => {
@@ -593,7 +571,11 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     <div className="flex-1 flex flex-col min-h-0">
       <ChatHeader
         chat={chat}
-        chatName={getChatName(chat)}
+        chatName={getChatDisplayName(chat, currentUser?.id, {
+          directMessage: t('chatList.directMessage'),
+          groupChat: t('chatList.groupChat'),
+          defaultName: t('chatWindow.defaultChatName'),
+        })}
         typingUsers={typingUsers}
         isMobile={isMobile}
         rightSidebarView={rightSidebarView}

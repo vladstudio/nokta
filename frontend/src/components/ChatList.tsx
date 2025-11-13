@@ -5,6 +5,7 @@ import { auth } from '../services/pocketbase';
 import { usePresence } from '../hooks/usePresence';
 import { Button, Badge, OnlineIndicator } from '../ui';
 import { UserAvatar, ChatAvatar } from './Avatar';
+import { getChatDisplayName } from '../utils/chatUtils';
 
 interface ChatListProps {
   chats: Chat[];
@@ -98,23 +99,10 @@ export default function ChatList({ chats, selectedChatId, onSelectChat, unreadCo
   const { isUserOnline } = usePresence(participantIds);
 
   const getChatName = useCallback((chat: Chat) => {
-    // Use explicit name if provided
-    if (chat.name) {
-      return chat.name;
-    }
-
-    // Fallback: show other participants' names
-    if (chat.expand?.participants) {
-      const otherParticipants = chat.expand.participants.filter(
-        (p) => p.id !== currentUser?.id
-      );
-      if (otherParticipants.length > 0) {
-        return otherParticipants.map((p) => p.name || p.email).join(', ');
-      }
-    }
-
-    // Default fallback
-    return chat.participants.length === 2 ? t('chatList.directMessage') : t('chatList.groupChat');
+    return getChatDisplayName(chat, currentUser?.id, {
+      directMessage: t('chatList.directMessage'),
+      groupChat: t('chatList.groupChat'),
+    });
   }, [currentUser?.id, t]);
 
   const getOtherParticipant = useCallback((chat: Chat) => {
