@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui';
-import { FileIcon, ImageIcon, VideoIcon, XIcon, MicrophoneIcon } from "@phosphor-icons/react";
+import { FileIcon, ImageIcon, VideoIcon, XIcon, MicrophoneIcon, UserFocusIcon } from "@phosphor-icons/react";
 
 interface AddActionsProps {
   onCancel: () => void;
@@ -8,9 +8,10 @@ interface AddActionsProps {
   onVideoSelect: () => void;
   onFileSelect: () => void;
   onVoiceSelect: () => void;
+  onQuickVideoSelect: () => void;
 }
 
-export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onFileSelect, onVoiceSelect }: AddActionsProps) {
+export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onFileSelect, onVoiceSelect, onQuickVideoSelect }: AddActionsProps) {
   const { t } = useTranslation();
 
   return (
@@ -26,6 +27,10 @@ export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onF
       <Button variant="ghost" onClick={onVideoSelect}>
         <VideoIcon size={20} className="text-accent" />
         <span className="hidden lg:flex">{t('addActions.video')}</span>
+      </Button>
+      <Button variant="ghost" onClick={onQuickVideoSelect}>
+        <UserFocusIcon size={20} className="text-accent" />
+        <span className="hidden lg:flex">{t('addActions.quickVideo')}</span>
       </Button>
       <Button variant="ghost" onClick={onVoiceSelect}>
         <MicrophoneIcon size={20} className="text-accent" />

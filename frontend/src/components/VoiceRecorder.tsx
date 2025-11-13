@@ -210,11 +210,11 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
       footer={
         <>
           <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
-            <XIcon size={20} />
+            <XIcon size={20} className="text-accent" />
             {t('common.cancel')}
           </Button>
           <Button variant="primary" className="flex-1 center" onClick={handleSend} disabled={!audioBlob}>
-            <PaperPlaneRightIcon size={20} />
+            <PaperPlaneRightIcon size={20} className="text-accent" />
             {t('common.send')}
           </Button>
         </>
@@ -247,7 +247,7 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
                 className="flex-1 center"
                 onClick={state === 'recording' ? pauseRecording : resumeRecording}
               >
-                {state === 'recording' ? <PauseIcon size={20} /> : <MicrophoneIcon size={20} />}
+                {state === 'recording' ? <PauseIcon size={20} className="text-accent" /> : <MicrophoneIcon size={20} className="text-accent" />}
                 {state === 'recording' ? t('common.pause') : t('common.resume')}
               </Button>
               <Button variant="primary" className="flex-1 center" onClick={stopRecording}>
@@ -258,11 +258,11 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
           {state === 'stopped' && (
             <>
               <Button variant="outline" className="flex-1 center" onClick={togglePlayback}>
-                {isPlaying ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+                {isPlaying ? <PauseIcon size={20} className="text-accent" /> : <PlayIcon size={20} className="text-accent" />}
                 Play
               </Button>
               <Button variant="outline" className="flex-1 center" onClick={rerecord}>
-                <ArrowClockwiseIcon size={20} />
+                <ArrowClockwiseIcon size={20} className="text-accent" />
                 Re-record
               </Button>
             </>

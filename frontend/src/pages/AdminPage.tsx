@@ -185,7 +185,7 @@ export default function AdminPage() {
       <div className="mx-auto w-full max-w-2xl grid gap-4 p-6">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setLocation('/my')}>
-            <ArrowLeftIcon size={20} />
+            <ArrowLeftIcon size={20} className="text-accent" />
           </Button>
           <h2 className="font-semibold flex-1">Admin Panel</h2>
         </div>
@@ -210,17 +210,17 @@ export default function AdminPage() {
         {activeTab === 'spaces' && !selectedSpace && (
           <div className="grid gap-2">
             <Button variant="default" onClick={() => openSpaceDialog()}>
-              <PlusIcon size={20} /> Add Space
+              <PlusIcon size={20} className="text-accent" /> Add Space
             </Button>
             {spaceList.map((space) => (
               <Card key={space.id} border shadow="sm" padding="sm">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 font-medium">{space.name}</div>
                   <Button variant="ghost" size="icon" onClick={() => openMemberManagement(space)}>
-                    <UsersIcon size={20} />
+                    <UsersIcon size={20} className="text-accent" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => openSpaceDialog(space)}>
-                    <PencilIcon size={20} />
+                    <PencilIcon size={20} className="text-accent" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'space', item: space })}>
                     <TrashIcon size={20} className="text-red-600" />
@@ -234,7 +234,7 @@ export default function AdminPage() {
         {activeTab === 'spaces' && selectedSpace && (
           <div className="grid gap-2">
             <Button variant="ghost" size="icon" onClick={() => setSelectedSpace(null)}>
-              <ArrowLeftIcon size={20} />
+              <ArrowLeftIcon size={20} className="text-accent" />
             </Button>
             <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
             {userList.filter(u => !memberList.some(m => m.user === u.id)).length > 0 && (
@@ -268,7 +268,7 @@ export default function AdminPage() {
         {activeTab === 'users' && (
           <div className="grid gap-2">
             <Button variant="default" onClick={() => openUserDialog()}>
-              <PlusIcon size={20} /> Add User
+              <PlusIcon size={20} className="text-accent" /> Add User
             </Button>
             {userList.map((user) => (
               <Card key={user.id} shadow="sm" border padding="sm">
@@ -278,7 +278,7 @@ export default function AdminPage() {
                     <div className="text-xs text-light">{user.email} • {user.role}</div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
-                    <PencilIcon size={20} />
+                    <PencilIcon size={20} className="text-accent" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'user', item: user })}>
                     <TrashIcon size={20} className="text-red-600" />

@@ -20,11 +20,12 @@ import DeleteMessageDialog from './DeleteMessageDialog';
 import ImageCropDialog from './ImageCropDialog';
 import VideoCompressionDialog from './VideoCompressionDialog';
 import VoiceRecorder from './VoiceRecorder';
+import QuickVideoRecorder from './QuickVideoRecorder';
 import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Message, Chat } from '../types';
-import type { VideoMetadata } from '../types/video';
+import type { VideoMetadata, VideoQuality } from '../types/video';
 import type { RightSidebarView } from './RightSidebar';
 
 interface ChatWindowProps {
@@ -113,6 +114,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
   const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
   const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
+  const [quickVideoRecorderOpen, setQuickVideoRecorderOpen] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -219,6 +221,21 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
     const file = new File([blob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
     uploadFiles([file], 'voice', durationStr);
+  };
+
+  const handleQuickVideoSelect = () => {
+    if (!isOnline) {
+      toastManager.add({ title: t('common.noConnection'), description: t('messages.cannotRecordOffline'), data: { type: 'error' } });
+      return;
+    }
+    setQuickVideoRecorderOpen(true);
+    setShowAddActions(false);
+  };
+
+  const handleQuickVideoSend = (blob: Blob, duration: number, _quality: VideoQuality) => {
+    const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
+    const file = new File([blob], `quick_video_${Date.now()}.mp4`, { type: 'video/mp4' });
+    uploadFiles([file], 'video', durationStr);
   };
 
   // Load chat data
@@ -618,6 +635,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
           setShowAddActions(false);
         }}
         onVoiceSelect={handleVoiceSelect}
+        onQuickVideoSelect={handleQuickVideoSelect}
         onShowAddActions={() => setShowAddActions(true)}
         onCancelMessageSelection={() => setSelectedMessageId(null)}
         onPasteImage={setCropDialogFile}
@@ -693,6 +711,13 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         open={voiceRecorderOpen}
         onOpenChange={setVoiceRecorderOpen}
         onSend={handleVoiceSend}
+      />
+
+      {/* Quick Video Recorder Dialog */}
+      <QuickVideoRecorder
+        open={quickVideoRecorderOpen}
+        onOpenChange={setQuickVideoRecorderOpen}
+        onSend={handleQuickVideoSend}
       />
     </div>
   );

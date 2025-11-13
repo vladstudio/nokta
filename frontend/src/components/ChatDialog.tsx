@@ -113,7 +113,7 @@ export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCr
                       );
                     }}
                   />
-                  <UserAvatar user={user} size={20} />
+                  <UserAvatar user={user} size={20} className="text-accent" />
                   <span className="text-sm">{user.name || user.email}</span>
                 </label>
               );

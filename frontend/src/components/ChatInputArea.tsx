@@ -23,6 +23,7 @@ interface ChatInputAreaProps {
   onVideoSelect: () => void;
   onFileSelect: () => void;
   onVoiceSelect: () => void;
+  onQuickVideoSelect: () => void;
   onShowAddActions: () => void;
   onCancelMessageSelection: () => void;
   onPasteImage?: (file: File) => void;
@@ -45,6 +46,7 @@ export default function ChatInputArea({
   onVideoSelect,
   onFileSelect,
   onVoiceSelect,
+  onQuickVideoSelect,
   onShowAddActions,
   onCancelMessageSelection,
   onPasteImage,
@@ -62,6 +64,7 @@ export default function ChatInputArea({
           onVideoSelect={onVideoSelect}
           onFileSelect={onFileSelect}
           onVoiceSelect={onVoiceSelect}
+          onQuickVideoSelect={onQuickVideoSelect}
         />
       ) : selectedMessageId ? (
         <MessageActions

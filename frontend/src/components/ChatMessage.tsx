@@ -111,18 +111,24 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     if (!message.file) return null;
 
     const videoUrl = messagesAPI.getFileURL(message);
+    const duration = message.content; // Duration in "MM:SS" format for quick videos
 
     return (
-      <VideoPlayer
-        videoUrl={videoUrl}
-        onError={() => {
-          console.error('Video playback failed');
-          toastManager.add({
-            title: t('messages.videoError'),
-            data: { type: 'error' },
-          });
-        }}
-      />
+      <div className="flex flex-col gap-2">
+        <VideoPlayer
+          videoUrl={videoUrl}
+          onError={() => {
+            console.error('Video playback failed');
+            toastManager.add({
+              title: t('messages.videoError'),
+              data: { type: 'error' },
+            });
+          }}
+        />
+        {duration && duration.match(/^\d+:\d{2}$/) && (
+          <span className="text-xs text-light">{duration}</span>
+        )}
+      </div>
     );
   };
 

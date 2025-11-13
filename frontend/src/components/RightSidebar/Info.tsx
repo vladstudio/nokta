@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrashIcon, SignOutIcon, PencilIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
-import { Button, Dialog } from '../../ui';
+import { Button, Dialog, ScrollArea } from '../../ui';
 import { getChatDisplayName } from '../../utils/chatUtils';
 import ChatDialog from '../ChatDialog';
 import type { Chat, User } from '../../types';
@@ -35,17 +35,14 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
     groupChat: t('chatList.groupChat'),
   });
 
-  return (
+  return (<ScrollArea>
     <div className="flex-1 flex flex-col p-4 gap-6">
       {/* Chat Name */}
-      <div className="flex flex-col gap-2">
-        <h4 className="text-xs font-semibold uppercase text-light">{t('chats.chatName')}</h4>
-        <div className="flex items-center gap-2">
-          <span className="flex-1 text-sm">{chatDisplayName}</span>
-          <Button variant="ghost" size="icon" onClick={() => setEditDialogOpen(true)}>
-            <PencilIcon size={20} />
-          </Button>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="flex-1 text-sm font-medium">{chatDisplayName}</span>
+        <Button variant="ghost" size="icon" onClick={() => setEditDialogOpen(true)}>
+          <PencilIcon size={20} className="text-accent" />
+        </Button>
       </div>
 
       {/* Participants */}
@@ -72,7 +69,7 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
             onClick={() => setLeaveDialogOpen(true)}
             className="w-full flex items-center gap-2 justify-start"
           >
-            <SignOutIcon size={20} />
+            <SignOutIcon size={20} className="text-accent" />
             {t('chats.leaveChat')}
           </Button>
         )}
@@ -81,7 +78,7 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
           onClick={() => setDeleteDialogOpen(true)}
           className="w-full flex items-center gap-2 justify-start text-red-600"
         >
-          <TrashIcon size={20} />
+          <TrashIcon size={20} className="text-red-600" />
           {t('chats.deleteChat')}
         </Button>
       </div>
@@ -134,6 +131,6 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
         chat={chat}
         onChatUpdated={onChatUpdated}
       />
-    </div>
+    </div></ScrollArea>
   );
 }

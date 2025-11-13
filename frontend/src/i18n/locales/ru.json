@@ -50,6 +50,7 @@
   "addActions": {
     "image": "Изображение",
     "video": "Видео",
+    "quickVideo": "Быстрое видео",
     "voice": "Голос",
     "file": "Файл"
   },
@@ -74,6 +75,14 @@
     "compressing": "Сжатие",
     "compressionFailed": "Ошибка сжатия",
     "formatNotSupported": "Формат не поддерживается"
+  },
+  "videoQuality": {
+    "title": "Качество",
+    "veryLow": "Очень низкое",
+    "low": "Низкое",
+    "medium": "Среднее",
+    "high": "Высокое",
+    "veryHigh": "Очень высокое"
   },
   "videoUpload": {
     "invalidType": "Неверный тип файла",
@@ -201,7 +210,9 @@
     "copyFailed": "Не удалось скопировать",
     "videoError": "Ошибка видео",
     "voiceMessage": "Голосовое сообщение",
+    "quickVideoMessage": "Быстрое видео",
     "micAccessDenied": "Доступ к микрофону запрещен",
+    "cameraAccessDenied": "Доступ к камере/микрофону запрещен",
     "recordingFailed": "Ошибка записи",
     "voiceRecorded": "Записано",
     "cannotRecordOffline": "Запись недоступна без сети"

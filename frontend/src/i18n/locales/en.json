@@ -50,6 +50,7 @@
   "addActions": {
     "image": "Image",
     "video": "Video",
+    "quickVideo": "Quick Video",
     "voice": "Voice",
     "file": "File"
   },
@@ -74,6 +75,14 @@
     "compressing": "Compressing",
     "compressionFailed": "Compression failed",
     "formatNotSupported": "Video format not supported"
+  },
+  "videoQuality": {
+    "title": "Quality",
+    "veryLow": "Very Low",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "veryHigh": "Very High"
   },
   "videoUpload": {
     "invalidType": "Invalid file type",
@@ -201,7 +210,9 @@
     "copyFailed": "Copy failed",
     "videoError": "Video error",
     "voiceMessage": "Voice Message",
+    "quickVideoMessage": "Quick Video",
     "micAccessDenied": "Mic access denied",
+    "cameraAccessDenied": "Camera/mic access denied",
     "recordingFailed": "Recording failed",
     "voiceRecorded": "Recorded",
     "cannotRecordOffline": "Cannot record offline"
