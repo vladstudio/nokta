@@ -44,7 +44,7 @@ export default function RightSidebar({ chatId, chat, currentUser, view, onClose,
         )}
       </div>
 
-      {view === 'search' && <Search chatId={chatId} />}
+      {view === 'search' && <Search chatId={chatId} onClose={onClose} isMobile={isMobile} />}
       {view === 'info' && <Info chat={chat} currentUser={currentUser} onDeleteChat={onDeleteChat} onLeaveChat={onLeaveChat} />}
     </div>
   );

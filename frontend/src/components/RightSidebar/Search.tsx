@@ -10,6 +10,8 @@ import type { Message } from '../../types';
 
 interface SearchProps {
   chatId: string;
+  onClose: () => void;
+  isMobile: boolean;
 }
 
 const formatDate = (dateString: string) => {
@@ -28,7 +30,7 @@ const truncateContent = (content: string, maxLength = 100) => {
 
 const EMPTY_STATE_ICON_SIZE = 80;
 
-export default function Search({ chatId }: SearchProps) {
+export default function Search({ chatId, onClose, isMobile }: SearchProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
@@ -41,6 +43,7 @@ export default function Search({ chatId }: SearchProps) {
   const handleSelectMessage = (message: Message, index: number) => {
     setSelectedIndex(index);
     setLocation(`/spaces/${params?.spaceId}/chat/${chatId}?msg=${message.id}`);
+    if (isMobile) onClose();
   };
 
   useEffect(() => {
