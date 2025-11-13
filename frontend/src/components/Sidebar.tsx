@@ -10,7 +10,7 @@ import { showCallNotification } from '../utils/notifications';
 import { isVideoCallsEnabled } from '../config/features';
 import { ScrollArea, useToastManager, Button, Menu } from '../ui';
 import ChatList from './ChatList';
-import CreateGroupChatDialog from './CreateGroupChatDialog';
+import ChatDialog from './ChatDialog';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
 import { PhoneIcon, PlusIcon } from "@phosphor-icons/react";
@@ -288,7 +288,7 @@ export default function Sidebar() {
         </ScrollArea>
       </div>
       {spaceId && (
-        <CreateGroupChatDialog
+        <ChatDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
           spaceId={spaceId}

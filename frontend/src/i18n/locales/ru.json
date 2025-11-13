@@ -117,6 +117,7 @@
   },
   "chats": {
     "createChat": "Создать чат",
+    "editChat": "Редактировать чат",
     "selectMembers": "Выберите участников",
     "groupName": "Название чата (необязательно)",
     "groupNamePlaceholder": "Введите название...",
@@ -129,6 +130,7 @@
     "chatName": "Название чата",
     "chatNameRequired": "Требуется название",
     "failedToRename": "Не удалось переименовать",
+    "failedToUpdate": "Не удалось обновить",
     "confirmLeave": "Покинуть чат?",
     "confirmDelete": "Удалить чат? Нельзя отменить.",
     "confirmDeleteForAll": "Удалить для ВСЕХ? Нельзя отменить.",

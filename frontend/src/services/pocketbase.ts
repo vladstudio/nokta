@@ -147,8 +147,11 @@ export const chats = {
     });
   },
 
-  async update(chatId: string, name: string) {
-    return await pb.collection('chats').update<Chat>(chatId, { name });
+  async update(chatId: string, name?: string, participants?: string[]) {
+    const data: { name?: string; participants?: string[] } = {};
+    if (name !== undefined) data.name = name;
+    if (participants !== undefined) data.participants = participants;
+    return await pb.collection('chats').update<Chat>(chatId, data);
   },
 
   async delete(chatId: string) {

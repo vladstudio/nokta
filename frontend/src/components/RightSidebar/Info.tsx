@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrashIcon, SignOutIcon } from '@phosphor-icons/react';
+import { TrashIcon, SignOutIcon, PencilIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
-import { Button, Dialog, Input, useToastManager } from '../../ui';
-import { chats } from '../../services/pocketbase';
+import { Button, Dialog } from '../../ui';
 import { getChatDisplayName } from '../../utils/chatUtils';
+import ChatDialog from '../ChatDialog';
 import type { Chat, User } from '../../types';
 
 interface InfoProps {
@@ -16,26 +16,9 @@ interface InfoProps {
 
 export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: InfoProps) {
   const { t } = useTranslation();
-  const toastManager = useToastManager();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [chatName, setChatName] = useState(() =>
-    getChatDisplayName(chat, currentUser?.id, {
-      directMessage: t('chatList.directMessage'),
-      groupChat: t('chatList.groupChat'),
-    })
-  );
-
-  useEffect(() => {
-    if (chat && !isEditing) {
-      setChatName(getChatDisplayName(chat, currentUser?.id, {
-        directMessage: t('chatList.directMessage'),
-        groupChat: t('chatList.groupChat'),
-      }));
-    }
-  }, [chat?.name, chat?.id, currentUser?.id, t]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   if (!chat) {
     return (
@@ -46,74 +29,23 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
   }
 
   const participants = chat.expand?.participants || [];
-
-  const handleSave = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const trimmedName = chatName.trim();
-    if (!trimmedName || trimmedName.length === 0) {
-      toastManager.add({
-        title: t('errors.invalidInput'),
-        description: t('chats.chatNameRequired'),
-        data: { type: 'error' },
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await chats.update(chat.id, trimmedName);
-      setIsEditing(false);
-    } catch (err) {
-      console.error('Failed to rename chat:', err);
-      toastManager.add({
-        title: t('chats.failedToRename'),
-        description: t('errors.unexpectedError'),
-        data: { type: 'error' },
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setChatName(getChatDisplayName(chat, currentUser?.id, {
-      directMessage: t('chatList.directMessage'),
-      groupChat: t('chatList.groupChat'),
-    }));
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      handleCancel();
-    }
-  };
+  const chatDisplayName = getChatDisplayName(chat, currentUser?.id, {
+    directMessage: t('chatList.directMessage'),
+    groupChat: t('chatList.groupChat'),
+  });
 
   return (
     <div className="flex-1 flex flex-col p-4 gap-6">
       {/* Chat Name */}
-      <form onSubmit={handleSave} className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         <h4 className="text-xs font-semibold uppercase text-light">{t('chats.chatName')}</h4>
-        <Input
-          value={chatName}
-          onChange={(e) => setChatName(e.target.value)}
-          onFocus={() => setIsEditing(true)}
-          onKeyDown={handleKeyDown}
-          placeholder={t('chats.chatName')}
-          disabled={isSaving}
-        />
-        {isEditing && (
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" className="flex-1 center" onClick={handleCancel} disabled={isSaving}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" variant="primary" className="flex-1 center" disabled={isSaving}>
-              {isSaving ? t('common.saving') : t('common.save')}
-            </Button>
-          </div>
-        )}
-      </form>
+        <div className="flex items-center gap-2">
+          <span className="flex-1 text-sm">{chatDisplayName}</span>
+          <Button variant="ghost" size="icon" onClick={() => setEditDialogOpen(true)}>
+            <PencilIcon size={20} />
+          </Button>
+        </div>
+      </div>
 
       {/* Participants */}
       <div className="flex flex-col gap-3">
@@ -192,6 +124,15 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
       >
         <div />
       </Dialog>
+
+      {/* Edit Chat Dialog */}
+      <ChatDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        spaceId={chat.space}
+        chat={chat}
+        onChatUpdated={() => {}}
+      />
     </div>
   );
 }

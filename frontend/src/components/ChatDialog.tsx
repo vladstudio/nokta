@@ -3,58 +3,74 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, Button, Input, FormLabel, ScrollArea, Checkbox, useToastManager } from '../ui';
 import { spaceMembers, chats, auth } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
-import type { SpaceMember } from '../types';
+import type { SpaceMember, Chat } from '../types';
 
-interface CreateGroupChatDialogProps {
+interface ChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   spaceId: string;
+  chat?: Chat;
   onChatCreated?: (chatId: string) => void;
+  onChatUpdated?: () => void;
 }
 
-export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onChatCreated }: CreateGroupChatDialogProps) {
+export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCreated, onChatUpdated }: ChatDialogProps) {
   const { t } = useTranslation();
   const toastManager = useToastManager();
+  const isEditing = !!chat;
   const [chatName, setChatName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [members, setMembers] = useState<SpaceMember[]>([]);
-  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open && spaceId) {
       spaceMembers.list(spaceId).then(setMembers).catch(() => setMembers([]));
+      if (chat) {
+        setChatName(chat.name || '');
+        setSelectedUsers(chat.participants.filter(id => id !== auth.user?.id));
+      } else {
+        setChatName('');
+        setSelectedUsers([]);
+      }
     } else {
       setChatName('');
       setSelectedUsers([]);
       setMembers([]);
     }
-  }, [open, spaceId]);
+  }, [open, spaceId, chat]);
 
   const availableMembers = useMemo(() =>
     members.filter(m => m.expand?.user && m.user !== auth.user?.id),
     [members, auth.user?.id]
   );
 
-  const handleCreate = async (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!auth.user?.id) return;
     const isChatWithSelf = selectedUsers.length === 0;
     if (isChatWithSelf && !chatName.trim()) return;
-    setCreating(true);
+    setSaving(true);
     try {
-      const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
-      const chat = await chats.create(spaceId, participants, chatName.trim() || undefined);
+      if (isEditing && chat) {
+        const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
+        await chats.update(chat.id, chatName.trim() || undefined, participants);
+        onChatUpdated?.();
+      } else {
+        const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
+        const newChat = await chats.create(spaceId, participants, chatName.trim() || undefined);
+        onChatCreated?.(newChat.id);
+      }
       onOpenChange(false);
-      onChatCreated?.(chat.id);
     } catch (error) {
-      console.error('Failed to create chat:', error);
+      console.error(`Failed to ${isEditing ? 'update' : 'create'} chat:`, error);
       toastManager.add({
-        title: t('chats.failedToCreate'),
+        title: isEditing ? t('chats.failedToUpdate') : t('chats.failedToCreate'),
         description: t('errors.pleaseTryAgain'),
         data: { type: 'error' },
       });
     } finally {
-      setCreating(false);
+      setSaving(false);
     }
   };
 
@@ -62,17 +78,17 @@ export default function CreateGroupChatDialog({ open, onOpenChange, spaceId, onC
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t('chats.createChat')}
+      title={isEditing ? t('chats.editChat') : t('chats.createChat')}
       footer={
         <>
           <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-          <Button variant="primary" className="flex-1 center" type="submit" form="create-chat-form" disabled={creating || (selectedUsers.length === 0 && !chatName.trim())}>
-            {creating ? t('common.creating') : t('common.create')}
+          <Button variant="primary" className="flex-1 center" type="submit" form="chat-form" disabled={saving || (selectedUsers.length === 0 && !chatName.trim())}>
+            {saving ? t('common.saving') : (isEditing ? t('common.save') : t('common.create'))}
           </Button>
         </>
       }
     >
-      <form id="create-chat-form" onSubmit={handleCreate} className="grid gap-4">
+      <form id="chat-form" onSubmit={handleSubmit} className="grid gap-4">
         <div>
           <FormLabel htmlFor="chatName">{t('chats.groupName')}</FormLabel>
           <Input

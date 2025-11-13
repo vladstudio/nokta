@@ -21,19 +21,19 @@ export default function AddActions({ onCancel, onImageSelect, onVideoSelect, onF
       <div className="bg-(--color-border-default) w-px h-6" />
       <Button variant="ghost" onClick={onImageSelect}>
         <ImageIcon size={20} className="text-accent" />
-        {t('addActions.image')}
+        <span className="hidden lg:flex">{t('addActions.image')}</span>
       </Button>
       <Button variant="ghost" onClick={onVideoSelect}>
         <VideoIcon size={20} className="text-accent" />
-        {t('addActions.video')}
+        <span className="hidden lg:flex">{t('addActions.video')}</span>
       </Button>
       <Button variant="ghost" onClick={onVoiceSelect}>
         <MicrophoneIcon size={20} className="text-accent" />
-        {t('addActions.voice')}
+        <span className="hidden lg:flex">{t('addActions.voice')}</span>
       </Button>
       <Button variant="ghost" onClick={onFileSelect}>
         <FileIcon size={20} className="text-accent" />
-        {t('addActions.file')}
+        <span className="hidden lg:flex">{t('addActions.file')}</span>
       </Button>
       <div className="flex-1" />
     </div>
