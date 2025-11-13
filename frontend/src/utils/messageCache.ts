@@ -1,6 +1,6 @@
 import type { Message } from '../types';
 
-const DB_NAME = 'talk_cache';
+const DB_NAME = 'noktaa_cache';
 const DB_VERSION = 1;
 const MESSAGES_STORE = 'messages';
 

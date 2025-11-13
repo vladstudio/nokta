@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# Talk App - Installation Script
-# Installs and configures Talk app on prepared Ubuntu server
+# Nokta App - Installation Script
+# Installs and configures Nokta app on prepared Ubuntu server
 # Run as the app user (not root)
 
 # Colors for output
@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "======================================"
-echo "Talk App - Installation"
+echo "Nokta App - Installation"
 echo "======================================"
 echo ""
 
@@ -26,7 +26,7 @@ fi
 
 # Configuration
 APP_USER=$(whoami)
-APP_DIR="/home/$APP_USER/talk"
+APP_DIR="/home/$APP_USER/nokta"
 DOMAIN=""
 ADMIN_EMAIL=""
 ADMIN_PASSWORD=""
@@ -35,7 +35,7 @@ ADMIN_PASSWORD=""
 echo "======================================"
 echo "Configuration"
 echo "======================================"
-read -p "Domain name (e.g., talk.example.com): " DOMAIN
+read -p "Domain name (e.g., nokta.example.com): " DOMAIN
 read -p "Admin email: " ADMIN_EMAIL
 read -sp "Admin password (min 10 chars): " ADMIN_PASSWORD
 echo ""
@@ -74,11 +74,11 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# Check if talk-app.tar.gz exists
-if [ ! -f "talk-app.tar.gz" ]; then
-    echo -e "${RED}Error: talk-app.tar.gz not found${NC}"
+# Check if nokta-app.tar.gz exists
+if [ ! -f "nokta-app.tar.gz" ]; then
+    echo -e "${RED}Error: nokta-app.tar.gz not found${NC}"
     echo "Upload the deployment package first:"
-    echo "  scp talk-app.tar.gz $APP_USER@$DOMAIN:~/"
+    echo "  scp nokta-app.tar.gz $APP_USER@$DOMAIN:~/"
     exit 1
 fi
 
@@ -99,7 +99,7 @@ fi
 echo -e "${BLUE}[2/10]${NC} Extracting application files..."
 rm -rf $APP_DIR
 mkdir -p $APP_DIR
-tar -xzf talk-app.tar.gz -C $APP_DIR --strip-components=1
+tar -xzf nokta-app.tar.gz -C $APP_DIR --strip-components=1
 cd $APP_DIR
 
 # Verify extraction
@@ -135,7 +135,7 @@ cd ..
 # Configure Caddy
 echo -e "${BLUE}[5/10]${NC} Configuring Caddy..."
 sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
-# Talk App - Caddy Configuration
+# Nokta App - Caddy Configuration
 # Generated: $(date)
 
 $DOMAIN {
@@ -169,7 +169,7 @@ $DOMAIN {
 
     # Logs
     log {
-        output file /var/log/caddy/talk-access.log
+        output file /var/log/caddy/nokta-access.log
         format json
     }
 }
@@ -184,9 +184,9 @@ sudo caddy validate --config /etc/caddy/Caddyfile
 
 # Create systemd service for PocketBase
 echo -e "${BLUE}[6/10]${NC} Creating PocketBase service..."
-sudo tee /etc/systemd/system/talk-backend.service > /dev/null << EOF
+sudo tee /etc/systemd/system/nokta-backend.service > /dev/null << EOF
 [Unit]
-Description=Talk App - PocketBase Backend
+Description=Nokta App - PocketBase Backend
 After=network.target
 Wants=network-online.target
 
@@ -220,17 +220,17 @@ sudo systemctl daemon-reload
 
 # Enable and start services
 echo -e "${BLUE}[7/10]${NC} Starting services..."
-sudo systemctl enable talk-backend
-sudo systemctl start talk-backend
+sudo systemctl enable nokta-backend
+sudo systemctl start nokta-backend
 
 # Wait for backend to start
 echo "  Waiting for backend to start..."
 sleep 3
 
 # Check if backend is running
-if ! systemctl is-active --quiet talk-backend; then
+if ! systemctl is-active --quiet nokta-backend; then
     echo -e "${RED}Error: Backend failed to start${NC}"
-    echo "Check logs: sudo journalctl -u talk-backend -n 50"
+    echo "Check logs: sudo journalctl -u nokta-backend -n 50"
     exit 1
 fi
 
@@ -239,7 +239,7 @@ sudo systemctl reload caddy
 
 # Setup logrotate for PocketBase logs
 echo -e "${BLUE}[8/10]${NC} Configuring log rotation..."
-sudo tee /etc/logrotate.d/talk-app > /dev/null << EOF
+sudo tee /etc/logrotate.d/nokta-app > /dev/null << EOF
 $APP_DIR/backend/*.log {
     daily
     rotate 14
@@ -249,7 +249,7 @@ $APP_DIR/backend/*.log {
     notifempty
     create 0640 $APP_USER $APP_USER
     postrotate
-        systemctl reload talk-backend > /dev/null 2>&1 || true
+        systemctl reload nokta-backend > /dev/null 2>&1 || true
     endscript
 }
 EOF
@@ -258,12 +258,12 @@ EOF
 echo -e "${BLUE}[9/10]${NC} Creating maintenance scripts..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
-# Talk App - Backup Script
+# Nokta App - Backup Script
 set -e
 
-BACKUP_DIR="$HOME/talk-backups"
+BACKUP_DIR="$HOME/nokta-backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-APP_DIR="$HOME/talk"
+APP_DIR="$HOME/nokta"
 
 mkdir -p $BACKUP_DIR
 
@@ -279,28 +279,28 @@ EOF
 
 cat > $APP_DIR/update.sh << 'EOF'
 #!/bin/bash
-# Talk App - Update Script
+# Nokta App - Update Script
 set -e
 
-APP_DIR="$HOME/talk"
+APP_DIR="$HOME/nokta"
 
-echo "Updating Talk App..."
+echo "Updating Nokta App..."
 
 # Backup database first
 $APP_DIR/backup.sh
 
-# Upload new talk-app.tar.gz to server first, then run this script
+# Upload new nokta-app.tar.gz to server first, then run this script
 
-if [ ! -f "$HOME/talk-app.tar.gz" ]; then
-    echo "Error: talk-app.tar.gz not found in home directory"
+if [ ! -f "$HOME/nokta-app.tar.gz" ]; then
+    echo "Error: nokta-app.tar.gz not found in home directory"
     exit 1
 fi
 
 # Stop services
-sudo systemctl stop talk-backend
+sudo systemctl stop nokta-backend
 
 # Extract new version
-tar -xzf $HOME/talk-app.tar.gz -C $APP_DIR --strip-components=1
+tar -xzf $HOME/nokta-app.tar.gz -C $APP_DIR --strip-components=1
 
 # Preserve .env file
 # (already preserved by tar, but ensure permissions)
@@ -308,11 +308,11 @@ chmod 600 $APP_DIR/backend/.env
 chmod +x $APP_DIR/backend/pocketbase
 
 # Start services
-sudo systemctl start talk-backend
+sudo systemctl start nokta-backend
 sudo systemctl reload caddy
 
 echo "Update completed!"
-echo "Check status: systemctl status talk-backend"
+echo "Check status: systemctl status nokta-backend"
 EOF
 
 chmod +x $APP_DIR/backup.sh
@@ -357,13 +357,13 @@ echo "======================================"
 echo "Useful Commands"
 echo "======================================"
 echo "Check backend status:"
-echo "  sudo systemctl status talk-backend"
+echo "  sudo systemctl status nokta-backend"
 echo ""
 echo "View backend logs:"
-echo "  sudo journalctl -u talk-backend -f"
+echo "  sudo journalctl -u nokta-backend -f"
 echo ""
 echo "Restart backend:"
-echo "  sudo systemctl restart talk-backend"
+echo "  sudo systemctl restart nokta-backend"
 echo ""
 echo "Restart Caddy:"
 echo "  sudo systemctl reload caddy"
@@ -372,7 +372,7 @@ echo "Create manual backup:"
 echo "  $APP_DIR/backup.sh"
 echo ""
 echo "Update application:"
-echo "  # Upload new talk-app.tar.gz first"
+echo "  # Upload new nokta-app.tar.gz first"
 echo "  $APP_DIR/update.sh"
 echo ""
 echo "======================================"
@@ -384,5 +384,5 @@ echo "3. Create your first user account"
 echo "4. Configure spaces and chats"
 echo ""
 echo "For support, check the logs if issues occur:"
-echo "  sudo journalctl -u talk-backend -n 100"
+echo "  sudo journalctl -u nokta-backend -n 100"
 echo ""

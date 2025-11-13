@@ -82,7 +82,7 @@ All db management is done using PocketBase.
 ## Project Structure
 
 ```
-talk/
+nokta/
 ├── backend/
 │   ├── pb_data/          # PocketBase data
 │   ├── pb_migrations/    # Schema migrations

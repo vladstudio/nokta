@@ -1,5 +1,5 @@
 {
-  "name": "talk-backend-scripts",
+  "name": "nokta-backend-scripts",
   "version": "1.0.0",
   "type": "module",
   "description": "Setup and utility scripts for PocketBase",

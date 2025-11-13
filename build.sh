@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# Talk App - Production Build Script
+# Nokta App - Production Build Script
 # Creates optimized frontend build and prepares backend for deployment
 
 echo "======================================"
-echo "Talk App - Production Build"
+echo "Nokta App - Production Build"
 echo "======================================"
 echo ""
 
@@ -94,7 +94,7 @@ cp -r frontend/dist/* deploy/frontend/
 # Create deployment package info
 echo -e "${BLUE}[5/6]${NC} Creating deployment manifest..."
 cat > deploy/MANIFEST.txt << EOF
-Talk App - Production Build
+Nokta App - Production Build
 ====================================
 Build Date: $(date)
 Frontend: Vite production build
@@ -133,6 +133,6 @@ echo ""
 echo "Next steps:"
 echo "1. Review deploy/backend/.env (set production credentials)"
 echo "2. Update frontend environment variables if needed"
-echo "3. Create deployment archive: tar -czf talk-app.tar.gz deploy/"
+echo "3. Create deployment archive: tar -czf nokta-app.tar.gz deploy/"
 echo "4. Transfer to server and run installation scripts"
 echo ""

@@ -15,7 +15,7 @@ import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Space, Chat, PocketBaseEvent } from '../types';
 import { PhoneIcon, PlusIcon } from "@phosphor-icons/react";
 
-const LAST_SPACE_KEY = 'talk:lastSpaceId';
+const LAST_SPACE_KEY = 'nokta:lastSpaceId';
 
 export default function Sidebar() {
   const { t } = useTranslation();

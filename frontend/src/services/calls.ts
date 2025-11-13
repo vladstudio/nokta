@@ -19,7 +19,7 @@ export const callsAPI = {
 
     // Create room if it doesn't exist
     if (!dailyRoomUrl) {
-      const roomName = `talk-${chatId}-${Date.now()}`;
+      const roomName = `nokta-${chatId}-${Date.now()}`;
       try {
         const dailyRoom = await dailyAPI.createRoom(roomName);
         dailyRoomUrl = dailyRoom.url;

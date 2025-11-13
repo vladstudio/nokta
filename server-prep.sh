@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Talk App - Server Preparation Script
+# Nokta App - Server Preparation Script
 # Prepares a fresh Ubuntu 24.04 server with security hardening
 # Run this FIRST before installation
 
@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "======================================"
-echo "Talk App - Server Preparation"
+echo "Nokta App - Server Preparation"
 echo "======================================"
 echo ""
 
@@ -41,8 +41,8 @@ if [ "$ID" != "ubuntu" ]; then
 fi
 
 # Configuration
-read -p "Enter username for app deployment (default: talk): " APP_USER
-APP_USER=${APP_USER:-talk}
+read -p "Enter username for app deployment (default: nokta): " APP_USER
+APP_USER=${APP_USER:-nokta}
 
 echo ""
 echo "======================================"
@@ -91,7 +91,7 @@ else
 fi
 
 # Setup passwordless sudo for app user (for service management)
-echo "$APP_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart talk-*" > /etc/sudoers.d/$APP_USER
+echo "$APP_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart nokta-*" > /etc/sudoers.d/$APP_USER
 chmod 0440 /etc/sudoers.d/$APP_USER
 
 # Configure SSH key authentication
@@ -118,7 +118,7 @@ cp $SSH_CONFIG ${SSH_CONFIG}.backup.$(date +%Y%m%d)
 
 # Apply hardened SSH config
 cat > $SSH_CONFIG << EOF
-# Talk App - Hardened SSH Configuration
+# Nokta App - Hardened SSH Configuration
 # Generated: $(date)
 
 # Authentication
@@ -208,7 +208,7 @@ echo -e "${BLUE}[8/8]${NC} Applying system hardening..."
 # Disable unused network protocols
 cat >> /etc/sysctl.conf << EOF
 
-# Talk App - Security Hardening
+# Nokta App - Security Hardening
 net.ipv4.conf.all.accept_redirects = 0
 net.ipv6.conf.all.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0

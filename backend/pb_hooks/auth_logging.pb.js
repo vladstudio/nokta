@@ -8,7 +8,7 @@
  *
  * Logs appear in:
  * - Development: backend/pocketbase.log
- * - Production: systemd journal (sudo journalctl -u talk-backend)
+ * - Production: systemd journal (sudo journalctl -u nokta-backend)
  */
 
 // Log user authentication attempts
