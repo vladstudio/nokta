@@ -52,6 +52,12 @@ export default function SpacePage() {
     chats.getOne(chatId).then(setChat).catch(() => setChat(null));
   }, [chatId]);
 
+  const refetchChat = () => {
+    if (chatId) {
+      chats.getOne(chatId).then(setChat).catch(() => setChat(null));
+    }
+  };
+
   // Load user's active call on mount
   useEffect(() => {
     if (!isVideoCallsEnabled || !spaceId) return;
@@ -185,6 +191,7 @@ export default function SpacePage() {
           onClose={() => setRightSidebarView(null)}
           onDeleteChat={handleDeleteChat}
           onLeaveChat={handleLeaveChat}
+          onChatUpdated={refetchChat}
           isMobile={isMobile}
         />
       );
@@ -229,6 +236,7 @@ export default function SpacePage() {
             onClose={() => setRightSidebarView(null)}
             onDeleteChat={handleDeleteChat}
             onLeaveChat={handleLeaveChat}
+            onChatUpdated={refetchChat}
             isMobile={false}
           />
         )}

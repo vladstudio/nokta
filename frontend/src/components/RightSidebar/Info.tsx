@@ -12,9 +12,10 @@ interface InfoProps {
   currentUser: User | null;
   onDeleteChat: () => void;
   onLeaveChat: () => void;
+  onChatUpdated: () => void;
 }
 
-export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: InfoProps) {
+export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onChatUpdated }: InfoProps) {
   const { t } = useTranslation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -131,7 +132,7 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat }: I
         onOpenChange={setEditDialogOpen}
         spaceId={chat.space}
         chat={chat}
-        onChatUpdated={() => {}}
+        onChatUpdated={onChatUpdated}
       />
     </div>
   );
