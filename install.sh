@@ -240,8 +240,35 @@ fi
 
 sudo systemctl restart caddy
 
+# Create admin user in users collection
+echo -e "${BLUE}[12/11]${NC} Creating admin user..."
+sleep 2
+
+# Authenticate as superuser to get admin token
+ADMIN_TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/admins/auth-with-password \
+  -H "Content-Type: application/json" \
+  -d "{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+if [ -z "$ADMIN_TOKEN" ]; then
+    echo -e "${YELLOW}Warning: Could not authenticate to create user${NC}"
+else
+    # Create admin user in users collection
+    curl -s -X POST http://127.0.0.1:8090/api/collections/users/records \
+      -H "Authorization: $ADMIN_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "{
+        \"email\":\"$ADMIN_EMAIL\",
+        \"password\":\"$ADMIN_PASSWORD\",
+        \"passwordConfirm\":\"$ADMIN_PASSWORD\",
+        \"name\":\"Admin\",
+        \"role\":\"Admin\"
+      }" > /dev/null
+
+    echo -e "${GREEN}Admin user created in users collection${NC}"
+fi
+
 # Setup log rotation
-echo -e "${BLUE}[12/11]${NC} Configuring log rotation..."
+echo -e "${BLUE}[13/11]${NC} Configuring log rotation..."
 sudo tee /etc/logrotate.d/nokta-app > /dev/null << EOF
 $APP_DIR/backend/*.log {
     daily
@@ -253,7 +280,7 @@ $APP_DIR/backend/*.log {
 EOF
 
 # Create maintenance scripts
-echo -e "${BLUE}[13/11]${NC} Creating maintenance scripts..."
+echo -e "${BLUE}[14/11]${NC} Creating maintenance scripts..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -334,7 +361,7 @@ chmod +x $APP_DIR/backup.sh
 chmod +x $APP_DIR/update.sh
 
 # Setup daily backups
-echo -e "${BLUE}[14/11]${NC} Setting up automated backups..."
+echo -e "${BLUE}[15/11]${NC} Setting up automated backups..."
 (crontab -l 2>/dev/null || true; echo "0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1") | crontab -
 
 echo ""
