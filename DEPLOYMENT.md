@@ -342,47 +342,6 @@ sudo tail -f /var/log/auth.log                     # Check auth logs
 
 ---
 
-## Production Checklist
-
-**Pre-Deployment:**
-- [ ] Domain DNS configured (A record)
-- [ ] Environment variables set
-- [ ] Build successful (`./build.sh`)
-- [ ] Deployment package created (`nokta-app.tar.gz`)
-
-**Installation:**
-- [ ] Server preparation completed
-- [ ] SSH key authentication working
-- [ ] Application installed
-- [ ] Both services running
-
-**Verification:**
-- [ ] HTTPS working (green padlock)
-- [ ] Frontend loads at `https://your-domain.com`
-- [ ] Admin dashboard accessible at `/_/`
-- [ ] Test user can log in
-- [ ] Real-time messaging works
-- [ ] File uploads functional
-
-**Security:**
-- [ ] SSH password auth disabled
-- [ ] Root login disabled
-- [ ] Firewall configured (only ports 22, 80, 443)
-- [ ] fail2ban active
-- [ ] Automatic updates enabled
-- [ ] Rate limiter enabled (Settings → Application)
-- [ ] MFA enabled for superusers (Collections → _superusers)
-- [ ] SMTP configured for OTP delivery (Settings → Mail settings)
-- [ ] Auth logging verified (check logs with `sudo journalctl -u nokta-backend | grep AUTH`)
-
-**Maintenance:**
-- [ ] Daily backups scheduled (check `crontab -l`)
-- [ ] Backup script tested (`~/nokta/backup.sh`)
-- [ ] Update script tested
-- [ ] Credentials documented securely
-
----
-
 ## Support
 
 **Check logs:** Most issues show up in logs first
