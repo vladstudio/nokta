@@ -117,6 +117,13 @@ EOF
 
 chmod 600 backend/.env
 
+# Configure frontend environment
+cat > frontend/.env << EOF
+VITE_POCKETBASE_URL=https://$DOMAIN
+EOF
+
+chmod 644 frontend/.env
+
 # Make PocketBase executable
 chmod +x backend/pocketbase
 
@@ -299,12 +306,20 @@ fi
 # Stop services
 sudo systemctl stop nokta-backend
 
+# Backup .env files and database
+cp $APP_DIR/backend/.env $HOME/.env.backend.backup
+cp $APP_DIR/frontend/.env $HOME/.env.frontend.backup
+mv $APP_DIR/backend/pb_data $HOME/pb_data.backup
+
 # Extract new version
 tar -xzf $HOME/nokta-app.tar.gz -C $APP_DIR --strip-components=1
 
-# Preserve .env file
-# (already preserved by tar, but ensure permissions)
+# Restore .env files and database
+mv $HOME/.env.backend.backup $APP_DIR/backend/.env
+mv $HOME/.env.frontend.backup $APP_DIR/frontend/.env
+mv $HOME/pb_data.backup $APP_DIR/backend/pb_data
 chmod 600 $APP_DIR/backend/.env
+chmod 644 $APP_DIR/frontend/.env
 chmod +x $APP_DIR/backend/pocketbase
 
 # Start services
