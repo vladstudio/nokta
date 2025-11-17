@@ -79,7 +79,25 @@ fi
 # Download PocketBase
 echo -e "${BLUE}[3/11]${NC} Downloading PocketBase..."
 PB_VERSION="0.23.6"
-curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip" -o /tmp/pb.zip
+
+# Detect system architecture
+ARCH=$(uname -m)
+case "$ARCH" in
+    x86_64)
+        PB_ARCH="linux_amd64"
+        ;;
+    aarch64|arm64)
+        PB_ARCH="linux_arm64"
+        ;;
+    *)
+        echo -e "${RED}Error: Unsupported architecture: $ARCH${NC}"
+        echo "Supported: x86_64, aarch64/arm64"
+        exit 1
+        ;;
+esac
+
+echo "Detected architecture: $ARCH -> $PB_ARCH"
+curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_${PB_ARCH}.zip" -o /tmp/pb.zip
 unzip -o /tmp/pb.zip -d backend/
 rm /tmp/pb.zip
 chmod +x backend/pocketbase
@@ -219,7 +237,23 @@ rm -rf $APP_DIR
 curl -L $REPO_URL/archive/refs/heads/main.tar.gz | tar -xz
 mv nokta-main $APP_DIR
 
-curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip" -o /tmp/pb.zip
+# Detect system architecture
+ARCH=$(uname -m)
+case "$ARCH" in
+    x86_64)
+        PB_ARCH="linux_amd64"
+        ;;
+    aarch64|arm64)
+        PB_ARCH="linux_arm64"
+        ;;
+    *)
+        echo "Error: Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
+
+echo "Detected architecture: $ARCH -> $PB_ARCH"
+curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_${PB_ARCH}.zip" -o /tmp/pb.zip
 unzip -o /tmp/pb.zip -d $APP_DIR/backend/
 rm /tmp/pb.zip
 
