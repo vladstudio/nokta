@@ -5,9 +5,7 @@ Complete guide for deploying Nokta App to Ubuntu 24.04 VPS.
 ## Prerequisites
 
 **Local Machine:**
-- [Bun](https://bun.sh) installed
 - SSH client
-- ~30MB free space
 
 **Server:**
 - Ubuntu 24.04 LTS (fresh)
@@ -18,34 +16,7 @@ Complete guide for deploying Nokta App to Ubuntu 24.04 VPS.
 
 ---
 
-## Step 1: Build Application (Local Machine)
-
-### Configure Environment
-
-**Frontend** (`frontend/.env`):
-```bash
-VITE_POCKETBASE_URL=https://your-domain.com
-VITE_DAILY_CO_API_KEY=your_daily_co_key_here  # Optional
-```
-
-**Backend** (`backend/.env`):
-```bash
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=your_secure_password_here
-```
-
-### Build and Package
-
-```bash
-./build.sh
-tar -czf nokta-app.tar.gz deploy/
-```
-
-Creates `nokta-app.tar.gz` (~15-30 MB) ready for deployment.
-
----
-
-## Step 2: Prepare Server (One-Time)
+## Step 1: Prepare Server (One-Time)
 
 ### Upload and Run Preparation Script
 
@@ -80,21 +51,17 @@ ssh nokta@YOUR_SERVER_IP
 
 ---
 
-## Step 3: Install Application
+## Step 2: Install Application
 
-### Upload Files
-
-```bash
-# From local machine
-scp nokta-app.tar.gz install.sh nokta@YOUR_SERVER_IP:~/
-```
-
-### Run Installation
+### Download and Run Installation Script
 
 ```bash
 # On server as 'nokta' user
 ssh nokta@YOUR_SERVER_IP
-chmod +x ~/install.sh
+
+# Download installation script from GitHub
+curl -o install.sh https://raw.githubusercontent.com/vladstudio/nokta/main/install.sh
+chmod +x install.sh
 ./install.sh
 ```
 
@@ -102,10 +69,14 @@ chmod +x ~/install.sh
 - Domain name (e.g., `nokta.example.com`)
 - Admin email
 - Admin password (minimum 10 characters)
+- Daily.co API key
 
 **What it does:**
 - Installs Caddy web server
-- Extracts application files to `/home/nokta/nokta/`
+- Installs Bun (JavaScript runtime)
+- Downloads latest code from GitHub
+- Downloads PocketBase
+- Builds frontend application
 - Initializes PocketBase database
 - Creates admin user
 - Configures Caddy (automatic SSL + reverse proxy)
@@ -116,7 +87,7 @@ chmod +x ~/install.sh
 
 ---
 
-## Step 4: Verify Installation
+## Step 3: Verify Installation
 
 ### Check Services
 
@@ -136,7 +107,7 @@ First HTTPS connection takes 5-10 seconds (SSL certificate generation).
 
 ---
 
-## Step 5: Security Hardening (Recommended)
+## Step 4: Security Hardening (Recommended)
 
 ### Enable Rate Limiter (1 minute)
 
@@ -221,7 +192,7 @@ tail -f backend/pocketbase.log | grep AUTH
 Internet
    ↓
 [Caddy Web Server] :80, :443
-   ├─→ Frontend (static files from /home/nokta/nokta/frontend/)
+   ├─→ Frontend (static files from /home/nokta/nokta/frontend/dist/)
    └─→ Backend API (reverse proxy to localhost:8090)
        └─→ PocketBase (SQLite at /home/nokta/nokta/backend/pb_data/)
 ```
@@ -256,16 +227,21 @@ ls -lh ~/nokta-backups/                 # List backups (kept 7 days)
 Automatic daily backups at 3 AM via cron.
 
 ### Update Application
+
 ```bash
-# 1. Build new version locally
-./build.sh && tar -czf nokta-app.tar.gz deploy/
-
-# 2. Upload to server
-scp nokta-app.tar.gz nokta@YOUR_SERVER_IP:~/
-
-# 3. Run update script (backs up database first)
-ssh nokta@YOUR_SERVER_IP '~/nokta/update.sh'
+# On server as 'nokta' user
+ssh nokta@YOUR_SERVER_IP
+~/nokta/update.sh
 ```
+
+**What it does:**
+- Creates automatic backup
+- Stops backend service
+- Downloads latest code from GitHub
+- Downloads latest PocketBase
+- Rebuilds frontend
+- Restores database and configuration
+- Restarts services
 
 ### Restart Services
 ```bash
@@ -300,8 +276,8 @@ sudo journalctl -u caddy -n 100 --no-pager
 ### Frontend Not Loading
 ```bash
 sudo caddy validate --config /etc/caddy/Caddyfile
-ls -la /home/nokta/nokta/frontend/
-sudo tail -f /var/log/caddy/nokta-access.log
+ls -la /home/nokta/nokta/frontend/dist/
+sudo tail -f /var/log/caddy/nokta.log
 ```
 
 ### Can't Access Admin Dashboard
@@ -324,20 +300,22 @@ sudo tail -f /var/log/auth.log                     # Check auth logs
 
 ```
 /home/nokta/nokta/                     # Application root
-├── frontend/                        # Static files (served by Caddy)
+├── frontend/                        # Frontend source
+│   ├── dist/                        # Built static files (served by Caddy)
+│   └── .env                         # Frontend config
 ├── backend/                         # PocketBase
 │   ├── pocketbase                   # Executable
 │   ├── pb_data/                     # SQLite database (BACKUP THIS!)
 │   ├── pb_hooks/                    # Server-side hooks
 │   ├── pb_migrations/               # Schema migrations
-│   └── .env                         # Configuration
+│   └── .env                         # Backend config
 ├── backup.sh                        # Manual backup script
 └── update.sh                        # Update script
 
 /home/nokta/nokta-backups/             # Daily backups (7 day retention)
 /etc/caddy/Caddyfile                 # Caddy configuration
 /etc/systemd/system/nokta-backend.service  # Backend service
-/var/log/caddy/nokta-access.log       # Access logs
+/var/log/caddy/nokta.log               # Access logs
 ```
 
 ---
@@ -374,6 +352,7 @@ sudo ufw status
 | View Caddy logs | `sudo journalctl -u caddy -f` |
 | Restart backend | `sudo systemctl restart nokta-backend` |
 | Reload Caddy | `sudo systemctl reload caddy` |
+| Update app | `~/nokta/update.sh` |
 | Manual backup | `~/nokta/backup.sh` |
 | List backups | `ls -lh ~/nokta-backups/` |
 | Check disk space | `df -h` |
@@ -383,4 +362,4 @@ sudo ufw status
 
 ---
 
-**Tech Stack:** React 19 + Vite + Tailwind CSS 4 | PocketBase 0.26.3 | Caddy 2 | SQLite | Ubuntu 24.04 LTS
+**Tech Stack:** React 19 + Vite + Tailwind CSS 4 | PocketBase 0.23.6 | Caddy 2 | SQLite | Ubuntu 24.04 LTS

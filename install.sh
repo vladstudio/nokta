@@ -64,8 +64,16 @@ if ! command -v caddy &> /dev/null; then
     sudo apt-get install -y caddy
 fi
 
+# Install bun
+echo -e "${BLUE}[2/11]${NC} Installing bun..."
+if ! command -v bun &> /dev/null; then
+    curl -fsSL https://bun.sh/install | bash
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
+fi
+
 # Download from GitHub
-echo -e "${BLUE}[2/11]${NC} Downloading from GitHub..."
+echo -e "${BLUE}[3/11]${NC} Downloading from GitHub..."
 rm -rf $APP_DIR
 curl -L $REPO_URL/archive/refs/heads/main.tar.gz | tar -xz
 mv nokta-main $APP_DIR
@@ -77,7 +85,7 @@ if [ ! -d "frontend" ] || [ ! -d "backend" ]; then
 fi
 
 # Download PocketBase
-echo -e "${BLUE}[3/11]${NC} Downloading PocketBase..."
+echo -e "${BLUE}[4/11]${NC} Downloading PocketBase..."
 PB_VERSION="0.23.6"
 
 # Detect system architecture
@@ -103,7 +111,7 @@ rm /tmp/pb.zip
 chmod +x backend/pocketbase
 
 # Configure environment
-echo -e "${BLUE}[4/11]${NC} Configuring environment..."
+echo -e "${BLUE}[5/11]${NC} Configuring environment..."
 cat > backend/.env << EOF
 ADMIN_EMAIL=$ADMIN_EMAIL
 ADMIN_PASSWORD=$ADMIN_PASSWORD
@@ -116,17 +124,29 @@ VITE_DAILY_CO_API_KEY=$DAILY_API_KEY
 EOF
 chmod 644 frontend/.env
 
+# Build frontend
+echo -e "${BLUE}[6/11]${NC} Building frontend..."
+cd frontend
+bun install --frozen-lockfile
+bun run build
+
+if [ ! -d "dist" ]; then
+    echo -e "${RED}Error: Frontend build failed${NC}"
+    exit 1
+fi
+cd ..
+
 # Initialize database
-echo -e "${BLUE}[5/11]${NC} Initializing database..."
+echo -e "${BLUE}[7/11]${NC} Initializing database..."
 cd backend
 ./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
 cd ..
 
 # Configure Caddy
-echo -e "${BLUE}[6/11]${NC} Configuring Caddy..."
+echo -e "${BLUE}[8/11]${NC} Configuring Caddy..."
 sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
 $DOMAIN {
-    root * $APP_DIR/frontend
+    root * $APP_DIR/frontend/dist
     encode gzip
 
     reverse_proxy /api/* localhost:8090
@@ -149,11 +169,14 @@ $DOMAIN {
 EOF
 
 sudo mkdir -p /var/log/caddy
-sudo chown caddy:caddy /var/log/caddy
+sudo touch /var/log/caddy/nokta.log
+sudo chown -R caddy:caddy /var/log/caddy
+sudo chmod 755 /var/log/caddy
+sudo chmod 644 /var/log/caddy/nokta.log
 sudo caddy validate --config /etc/caddy/Caddyfile
 
 # Create systemd service
-echo -e "${BLUE}[7/11]${NC} Creating systemd service..."
+echo -e "${BLUE}[9/11]${NC} Creating systemd service..."
 sudo tee /etc/systemd/system/nokta-backend.service > /dev/null << EOF
 [Unit]
 Description=Nokta App Backend
@@ -178,7 +201,7 @@ WantedBy=multi-user.target
 EOF
 
 # Start services
-echo -e "${BLUE}[8/11]${NC} Starting services..."
+echo -e "${BLUE}[10/11]${NC} Starting services..."
 sudo systemctl daemon-reload
 sudo systemctl enable nokta-backend
 sudo systemctl start nokta-backend
@@ -190,10 +213,10 @@ if ! systemctl is-active --quiet nokta-backend; then
     exit 1
 fi
 
-sudo systemctl reload caddy
+sudo systemctl restart caddy
 
 # Setup log rotation
-echo -e "${BLUE}[9/11]${NC} Configuring log rotation..."
+echo -e "${BLUE}[11/11]${NC} Configuring log rotation..."
 sudo tee /etc/logrotate.d/nokta-app > /dev/null << EOF
 $APP_DIR/backend/*.log {
     daily
@@ -205,7 +228,7 @@ $APP_DIR/backend/*.log {
 EOF
 
 # Create maintenance scripts
-echo -e "${BLUE}[10/11]${NC} Creating maintenance scripts..."
+echo -e "${BLUE}[12/11]${NC} Creating maintenance scripts..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -264,6 +287,13 @@ chmod 600 $APP_DIR/backend/.env
 chmod 644 $APP_DIR/frontend/.env
 chmod +x $APP_DIR/backend/pocketbase
 
+# Build frontend
+echo "Building frontend..."
+cd $APP_DIR/frontend
+bun install --frozen-lockfile
+bun run build
+cd ..
+
 sudo systemctl start nokta-backend
 sudo systemctl reload caddy
 
@@ -274,7 +304,7 @@ chmod +x $APP_DIR/backup.sh
 chmod +x $APP_DIR/update.sh
 
 # Setup daily backups
-echo -e "${BLUE}[11/11]${NC} Setting up automated backups..."
+echo -e "${BLUE}[13/11]${NC} Setting up automated backups..."
 (crontab -l 2>/dev/null || true; echo "0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1") | crontab -
 
 echo ""
