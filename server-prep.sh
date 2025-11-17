@@ -40,6 +40,14 @@ if [ "$ID" != "ubuntu" ]; then
     fi
 fi
 
+# Detect server public IP
+echo "Detecting server public IP..."
+SERVER_IP=$(curl -s -4 icanhazip.com || curl -s ifconfig.me || echo "UNKNOWN")
+if [ "$SERVER_IP" = "UNKNOWN" ]; then
+    echo -e "${YELLOW}Warning: Could not detect public IP automatically${NC}"
+    read -p "Enter server public IP: " SERVER_IP
+fi
+
 # Configuration
 read -p "Enter username for app deployment (default: nokta): " APP_USER
 APP_USER=${APP_USER:-nokta}
@@ -48,6 +56,7 @@ echo ""
 echo "======================================"
 echo "Configuration"
 echo "======================================"
+echo "Server IP: $SERVER_IP"
 echo "App User: $APP_USER"
 echo "SSH Port: 22 (default)"
 echo ""
@@ -105,7 +114,7 @@ chown -R $APP_USER:$APP_USER /home/$APP_USER/.ssh
 echo -e "${YELLOW}Important: Add your SSH public key to authorized_keys${NC}"
 echo ""
 echo "From your local machine, run:"
-echo -e "${GREEN}cat ~/.ssh/id_rsa.pub | ssh root@YOUR_SERVER_IP 'cat >> /home/$APP_USER/.ssh/authorized_keys'${NC}"
+echo -e "${GREEN}cat ~/.ssh/id_rsa.pub | ssh root@$SERVER_IP 'cat >> /home/$APP_USER/.ssh/authorized_keys'${NC}"
 echo ""
 read -p "Press Enter when SSH key is added (or skip if already added)..."
 
@@ -256,12 +265,12 @@ echo "======================================"
 echo "Next Steps"
 echo "======================================"
 echo "1. Verify SSH key authentication works:"
-echo "   ${GREEN}ssh $APP_USER@YOUR_SERVER_IP${NC}"
+echo "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
 echo ""
 echo "2. DO NOT close this terminal until SSH key login is verified!"
 echo ""
 echo "3. Run the installation script as $APP_USER:"
-echo "   ${GREEN}ssh $APP_USER@YOUR_SERVER_IP${NC}"
+echo "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
 echo "   ${GREEN}./install.sh${NC}"
 echo ""
 echo "======================================"
