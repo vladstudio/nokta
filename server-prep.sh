@@ -53,6 +53,28 @@ read -p "Enter username for app deployment (default: nokta): " APP_USER
 APP_USER=${APP_USER:-nokta}
 
 echo ""
+read -sp "Set password for $APP_USER (min 10 chars): " APP_USER_PASSWORD
+echo ""
+read -sp "Confirm password: " APP_USER_PASSWORD_CONFIRM
+echo ""
+
+# Validate password
+if [ -z "$APP_USER_PASSWORD" ]; then
+    echo -e "${RED}Error: Password is required${NC}"
+    exit 1
+fi
+
+if [ "$APP_USER_PASSWORD" != "$APP_USER_PASSWORD_CONFIRM" ]; then
+    echo -e "${RED}Error: Passwords do not match${NC}"
+    exit 1
+fi
+
+if [ ${#APP_USER_PASSWORD} -lt 10 ]; then
+    echo -e "${RED}Error: Password must be at least 10 characters${NC}"
+    exit 1
+fi
+
+echo ""
 echo "======================================"
 echo "Configuration"
 echo "======================================"
@@ -93,11 +115,15 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
 # Create app user
 echo -e "${BLUE}[3/8]${NC} Creating application user..."
 if id "$APP_USER" &>/dev/null; then
-    echo "  User $APP_USER already exists"
+    echo "  User $APP_USER already exists, updating password"
 else
     useradd -m -s /bin/bash "$APP_USER"
     echo "  Created user: $APP_USER"
 fi
+
+# Set password
+echo "$APP_USER:$APP_USER_PASSWORD" | chpasswd
+echo "  Password set for $APP_USER"
 
 # Setup passwordless sudo for app user (for service management)
 echo "$APP_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart nokta-*" > /etc/sudoers.d/$APP_USER
