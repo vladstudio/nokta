@@ -154,7 +154,9 @@ chmod 755 $APP_DIR/frontend/dist
 # Initialize database
 echo -e "${BLUE}[8/11]${NC} Initializing database..."
 cd backend
-./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
+echo "$ADMIN_PASSWORD" | ./pocketbase superuser create "$ADMIN_EMAIL" || {
+    echo -e "${YELLOW}Note: Superuser may already exist or creation deferred${NC}"
+}
 cd ..
 
 # Configure Caddy
@@ -242,29 +244,10 @@ sudo systemctl restart caddy
 
 # Create admin user in users collection
 echo -e "${BLUE}[12/11]${NC} Creating admin user..."
-sleep 2
-
-# Authenticate as superuser to get admin token
-ADMIN_TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/admins/auth-with-password \
-  -H "Content-Type: application/json" \
-  -d "{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
-
-if [ -z "$ADMIN_TOKEN" ]; then
-    echo -e "${YELLOW}Warning: Could not authenticate to create user${NC}"
-else
-    # Create admin user in users collection
-    curl -s -X POST http://127.0.0.1:8090/api/collections/users/records \
-      -H "Authorization: $ADMIN_TOKEN" \
-      -H "Content-Type: application/json" \
-      -d "{
-        \"email\":\"$ADMIN_EMAIL\",
-        \"password\":\"$ADMIN_PASSWORD\",
-        \"passwordConfirm\":\"$ADMIN_PASSWORD\",
-        \"name\":\"Admin\",
-        \"role\":\"Admin\"
-      }" > /dev/null
-
-    echo -e "${GREEN}Admin user created in users collection${NC}"
+sleep 5
+ADMIN_TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/admins/auth-with-password -H "Content-Type: application/json" -d "{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+if [ -n "$ADMIN_TOKEN" ]; then
+    curl -s -X POST http://127.0.0.1:8090/api/collections/users/records -H "Authorization: $ADMIN_TOKEN" -H "Content-Type: application/json" -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\",\"passwordConfirm\":\"$ADMIN_PASSWORD\",\"name\":\"Admin\",\"role\":\"Admin\"}" > /dev/null && echo -e "${GREEN}✓ Admin user created${NC}" || echo -e "${YELLOW}User may already exist${NC}"
 fi
 
 # Setup log rotation
