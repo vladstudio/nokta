@@ -174,13 +174,12 @@ export default function SpacePage() {
     }
   };
 
-  if (isMobile && !chatId) return null;
-
   // Mobile: show only one component at a time
   if (isMobile) {
     if (showCallView && activeCallChat) {
       return <CallView show={showCallView} chat={activeCallChat} />;
     }
+    if (!chatId) return null;
     if (rightSidebarView && chatId) {
       return (
         <RightSidebar

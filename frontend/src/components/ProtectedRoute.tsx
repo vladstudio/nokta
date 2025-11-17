@@ -1,9 +1,11 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { useAtomValue } from 'jotai';
 import { auth } from '../services/pocketbase';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useColorScheme } from '../hooks/useColorScheme';
+import { showCallViewAtom } from '../store/callStore';
 import Sidebar from './Sidebar';
 import clsx from 'clsx';
 
@@ -17,6 +19,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
   const isMobile = useIsMobile();
   const colorScheme = useColorScheme();
+  const showCallView = useAtomValue(showCallViewAtom);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  const showSidebar = !['/my', '/admin'].includes(location) && !(isMobile && params?.chatId);
+  const showSidebar = !['/my', '/admin'].includes(location) && !(isMobile && params?.chatId) && !(isMobile && showCallView);
 
   return (
     <div className={clsx("fixed inset-0 flex overflow-hidden", getBgClass())}>
