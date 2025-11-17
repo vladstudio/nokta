@@ -154,9 +154,7 @@ chmod 755 $APP_DIR/frontend/dist
 # Initialize database
 echo -e "${BLUE}[8/11]${NC} Initializing database..."
 cd backend
-echo "$ADMIN_PASSWORD" | ./pocketbase superuser create "$ADMIN_EMAIL" || {
-    echo -e "${YELLOW}Note: Superuser may already exist or creation deferred${NC}"
-}
+./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
 cd ..
 
 # Configure Caddy
