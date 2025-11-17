@@ -41,9 +41,11 @@ read -sp "Admin password (min 10 chars): " ADMIN_PASSWORD
 echo ""
 read -sp "Confirm admin password: " ADMIN_PASSWORD_CONFIRM
 echo ""
+echo ""
+read -p "Daily.co API key (for video/audio calls): " DAILY_API_KEY
 
 # Validate input
-if [ -z "$DOMAIN" ] || [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
+if [ -z "$DOMAIN" ] || [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ] || [ -z "$DAILY_API_KEY" ]; then
     echo -e "${RED}Error: All fields are required${NC}"
     exit 1
 fi
@@ -120,6 +122,7 @@ chmod 600 backend/.env
 # Configure frontend environment
 cat > frontend/.env << EOF
 VITE_POCKETBASE_URL=https://$DOMAIN
+VITE_DAILY_CO_API_KEY=$DAILY_API_KEY
 EOF
 
 chmod 644 frontend/.env
