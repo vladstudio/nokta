@@ -161,14 +161,24 @@ cd ..
 echo -e "${BLUE}[9/11]${NC} Configuring Caddy..."
 sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
 $DOMAIN {
-    root * $APP_DIR/frontend/dist
     encode gzip
 
-    reverse_proxy /api/* localhost:8090
-    reverse_proxy /_/* localhost:8090
+    # PocketBase admin UI
+    handle /_/* {
+        reverse_proxy localhost:8090
+    }
 
-    file_server
-    try_files {path} /index.html
+    # PocketBase API
+    handle /api/* {
+        reverse_proxy localhost:8090
+    }
+
+    # Frontend SPA
+    handle {
+        root * $APP_DIR/frontend/dist
+        try_files {path} /index.html
+        file_server
+    }
 
     header {
         X-Frame-Options "SAMEORIGIN"
