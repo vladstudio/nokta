@@ -4,9 +4,10 @@ import PocketBase from 'pocketbase';
 const pb = new PocketBase('http://127.0.0.1:8090');
 
 const CONFIG = {
-  MESSAGE_COUNT: 300,
-  MESSAGE_DAYS: 7,
-  PROGRESS_STEP: 50
+  USER_COUNT: 30,
+  CHAT_COUNT: 30,
+  MESSAGE_DAYS: 12,
+  PROGRESS_STEP: 100
 };
 
 if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
@@ -23,15 +24,35 @@ const ADMIN = {
   password: process.env.ADMIN_PASSWORD
 };
 
-const USERS = [
-  { email: 'a@test.com', password: '1234567890', name: 'Alice' },
-  { email: 'b@test.com', password: '1234567890', name: 'Bob' },
-  { email: 'c@test.com', password: '1234567890', name: 'Colin' }
-];
-
 const SPACES = [
   { name: 'Team Alpha' },
   { name: 'Team Beta' }
+];
+
+// Sample names for random user generation
+const FIRST_NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack', 'Kate', 'Liam', 'Mia', 'Noah', 'Olivia', 'Peter', 'Quinn', 'Rachel', 'Sam', 'Tina', 'Uma', 'Victor', 'Wendy', 'Xavier', 'Yara', 'Zara', 'Adam', 'Belle', 'Chloe', 'David'];
+
+const SAMPLE_MESSAGES = [
+  'Hey, how are you?',
+  'Just finished the project',
+  'Let me know when you are free',
+  'That sounds great!',
+  'Can you review this?',
+  'Meeting tomorrow at 10am',
+  'Done with the initial design',
+  'What do you think about this approach?',
+  'Thanks for the feedback',
+  'I agree with that',
+  'Let me check and get back to you',
+  'This is looking good',
+  'Need your input on this',
+  'All set for the demo',
+  'Great work everyone!',
+  'Just merged the PR',
+  'Anyone free for a quick sync?',
+  'Updated the documentation',
+  'Tests are passing now',
+  'Ready for deployment'
 ];
 
 async function getOrCreate(collection, filter, data, params = {}) {
@@ -57,34 +78,39 @@ async function ensureAdmin() {
 }
 
 async function createUsers() {
-  console.log('\n📝 Creating users...');
+  console.log(`\n📝 Creating ${CONFIG.USER_COUNT} users...`);
   const users = [];
-  for (const user of USERS) {
+  
+  for (let i = 0; i < CONFIG.USER_COUNT; i++) {
+    const name = FIRST_NAMES[i % FIRST_NAMES.length];
+    const email = `user${i + 1}@test.com`;
+    const password = '1234567890';
+    
     try {
       const record = await getOrCreate(
         'users',
         'email = {:email}',
-        { ...user, passwordConfirm: user.password, emailVisibility: true, role: 'Member' },
-        { email: user.email }
+        { 
+          email, 
+          name: `${name} ${i + 1}`,
+          password, 
+          passwordConfirm: password, 
+          emailVisibility: true, 
+          role: 'Member' 
+        },
+        { email }
       );
-      console.log(`✓ ${user.name} (${user.email})`);
-      users.push({ ...record, password: user.password });
+      users.push({ ...record, password });
+      
+      if ((i + 1) % 10 === 0) {
+        console.log(`✓ Created ${i + 1}/${CONFIG.USER_COUNT} users`);
+      }
     } catch (error) {
-      console.error(`✗ Failed to create ${user.email}:`, error.message);
+      console.error(`✗ Failed to create ${email}:`, error.message);
     }
   }
-
-  // Make Alice an admin
-  const alice = users.find(u => u.name === 'Alice');
-  if (alice) {
-    try {
-      await pb.collection('users').update(alice.id, { role: 'Admin' });
-      console.log('✓ Alice promoted to Admin');
-    } catch (error) {
-      console.error('✗ Failed to promote Alice:', error.message);
-    }
-  }
-
+  
+  console.log(`✓ Total users created: ${users.length}`);
   return users;
 }
 
@@ -104,74 +130,109 @@ async function createSpaces() {
 }
 
 async function addMembers(spaces, users) {
-  console.log('\n👥 Adding members...');
+  console.log('\n👥 Adding members to spaces...');
+  let count = 0;
+  
   for (const space of spaces) {
     for (const user of users) {
       try {
         await pb.collection('space_members').create({ space: space.id, user: user.id });
-        console.log(`✓ ${user.name} → ${space.name}`);
+        count++;
+        
+        if (count % 30 === 0) {
+          console.log(`✓ Added ${count} members to spaces`);
+        }
       } catch (error) {
-        console.error(`✗ Failed: ${user.name} → ${space.name}`);
+        // Silently skip duplicates
       }
     }
   }
+  
+  console.log(`✓ Total members added: ${count}`);
 }
 
-async function createTestChat(space, users) {
-  console.log('\n💬 Creating test chat...');
-  const alice = users.find(u => u.name === 'Alice');
-  const bob = users.find(u => u.name === 'Bob');
-
-  if (!alice || !bob) {
-    throw new Error('Alice or Bob not found');
-  }
-
-  await pb.collection('users').authWithPassword(alice.email, alice.password);
-
-  try {
-    const chat = await pb.collection('chats').create({
-      space: space.id,
-      participants: [alice.id, bob.id],
-      created_by: alice.id
-    });
-    console.log(`✓ Created chat between Alice and Bob in ${space.name}`);
-    return chat;
-  } catch (error) {
-    console.error(`✗ Failed to create chat:`, error.message);
-    throw error;
-  }
+function getRandomParticipants(users, count = 2) {
+  const shuffled = [...users].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.max(count, Math.floor(Math.random() * users.length) + 2)).map(u => u.id);
 }
 
-async function createMessages(chat, users) {
-  console.log(`\n✉️  Creating ${CONFIG.MESSAGE_COUNT} messages...`);
-
-  const now = Date.now();
-  const start = now - (CONFIG.MESSAGE_DAYS * 24 * 60 * 60 * 1000);
-  const increment = (now - start) / CONFIG.MESSAGE_COUNT;
-
-  let messageNum = 0;
-
-  for (let i = 0; i < CONFIG.MESSAGE_COUNT; i++, messageNum++) {
-    const user = users[Math.floor(Math.random() * users.length)];
-    await pb.collection('users').authWithPassword(user.email, user.password);
-
+async function createChats(spaces, users) {
+  console.log(`\n💬 Creating ${CONFIG.CHAT_COUNT} chats...`);
+  const chats = [];
+  
+  // Use first user as creator for all chats
+  const creator = users[0];
+  await pb.collection('users').authWithPassword(creator.email, creator.password);
+  
+  for (let i = 0; i < CONFIG.CHAT_COUNT; i++) {
     try {
-      await pb.collection('messages').create({
-        chat: chat.id,
-        sender: user.id,
-        content: `Message ${messageNum + 1} from ${user.name}`,
-        type: 'text',
-        created: new Date(start + increment * messageNum).toISOString()
+      const space = spaces[i % spaces.length];
+      const participants = getRandomParticipants(users);
+      
+      const chat = await pb.collection('chats').create({
+        space: space.id,
+        participants,
+        created_by: creator.id
       });
-
-      if ((messageNum + 1) % CONFIG.PROGRESS_STEP === 0) {
-        console.log(`  ${messageNum + 1}/${CONFIG.MESSAGE_COUNT}...`);
+      
+      chats.push(chat);
+      
+      if ((i + 1) % 10 === 0) {
+        console.log(`✓ Created ${i + 1}/${CONFIG.CHAT_COUNT} chats`);
       }
     } catch (error) {
-      console.error(`  ✗ Failed message ${messageNum + 1}:`, error.message);
+      console.error(`✗ Failed to create chat ${i + 1}:`, error.message);
     }
   }
-  console.log(`✓ Created ${messageNum} messages`);
+  
+  console.log(`✓ Total chats created: ${chats.length}`);
+  return chats;
+}
+
+async function createMessages(chats, users) {
+  console.log(`\n✉️  Creating messages for ${chats.length} chats...`);
+  
+  let totalMessages = 0;
+  
+  for (let chatIdx = 0; chatIdx < chats.length; chatIdx++) {
+    const chat = chats[chatIdx];
+    const messageCount = Math.floor(Math.random() * 291) + 10; // 10 to 300
+    
+    const startDate = new Date('2025-01-01');
+    
+    for (let msgIdx = 0; msgIdx < messageCount; msgIdx++) {
+      try {
+        const user = users[Math.floor(Math.random() * users.length)];
+        await pb.collection('users').authWithPassword(user.email, user.password);
+        
+        // Random offset in hours (1-12)
+        const hourOffset = Math.floor(Math.random() * 12) + 1;
+        const messageDate = new Date(startDate);
+        messageDate.setHours(messageDate.getHours() + (chatIdx * CONFIG.MESSAGE_DAYS * 24) + (msgIdx * 0.5) + (Math.random() * hourOffset));
+        
+        const message = SAMPLE_MESSAGES[Math.floor(Math.random() * SAMPLE_MESSAGES.length)];
+        
+        await pb.collection('messages').create({
+          chat: chat.id,
+          sender: user.id,
+          content: message,
+          type: 'text',
+          created: messageDate.toISOString()
+        });
+        
+        totalMessages++;
+      } catch (error) {
+        // Log but continue
+        console.error(`  ✗ Failed to create message in chat ${chatIdx + 1}:`, error.message);
+      }
+    }
+    
+    if ((chatIdx + 1) % 5 === 0) {
+      console.log(`✓ Processed ${chatIdx + 1}/${chats.length} chats (${totalMessages} messages so far)`);
+    }
+  }
+  
+  console.log(`✓ Total messages created: ${totalMessages}`);
 }
 
 async function main() {
@@ -202,19 +263,22 @@ async function main() {
 
   await addMembers(spaces, users);
 
-  const chat = await createTestChat(spaces[0], users);
-  await createMessages(chat, users);
+  const chats = await createChats(spaces, users);
+  if (chats.length === 0) {
+    console.error('\n✗ Failed to create chats');
+    process.exit(1);
+  }
+
+  await createMessages(chats, users);
 
   console.log('\n✅ Setup complete!');
   console.log('\n📊 Summary:');
   console.log(`  - Users: ${users.length}`);
   console.log(`  - Spaces: ${spaces.length}`);
-  console.log(`  - Chats: 1 (Alice + Bob)`);
-  console.log(`  - Messages: ${CONFIG.MESSAGE_COUNT}`);
-  console.log('\n🔑 Credentials:');
+  console.log(`  - Chats: ${chats.length}`);
+  console.log(`\n🔑 Credentials:`);
   console.log(`  Admin: ${ADMIN.email} / ${ADMIN.password}`);
-  console.log('  Users: a@test.com / 1234567890 (Alice)');
-  console.log('         b@test.com / 1234567890 (Bob)');
+  console.log('  Test users: user1@test.com through user30@test.com / 1234567890');
 }
 
 main().catch(error => {

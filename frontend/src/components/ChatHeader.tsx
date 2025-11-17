@@ -34,7 +34,6 @@ export default function ChatHeader({
   rightSidebarView,
   isCreatingCall,
   activeCallChat,
-  currentUser,
   onBack,
   onToggleRightSidebar,
   onStartCall,
@@ -49,14 +48,14 @@ export default function ChatHeader({
             <ArrowLeftIcon size={20} className="text-accent" />
           </button>
         )}
-        <h2 className="font-semibold flex-1">{chatName}</h2>
+        <h2 className="font-semibold flex-1 grid"><div className="truncate">{chatName}</div></h2>
         {typingUsers.length > 0 && (
           <span className="text-xs text-light">
             {typingUsers.length === 1
               ? `${typingUsers[0].userName} ${t('chatWindow.isTyping')}`
               : typingUsers.length === 2
-              ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}`
-              : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
+                ? `${typingUsers[0].userName} and ${typingUsers[1].userName} ${t('chatWindow.areTyping')}`
+                : `${typingUsers.length} people ${t('chatWindow.areTyping')}`}
           </span>
         )}
       </div>
@@ -64,7 +63,7 @@ export default function ChatHeader({
         {/* Participant avatars for group chats */}
         {chat && (chat.participants?.length || 0) > 2 && chat.expand?.participants && (
           <div className="flex items-center -space-x-2">
-            {chat.expand.participants.slice(0, 5).map((participant) => (
+            {chat.expand.participants.slice(0, 4).map((participant) => (
               <UserAvatar
                 key={participant.id}
                 user={participant}
@@ -72,11 +71,11 @@ export default function ChatHeader({
                 className="border-2 rounded-full border-(--color-bg-primary)/90"
               />
             ))}
-            {chat.expand.participants.length > 5 && (
+            {chat.expand.participants.length > 4 && (
               <div
                 className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-(--color-bg-primary) bg-(--color-bg-secondary)"
               >
-                +{chat.expand.participants.length - 5}
+                +{chat.expand.participants.length - 4}
               </div>
             )}
           </div>
