@@ -127,8 +127,16 @@ chmod 644 frontend/.env
 # Build frontend
 echo -e "${BLUE}[6/11]${NC} Building frontend..."
 cd frontend
-bun install --frozen-lockfile
-bun run build
+
+# Use full path to bun
+BUN_BIN="$HOME/.bun/bin/bun"
+if [ ! -f "$BUN_BIN" ]; then
+    echo -e "${RED}Error: Bun not found at $BUN_BIN${NC}"
+    exit 1
+fi
+
+$BUN_BIN install --frozen-lockfile
+$BUN_BIN run build
 
 if [ ! -d "dist" ]; then
     echo -e "${RED}Error: Frontend build failed${NC}"
@@ -136,14 +144,21 @@ if [ ! -d "dist" ]; then
 fi
 cd ..
 
+# Fix permissions for Caddy
+echo -e "${BLUE}[7/11]${NC} Setting permissions..."
+chmod 711 $HOME
+chmod 755 $APP_DIR
+chmod 755 $APP_DIR/frontend
+chmod 755 $APP_DIR/frontend/dist
+
 # Initialize database
-echo -e "${BLUE}[7/11]${NC} Initializing database..."
+echo -e "${BLUE}[8/11]${NC} Initializing database..."
 cd backend
 ./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
 cd ..
 
 # Configure Caddy
-echo -e "${BLUE}[8/11]${NC} Configuring Caddy..."
+echo -e "${BLUE}[9/11]${NC} Configuring Caddy..."
 sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
 $DOMAIN {
     root * $APP_DIR/frontend/dist
@@ -176,7 +191,7 @@ sudo chmod 644 /var/log/caddy/nokta.log
 sudo caddy validate --config /etc/caddy/Caddyfile
 
 # Create systemd service
-echo -e "${BLUE}[9/11]${NC} Creating systemd service..."
+echo -e "${BLUE}[10/11]${NC} Creating systemd service..."
 sudo tee /etc/systemd/system/nokta-backend.service > /dev/null << EOF
 [Unit]
 Description=Nokta App Backend
@@ -201,7 +216,7 @@ WantedBy=multi-user.target
 EOF
 
 # Start services
-echo -e "${BLUE}[10/11]${NC} Starting services..."
+echo -e "${BLUE}[11/11]${NC} Starting services..."
 sudo systemctl daemon-reload
 sudo systemctl enable nokta-backend
 sudo systemctl start nokta-backend
@@ -216,7 +231,7 @@ fi
 sudo systemctl restart caddy
 
 # Setup log rotation
-echo -e "${BLUE}[11/11]${NC} Configuring log rotation..."
+echo -e "${BLUE}[12/11]${NC} Configuring log rotation..."
 sudo tee /etc/logrotate.d/nokta-app > /dev/null << EOF
 $APP_DIR/backend/*.log {
     daily
@@ -228,7 +243,7 @@ $APP_DIR/backend/*.log {
 EOF
 
 # Create maintenance scripts
-echo -e "${BLUE}[12/11]${NC} Creating maintenance scripts..."
+echo -e "${BLUE}[13/11]${NC} Creating maintenance scripts..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -290,9 +305,14 @@ chmod +x $APP_DIR/backend/pocketbase
 # Build frontend
 echo "Building frontend..."
 cd $APP_DIR/frontend
-bun install --frozen-lockfile
-bun run build
+$HOME/.bun/bin/bun install --frozen-lockfile
+$HOME/.bun/bin/bun run build
 cd ..
+
+# Fix permissions for Caddy
+chmod 755 $APP_DIR
+chmod 755 $APP_DIR/frontend
+chmod 755 $APP_DIR/frontend/dist
 
 sudo systemctl start nokta-backend
 sudo systemctl reload caddy
@@ -304,7 +324,7 @@ chmod +x $APP_DIR/backup.sh
 chmod +x $APP_DIR/update.sh
 
 # Setup daily backups
-echo -e "${BLUE}[13/11]${NC} Setting up automated backups..."
+echo -e "${BLUE}[14/11]${NC} Setting up automated backups..."
 (crontab -l 2>/dev/null || true; echo "0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1") | crontab -
 
 echo ""
