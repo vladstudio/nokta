@@ -162,7 +162,7 @@ EOF
 # Validate SSH config
 sshd -t
 if [ $? -eq 0 ]; then
-    systemctl restart sshd
+    systemctl restart ssh
     echo "  SSH configuration updated and restarted"
 else
     echo -e "${RED}Error: Invalid SSH configuration${NC}"
@@ -265,13 +265,13 @@ echo "======================================"
 echo "Next Steps"
 echo "======================================"
 echo "1. Verify SSH key authentication works:"
-echo "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
+echo -e "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
 echo ""
 echo "2. DO NOT close this terminal until SSH key login is verified!"
 echo ""
 echo "3. Run the installation script as $APP_USER:"
-echo "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
-echo "   ${GREEN}./install.sh${NC}"
+echo -e "   ${GREEN}ssh $APP_USER@$SERVER_IP${NC}"
+echo -e "   ${GREEN}./install.sh${NC}"
 echo ""
 echo "======================================"
 echo "Server Details"
