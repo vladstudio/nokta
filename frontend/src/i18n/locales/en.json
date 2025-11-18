@@ -116,6 +116,8 @@
     "year": "Year",
     "language": "Language",
     "theme": "Theme",
+    "oldPassword": "Old Password",
+    "newPassword": "New Password",
     "leaveBlankPassword": "Leave blank to keep current",
     "settingsSaved": "Settings saved"
   },

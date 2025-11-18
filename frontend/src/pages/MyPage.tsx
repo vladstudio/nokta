@@ -27,6 +27,7 @@ export default function MyPage() {
   // Settings state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [language, setLanguage] = useState<'en' | 'ru'>('en');
   const [theme, setTheme] = useState<'default' | 'wooden'>('default');
@@ -98,6 +99,7 @@ export default function MyPage() {
       if (name !== currentUser.name) formData.append('name', name);
       if (email !== currentUser.email) formData.append('email', email);
       if (password) {
+        formData.append('oldPassword', oldPassword);
         formData.append('password', password);
         formData.append('passwordConfirm', password);
       }
@@ -237,7 +239,11 @@ export default function MyPage() {
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('common.email')} />
             </div>
             <div>
-              <FormLabel htmlFor="password">{t('common.password')}</FormLabel>
+              <FormLabel htmlFor="oldPassword">{t('userSettingsDialog.oldPassword')}</FormLabel>
+              <Input id="oldPassword" type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder={t('userSettingsDialog.oldPassword')} />
+            </div>
+            <div>
+              <FormLabel htmlFor="password">{t('userSettingsDialog.newPassword')}</FormLabel>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
             </div>
             <div>

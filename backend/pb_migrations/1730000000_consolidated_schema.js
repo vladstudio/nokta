@@ -205,11 +205,11 @@ migrate((app) => {
     minSelect: 0
   }))
 
-  chats.listRule = '@request.auth.id != ""'
-  chats.viewRule = '@request.auth.id != ""'
+  chats.listRule = 'participants.id ?= @request.auth.id'
+  chats.viewRule = 'participants.id ?= @request.auth.id'
   chats.createRule = '@request.auth.id != ""'
   chats.updateRule = 'participants.id ?= @request.auth.id'
-  chats.deleteRule = '@request.auth.id != "" && participants.id ?= @request.auth.id'
+  chats.deleteRule = 'participants.id ?= @request.auth.id'
 
   chats.indexes = [
     "CREATE INDEX idx_chats_space ON chats (space)",
@@ -290,11 +290,11 @@ migrate((app) => {
     required: false
   }))
 
-  messages.listRule = '@request.auth.id != ""'
-  messages.viewRule = '@request.auth.id != ""'
-  messages.createRule = '@request.auth.id != ""'
-  messages.updateRule = '@request.auth.id != ""'
-  messages.deleteRule = "sender = @request.auth.id"
+  messages.listRule = 'chat.participants.id ?= @request.auth.id'
+  messages.viewRule = 'chat.participants.id ?= @request.auth.id'
+  messages.createRule = 'chat.participants.id ?= @request.auth.id'
+  messages.updateRule = 'chat.participants.id ?= @request.auth.id'
+  messages.deleteRule = 'sender = @request.auth.id'
 
   messages.indexes = [
     "CREATE INDEX idx_messages_chat ON messages (chat)",
@@ -343,9 +343,9 @@ migrate((app) => {
     onUpdate: false
   }))
 
-  typingEvents.listRule = '@request.auth.id != ""'
-  typingEvents.viewRule = '@request.auth.id != ""'
-  typingEvents.createRule = '@request.auth.id != ""'
+  typingEvents.listRule = 'chat.participants.id ?= @request.auth.id'
+  typingEvents.viewRule = 'chat.participants.id ?= @request.auth.id'
+  typingEvents.createRule = 'chat.participants.id ?= @request.auth.id'
   typingEvents.updateRule = null
   typingEvents.deleteRule = '@request.auth.id != ""'
 

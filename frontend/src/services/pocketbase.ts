@@ -120,8 +120,14 @@ export const spaceMembers = {
 
 export const chats = {
   async list(spaceId: string) {
+    if (!auth.user?.id) {
+      throw new Error('User must be authenticated to list chats');
+    }
     const records = await pb.collection('chats').getFullList<Chat>({
-      filter: pb.filter('space = {:spaceId}', { spaceId }),
+      filter: pb.filter('space = {:spaceId} && participants.id ?= {:userId}', {
+        spaceId,
+        userId: auth.user.id
+      }),
       expand: 'participants,last_message_sender',
       sort: '-last_message_at',
     });
