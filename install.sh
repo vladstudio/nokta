@@ -55,7 +55,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # Install Caddy
-echo -e "${BLUE}[1/11]${NC} Installing Caddy..."
+echo -e "${BLUE}[->]${NC} Installing Caddy..."
 if ! command -v caddy &> /dev/null; then
     sudo apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl
     curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -65,7 +65,7 @@ if ! command -v caddy &> /dev/null; then
 fi
 
 # Install bun
-echo -e "${BLUE}[2/11]${NC} Installing bun..."
+echo -e "${BLUE}[->]${NC} Installing bun..."
 if ! command -v bun &> /dev/null; then
     curl -fsSL https://bun.sh/install | bash
     export BUN_INSTALL="$HOME/.bun"
@@ -73,7 +73,7 @@ if ! command -v bun &> /dev/null; then
 fi
 
 # Download from GitHub
-echo -e "${BLUE}[3/11]${NC} Downloading from GitHub..."
+echo -e "${BLUE}[->]${NC} Downloading from GitHub..."
 rm -rf $APP_DIR
 curl -L $REPO_URL/archive/refs/heads/main.tar.gz | tar -xz
 mv nokta-main $APP_DIR
@@ -85,7 +85,7 @@ if [ ! -d "frontend" ] || [ ! -d "backend" ]; then
 fi
 
 # Download PocketBase
-echo -e "${BLUE}[4/11]${NC} Downloading PocketBase..."
+echo -e "${BLUE}[->]${NC} Downloading PocketBase..."
 PB_VERSION="0.23.6"
 
 # Detect system architecture
@@ -111,7 +111,7 @@ rm /tmp/pb.zip
 chmod +x backend/pocketbase
 
 # Configure environment
-echo -e "${BLUE}[5/11]${NC} Configuring environment..."
+echo -e "${BLUE}[->]${NC} Configuring environment..."
 cat > backend/.env << EOF
 ADMIN_EMAIL=$ADMIN_EMAIL
 ADMIN_PASSWORD=$ADMIN_PASSWORD
@@ -125,7 +125,7 @@ EOF
 chmod 644 frontend/.env
 
 # Build frontend
-echo -e "${BLUE}[6/11]${NC} Building frontend..."
+echo -e "${BLUE}[->]${NC} Building frontend..."
 cd frontend
 
 # Use full path to bun
@@ -145,20 +145,20 @@ fi
 cd ..
 
 # Fix permissions for Caddy
-echo -e "${BLUE}[7/11]${NC} Setting permissions..."
+echo -e "${BLUE}[->]${NC} Setting permissions..."
 chmod 711 $HOME
 chmod 755 $APP_DIR
 chmod 755 $APP_DIR/frontend
 chmod 755 $APP_DIR/frontend/dist
 
 # Initialize database
-echo -e "${BLUE}[8/11]${NC} Initializing database..."
+echo -e "${BLUE}[->]${NC} Initializing database..."
 cd backend
 ./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
 cd ..
 
 # Configure Caddy
-echo -e "${BLUE}[9/11]${NC} Configuring Caddy..."
+echo -e "${BLUE}[->]${NC} Configuring Caddy..."
 sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
 $DOMAIN {
     encode gzip
@@ -201,7 +201,7 @@ sudo chmod 644 /var/log/caddy/nokta.log
 sudo caddy validate --config /etc/caddy/Caddyfile
 
 # Create systemd service
-echo -e "${BLUE}[10/11]${NC} Creating systemd service..."
+echo -e "${BLUE}[1->]${NC} Creating systemd service..."
 sudo tee /etc/systemd/system/nokta-backend.service > /dev/null << EOF
 [Unit]
 Description=Nokta App Backend
@@ -226,7 +226,7 @@ WantedBy=multi-user.target
 EOF
 
 # Start services
-echo -e "${BLUE}[11/11]${NC} Starting services..."
+echo -e "${BLUE}[1->]${NC} Starting services..."
 sudo systemctl daemon-reload
 sudo systemctl enable nokta-backend
 sudo systemctl start nokta-backend
@@ -241,7 +241,7 @@ fi
 sudo systemctl restart caddy
 
 # Create admin user in users collection
-echo -e "${BLUE}[12/11]${NC} Creating admin user..."
+echo -e "${BLUE}[1->]${NC} Creating admin user..."
 sleep 5
 ADMIN_TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/admins/auth-with-password -H "Content-Type: application/json" -d "{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
 if [ -n "$ADMIN_TOKEN" ]; then
@@ -249,7 +249,7 @@ if [ -n "$ADMIN_TOKEN" ]; then
 fi
 
 # Setup log rotation
-echo -e "${BLUE}[13/11]${NC} Configuring log rotation..."
+echo -e "${BLUE}[1->]${NC} Configuring log rotation..."
 sudo tee /etc/logrotate.d/nokta-app > /dev/null << EOF
 $APP_DIR/backend/*.log {
     daily
@@ -261,7 +261,7 @@ $APP_DIR/backend/*.log {
 EOF
 
 # Create maintenance scripts
-echo -e "${BLUE}[14/11]${NC} Creating maintenance scripts..."
+echo -e "${BLUE}[1->]${NC} Creating maintenance scripts..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -342,7 +342,7 @@ chmod +x $APP_DIR/backup.sh
 chmod +x $APP_DIR/update.sh
 
 # Setup daily backups
-echo -e "${BLUE}[15/11]${NC} Setting up automated backups..."
+echo -e "${BLUE}[1->]${NC} Setting up automated backups..."
 (crontab -l 2>/dev/null || true; echo "0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1") | crontab -
 
 echo ""
