@@ -37,8 +37,8 @@ migrate((app) => {
   spaces.listRule = '@request.auth.id != ""'
   spaces.viewRule = '@request.auth.id != ""'
   spaces.createRule = '@request.auth.id != ""'
-  spaces.updateRule = null
-  spaces.deleteRule = null
+  spaces.updateRule = '@request.auth.role = "Admin"'
+  spaces.deleteRule = '@request.auth.role = "Admin"'
 
   app.save(spaces)
 
@@ -84,9 +84,9 @@ migrate((app) => {
 
   spaceMembers.listRule = '@request.auth.id != ""'
   spaceMembers.viewRule = '@request.auth.id != ""'
-  spaceMembers.createRule = null
+  spaceMembers.createRule = '@request.auth.role = "Admin"'
   spaceMembers.updateRule = null
-  spaceMembers.deleteRule = null
+  spaceMembers.deleteRule = '@request.auth.role = "Admin"'
 
   spaceMembers.indexes = [
     "CREATE UNIQUE INDEX idx_unique_space_member ON space_members (space, user)",
@@ -96,7 +96,7 @@ migrate((app) => {
 
   app.save(spaceMembers)
 
-  // Create chats collection (without type field, background removed)
+  // Create chats collection
   const chats = new Collection({
     name: "chats",
     type: "base"
@@ -482,8 +482,9 @@ migrate((app) => {
 
   users.listRule = '@request.auth.id != ""'
   users.viewRule = '@request.auth.id != ""'
-  users.updateRule = 'id = @request.auth.id'
-  users.deleteRule = 'id = @request.auth.id'
+  users.createRule = '@request.auth.role = "Admin"'
+  users.updateRule = '@request.auth.role = "Admin" || @request.auth.id = id'
+  users.deleteRule = '@request.auth.role = "Admin"'
 
   app.save(users)
 
@@ -530,6 +531,7 @@ migrate((app) => {
 
   users.listRule = null
   users.viewRule = null
+  users.createRule = null
   users.updateRule = null
   users.deleteRule = null
 

@@ -8,8 +8,6 @@ echo ""
 if lsof -Pi :8090 -sTCP:LISTEN -t >/dev/null 2>&1; then
     echo "⚠️  PocketBase is currently running on port 8090"
     echo "Please stop PocketBase first, then run this script again."
-    echo ""
-    echo "To stop PocketBase:"
     echo "  1. Press Ctrl+C in the terminal where PocketBase is running"
     echo "  2. Or run: lsof -ti:8090 | xargs kill"
     exit 1
@@ -48,19 +46,11 @@ else
     export $(grep -v '^#' .env.example | xargs)
 fi
 
-# Create admin user
-echo "👑 Creating admin user..."
+# Create superuser
+echo "👑 Creating superuser..."
 ./pocketbase superuser upsert "$ADMIN_EMAIL" "$ADMIN_PASSWORD" > /dev/null 2>&1
-echo "✓ Admin created: $ADMIN_EMAIL"
+echo "✓ Superuser created: $ADMIN_EMAIL"
 echo ""
-
-# Install dependencies if needed
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    bun install
-    echo "✓ Dependencies installed"
-    echo ""
-fi
 
 echo "🚀 Starting PocketBase..."
 echo "   (Starting in background, logs in pocketbase.log)"
@@ -83,10 +73,43 @@ fi
 echo "✓ PocketBase is ready"
 echo ""
 
-# Run setup script
-echo "🎬 Running setup script..."
-echo ""
-bun run setup
+# Create admin user in users collection via API
+echo "👤 Creating admin user in users collection..."
+
+# First, authenticate as superuser to get token
+AUTH_RESPONSE=$(curl -s -X POST "http://127.0.0.1:8090/api/collections/_superusers/auth-with-password" \
+    -H "Content-Type: application/json" \
+    -d "{
+        \"identity\": \"$ADMIN_EMAIL\",
+        \"password\": \"$ADMIN_PASSWORD\"
+    }")
+
+TOKEN=$(echo "$AUTH_RESPONSE" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+if [ -z "$TOKEN" ]; then
+    echo "❌ Failed to authenticate as superuser"
+    kill $POCKETBASE_PID 2>/dev/null
+    exit 1
+fi
+
+# Create admin user via API with superuser token
+curl -s -X POST "http://127.0.0.1:8090/api/collections/users/records" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    -d "{
+        \"email\": \"$ADMIN_EMAIL\",
+        \"password\": \"$ADMIN_PASSWORD\",
+        \"passwordConfirm\": \"$ADMIN_PASSWORD\",
+        \"name\": \"Admin\",
+        \"role\": \"Admin\",
+        \"emailVisibility\": true
+    }" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "✓ Admin user created in users collection: $ADMIN_EMAIL"
+else
+    echo "⚠️  Failed to create admin user (may already exist)"
+fi
 
 echo ""
 echo "✅ All done!"
