@@ -86,12 +86,10 @@ export function showMessageNotification(
   body: string,
   options?: {
     chatId?: string;
-    spaceId?: string;
     icon?: string;
     tag?: string;
   }
 ): Notification | null {
-  // Truncate body if too long
   const truncatedBody = body.length > 100
     ? body.substring(0, 100) + '...'
     : body;
@@ -105,7 +103,6 @@ export function showMessageNotification(
     silent: false,
     data: {
       chatId: options?.chatId,
-      spaceId: options?.spaceId,
       timestamp: Date.now(),
     },
   });
@@ -115,21 +112,20 @@ export function showMessageNotification(
  * Show a notification for an incoming call
  *
  * @param callerName - Name of the person calling
- * @param spaceName - Name of the space
+ * @param chatName - Name of the chat
  * @param options - Additional notification options
  */
 export function showCallNotification(
   callerName: string,
-  spaceName: string,
+  chatName: string,
   options?: {
     inviteId?: string;
-    spaceId?: string;
     icon?: string;
     tag?: string;
   }
 ): Notification | null {
   return createNotification(`Incoming call from ${callerName}`, {
-    body: `In ${spaceName}`,
+    body: `In ${chatName}`,
     icon: options?.icon || '/logo.png',
     tag: options?.tag || `call-invite-${options?.inviteId}`,
     badge: '/logo-badge.png',
@@ -137,7 +133,6 @@ export function showCallNotification(
     silent: false,
     data: {
       inviteId: options?.inviteId,
-      spaceId: options?.spaceId,
       timestamp: Date.now(),
       type: 'call-invite',
     },

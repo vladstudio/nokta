@@ -33,7 +33,6 @@ const EMPTY_STATE_ICON_SIZE = 80;
 export default function Search({ chatId, onClose, isMobile }: SearchProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { results, loading } = useSearchMessages(chatId, query);
@@ -42,7 +41,7 @@ export default function Search({ chatId, onClose, isMobile }: SearchProps) {
 
   const handleSelectMessage = (message: Message, index: number) => {
     setSelectedIndex(index);
-    setLocation(`/spaces/${params?.spaceId}/chat/${chatId}?msg=${message.id}`);
+    setLocation(`/chat/${chatId}?msg=${message.id}`);
     if (isMobile) onClose();
   };
 

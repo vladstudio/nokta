@@ -7,7 +7,7 @@ export default function AdminRoute({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!auth.isValid || auth.user?.role !== 'Admin') {
-      setLocation('/my');
+      setLocation('/chat');
     }
   }, [setLocation]);
 

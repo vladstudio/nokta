@@ -1,31 +1,30 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, Button, Input, FormLabel, ScrollArea, Checkbox, useToastManager } from '../ui';
-import { spaceMembers, chats, auth } from '../services/pocketbase';
+import { users, chats, auth } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
-import type { SpaceMember, Chat } from '../types';
+import type { User, Chat } from '../types';
 
 interface ChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  spaceId: string;
   chat?: Chat;
   onChatCreated?: (chatId: string) => void;
   onChatUpdated?: () => void;
 }
 
-export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCreated, onChatUpdated }: ChatDialogProps) {
+export default function ChatDialog({ open, onOpenChange, chat, onChatCreated, onChatUpdated }: ChatDialogProps) {
   const { t } = useTranslation();
   const toastManager = useToastManager();
   const isEditing = !!chat;
   const [chatName, setChatName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [members, setMembers] = useState<SpaceMember[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open && spaceId) {
-      spaceMembers.list(spaceId).then(setMembers).catch(() => setMembers([]));
+    if (open) {
+      users.list().then(setAllUsers).catch(() => setAllUsers([]));
       if (chat) {
         setChatName(chat.name || '');
         setSelectedUsers(chat.participants.filter(id => id !== auth.user?.id));
@@ -36,13 +35,13 @@ export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCr
     } else {
       setChatName('');
       setSelectedUsers([]);
-      setMembers([]);
+      setAllUsers([]);
     }
-  }, [open, spaceId, chat]);
+  }, [open, chat]);
 
-  const availableMembers = useMemo(() =>
-    members.filter(m => m.expand?.user && m.user !== auth.user?.id),
-    [members, auth.user?.id]
+  const availableUsers = useMemo(() =>
+    allUsers.filter(u => u.id !== auth.user?.id),
+    [allUsers, auth.user?.id]
   );
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -58,7 +57,7 @@ export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCr
         onChatUpdated?.();
       } else {
         const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
-        const newChat = await chats.create(spaceId, participants, chatName.trim() || undefined);
+        const newChat = await chats.create(participants, chatName.trim() || undefined);
         onChatCreated?.(newChat.id);
       }
       onOpenChange(false);
@@ -100,24 +99,20 @@ export default function ChatDialog({ open, onOpenChange, spaceId, chat, onChatCr
         </div>
         <ScrollArea className="max-h-[50dvh]">
           <div className="grid">
-            {availableMembers.map(member => {
-              const user = member.expand?.user;
-              if (!user) return null;
-              return (
-                <label key={member.id} className="flex items-center gap-3 p-2 hover:bg-(--color-bg-hover) rounded cursor-pointer">
-                  <Checkbox
-                    checked={selectedUsers.includes(user.id)}
-                    onCheckedChange={(checked) => {
-                      setSelectedUsers(prev =>
-                        checked ? [...prev, user.id] : prev.filter(id => id !== user.id)
-                      );
-                    }}
-                  />
-                  <UserAvatar user={user} size={20} className="text-accent" />
-                  <span className="text-sm">{user.name || user.email}</span>
-                </label>
-              );
-            })}
+            {availableUsers.map(user => (
+              <label key={user.id} className="flex items-center gap-3 p-2 hover:bg-(--color-bg-hover) rounded cursor-pointer">
+                <Checkbox
+                  checked={selectedUsers.includes(user.id)}
+                  onCheckedChange={(checked) => {
+                    setSelectedUsers(prev =>
+                      checked ? [...prev, user.id] : prev.filter(id => id !== user.id)
+                    );
+                  }}
+                />
+                <UserAvatar user={user} size={20} className="text-accent" />
+                <span className="text-sm">{user.name || user.email}</span>
+              </label>
+            ))}
           </div>
         </ScrollArea>
       </form>

@@ -4,16 +4,14 @@ import { showMessageNotification } from '../utils/notifications';
 import type { Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
 
 /**
- * Manages unread message counts for all chats in a space
+ * Manages unread message counts for all chats
  * Also shows browser notifications for new messages
  *
- * @param spaceId - Current space ID
- * @param chats - List of chats in the space
+ * @param chats - List of chats
  * @param currentChatId - ID of currently open chat (to prevent notifications)
  * @returns Object with unread counts and mark-as-read function
  */
 export function useUnreadMessages(
-  spaceId: string | undefined,
   chats: Chat[],
   currentChatId?: string
 ) {
@@ -35,9 +33,9 @@ export function useUnreadMessages(
   // Create stable chatIds for dependency tracking
   const chatIds = useMemo(() => chats.map(c => c.id).sort().join(','), [chats]);
 
-  // Load initial unread counts - only when space or chatIds change
+  // Load initial unread counts - only when chatIds change
   useEffect(() => {
-    if (!spaceId || !userId || chats.length === 0) {
+    if (!userId || chats.length === 0) {
       return;
     }
 
@@ -46,7 +44,7 @@ export function useUnreadMessages(
     const loadUnreadCounts = async () => {
       try {
         // Get read status for all chats
-        const readStatusMap = await chatReadStatus.getForSpace(userId, spaceId);
+        const readStatusMap = await chatReadStatus.getAll(userId);
         readStatusMapRef.current = readStatusMap;
 
         // Compute unread count for each chat
@@ -81,11 +79,11 @@ export function useUnreadMessages(
     return () => {
       isCancelled = true;
     };
-  }, [spaceId, userId, chatIds]);
+  }, [userId, chatIds]);
 
   // Set up real-time subscriptions - separate effect
   useEffect(() => {
-    if (!spaceId || !userId || chats.length === 0) {
+    if (!userId || chats.length === 0) {
       return;
     }
 
@@ -137,7 +135,6 @@ export function useUnreadMessages(
                 expandedMsg.content,
                 {
                   chatId: message.chat,
-                  spaceId: spaceId,
                 }
               );
 
@@ -151,7 +148,6 @@ export function useUnreadMessages(
                   window.dispatchEvent(new CustomEvent('notification-click', {
                     detail: {
                       chatId: message.chat,
-                      spaceId: spaceId,
                     },
                   }));
                 };
@@ -242,7 +238,7 @@ export function useUnreadMessages(
       if (messagesUnsubscribe) messagesUnsubscribe();
       if (readStatusUnsubscribe) readStatusUnsubscribe();
     };
-  }, [spaceId, userId, chatIds]);
+  }, [userId, chatIds]);
 
   /**
    * Mark a chat as read and reset its unread count

@@ -67,11 +67,11 @@ export const callsAPI = {
   },
 
   /**
-   * Get all chats with active calls in a space
+   * Get all chats with active calls
    */
-  async getActiveCallsInSpace(spaceId: string): Promise<Chat[]> {
+  async getActiveCalls(): Promise<Chat[]> {
     const chats = await pb.collection('chats').getFullList<Chat>({
-      filter: `space = "${spaceId}" && is_active_call = true`,
+      filter: 'is_active_call = true',
       sort: '-updated',
       expand: 'participants'
     });
@@ -79,17 +79,11 @@ export const callsAPI = {
   },
 
   /**
-   * Subscribe to chat updates in a space
-   * Passes all chat update events to callback for active call tracking
+   * Subscribe to chat updates for active call tracking
    */
-  subscribeToActiveCalls(
-    spaceId: string,
-    callback: (data: RecordSubscription<Chat>) => void
-  ) {
+  subscribeToActiveCalls(callback: (data: RecordSubscription<Chat>) => void) {
     return pb.collection('chats').subscribe('*', async (data) => {
-      // Only trigger callback for chats in this space
-      if (data.record.space === spaceId && data.action === 'update') {
-        // Fetch full chat with expanded participants for proper display
+      if (data.action === 'update') {
         try {
           const fullChat = await pb.collection('chats').getOne<Chat>(data.record.id, {
             expand: 'participants'

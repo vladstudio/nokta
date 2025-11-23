@@ -24,10 +24,6 @@ const ADMIN = {
   password: process.env.ADMIN_PASSWORD
 };
 
-const SPACES = [
-  { name: 'Team Alpha' },
-  { name: 'Team Beta' }
-];
 
 // Sample names for random user generation
 const FIRST_NAMES = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack', 'Kate', 'Liam', 'Mia', 'Noah', 'Olivia', 'Peter', 'Quinn', 'Rachel', 'Sam', 'Tina', 'Uma', 'Victor', 'Wendy', 'Xavier', 'Yara', 'Zara', 'Adam', 'Belle', 'Chloe', 'David'];
@@ -136,63 +132,24 @@ async function createUsers() {
   return users;
 }
 
-async function createSpaces() {
-  console.log('\n🏢 Creating spaces...');
-  const spaces = [];
-  for (const space of SPACES) {
-    try {
-      const record = await pb.collection('spaces').create(space);
-      console.log(`✓ Created ${space.name}`);
-      spaces.push(record);
-    } catch (error) {
-      console.error(`✗ Failed to create ${space.name}:`, error.message);
-    }
-  }
-  return spaces;
-}
-
-async function addMembers(spaces, users) {
-  console.log('\n👥 Adding members to spaces...');
-  let count = 0;
-  
-  for (const space of spaces) {
-    for (const user of users) {
-      try {
-        await pb.collection('space_members').create({ space: space.id, user: user.id });
-        count++;
-        
-        if (count % 30 === 0) {
-          console.log(`✓ Added ${count} members to spaces`);
-        }
-      } catch (error) {
-        // Silently skip duplicates
-      }
-    }
-  }
-  
-  console.log(`✓ Total members added: ${count}`);
-}
 
 function getRandomParticipants(users, count = 2) {
   const shuffled = [...users].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.max(count, Math.floor(Math.random() * users.length) + 2)).map(u => u.id);
 }
 
-async function createChats(spaces, users) {
+async function createChats(users) {
   console.log(`\n💬 Creating ${CONFIG.CHAT_COUNT} chats...`);
   const chats = [];
 
-  // Use first user as creator for all chats
   const creator = users[0];
   await pb.collection('users').authWithPassword(creator.email, creator.password);
 
   for (let i = 0; i < CONFIG.CHAT_COUNT; i++) {
     try {
-      const space = spaces[i % spaces.length];
       const participants = getRandomParticipants(users);
 
       const chat = await pb.collection('chats').create({
-        space: space.id,
         participants,
         created_by: creator.id
       });
@@ -277,15 +234,7 @@ async function main() {
     process.exit(1);
   }
 
-  const spaces = await createSpaces();
-  if (spaces.length < 2) {
-    console.error('\n✗ Failed to create spaces');
-    process.exit(1);
-  }
-
-  await addMembers(spaces, users);
-
-  const chats = await createChats(spaces, users);
+  const chats = await createChats(users);
   if (chats.length === 0) {
     console.error('\n✗ Failed to create chats');
     process.exit(1);
@@ -296,7 +245,6 @@ async function main() {
   console.log('\n✅ Setup complete!');
   console.log('\n📊 Summary:');
   console.log(`  - Users: ${users.length}`);
-  console.log(`  - Spaces: ${spaces.length}`);
   console.log(`  - Chats: ${chats.length}`);
   console.log(`\n🔑 Credentials:`);
   console.log(`  Admin: ${ADMIN.email} / ${ADMIN.password}`);

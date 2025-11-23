@@ -1,101 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  // ============================================
-  // COLLECTIONS
-  // ============================================
-
-  // Create spaces collection
-  const spaces = new Collection({
-    name: "spaces",
-    type: "base"
-  })
-
-  spaces.fields.addAt(0, new Field({
-    name: "name",
-    type: "text",
-    required: true,
-    presentable: true,
-    min: 1,
-    max: 100,
-    pattern: ""
-  }))
-
-  spaces.fields.addAt(1, new Field({
-    name: "created",
-    type: "autodate",
-    onCreate: true,
-    onUpdate: false
-  }))
-
-  spaces.fields.addAt(2, new Field({
-    name: "updated",
-    type: "autodate",
-    onCreate: true,
-    onUpdate: true
-  }))
-
-  spaces.listRule = '@request.auth.id != ""'
-  spaces.viewRule = '@request.auth.id != ""'
-  spaces.createRule = '@request.auth.id != ""'
-  spaces.updateRule = '@request.auth.role = "Admin"'
-  spaces.deleteRule = '@request.auth.role = "Admin"'
-
-  app.save(spaces)
-
-  // Create space_members collection
-  const spaceMembers = new Collection({
-    name: "space_members",
-    type: "base"
-  })
-
-  spaceMembers.fields.addAt(0, new Field({
-    name: "space",
-    type: "relation",
-    required: true,
-    collectionId: spaces.id,
-    cascadeDelete: true,
-    maxSelect: 1,
-    minSelect: 0
-  }))
-
-  spaceMembers.fields.addAt(1, new Field({
-    name: "user",
-    type: "relation",
-    required: true,
-    collectionId: app.findCollectionByNameOrId("users").id,
-    cascadeDelete: false,
-    maxSelect: 1,
-    minSelect: 0
-  }))
-
-  spaceMembers.fields.addAt(2, new Field({
-    name: "created",
-    type: "autodate",
-    onCreate: true,
-    onUpdate: false
-  }))
-
-  spaceMembers.fields.addAt(3, new Field({
-    name: "updated",
-    type: "autodate",
-    onCreate: true,
-    onUpdate: true
-  }))
-
-  spaceMembers.listRule = '@request.auth.id != ""'
-  spaceMembers.viewRule = '@request.auth.id != ""'
-  spaceMembers.createRule = '@request.auth.role = "Admin"'
-  spaceMembers.updateRule = null
-  spaceMembers.deleteRule = '@request.auth.role = "Admin"'
-
-  spaceMembers.indexes = [
-    "CREATE UNIQUE INDEX idx_unique_space_member ON space_members (space, user)",
-    "CREATE INDEX idx_space_members_space ON space_members (space)",
-    "CREATE INDEX idx_space_members_user ON space_members (user)"
-  ]
-
-  app.save(spaceMembers)
-
   // Create chats collection
   const chats = new Collection({
     name: "chats",
@@ -103,16 +7,6 @@ migrate((app) => {
   })
 
   chats.fields.addAt(0, new Field({
-    name: "space",
-    type: "relation",
-    required: true,
-    collectionId: spaces.id,
-    cascadeDelete: true,
-    maxSelect: 1,
-    minSelect: 0
-  }))
-
-  chats.fields.addAt(1, new Field({
     name: "participants",
     type: "relation",
     required: false,
@@ -122,7 +16,7 @@ migrate((app) => {
     minSelect: 0
   }))
 
-  chats.fields.addAt(2, new Field({
+  chats.fields.addAt(1, new Field({
     name: "name",
     type: "text",
     required: false,
@@ -131,19 +25,19 @@ migrate((app) => {
     pattern: ""
   }))
 
-  chats.fields.addAt(3, new Field({
+  chats.fields.addAt(2, new Field({
     name: "last_message_at",
     type: "date",
     required: false
   }))
 
-  chats.fields.addAt(4, new Field({
+  chats.fields.addAt(3, new Field({
     name: "last_message_content",
     type: "text",
     required: false
   }))
 
-  chats.fields.addAt(5, new Field({
+  chats.fields.addAt(4, new Field({
     name: "last_message_sender",
     type: "relation",
     required: false,
@@ -151,7 +45,7 @@ migrate((app) => {
     maxSelect: 1
   }))
 
-  chats.fields.addAt(6, new Field({
+  chats.fields.addAt(5, new Field({
     name: "avatar",
     type: "file",
     required: false,
@@ -160,21 +54,21 @@ migrate((app) => {
     mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"]
   }))
 
-  chats.fields.addAt(7, new Field({
+  chats.fields.addAt(6, new Field({
     name: "created",
     type: "autodate",
     onCreate: true,
     onUpdate: false
   }))
 
-  chats.fields.addAt(8, new Field({
+  chats.fields.addAt(7, new Field({
     name: "updated",
     type: "autodate",
     onCreate: true,
     onUpdate: true
   }))
 
-  chats.fields.addAt(9, new Field({
+  chats.fields.addAt(8, new Field({
     name: "daily_room_url",
     type: "text",
     required: false,
@@ -183,19 +77,19 @@ migrate((app) => {
     pattern: ""
   }))
 
-  chats.fields.addAt(10, new Field({
+  chats.fields.addAt(9, new Field({
     name: "is_active_call",
     type: "bool",
     required: false
   }))
 
-  chats.fields.addAt(11, new Field({
+  chats.fields.addAt(10, new Field({
     name: "call_participants",
     type: "json",
     required: false
   }))
 
-  chats.fields.addAt(12, new Field({
+  chats.fields.addAt(11, new Field({
     name: "created_by",
     type: "relation",
     required: false,
@@ -212,7 +106,6 @@ migrate((app) => {
   chats.deleteRule = 'participants.id ?= @request.auth.id'
 
   chats.indexes = [
-    "CREATE INDEX idx_chats_space ON chats (space)",
     "CREATE INDEX idx_chats_participants ON chats (participants)"
   ]
 
@@ -413,7 +306,6 @@ migrate((app) => {
   // Update users collection
   const users = app.findCollectionByNameOrId("users")
 
-  // Remove verified field if it exists
   const verifiedField = users.fields.getByName("verified")
   if (verifiedField) {
     users.fields.removeById(verifiedField.id)
@@ -490,7 +382,6 @@ migrate((app) => {
 
   return null
 }, (app) => {
-  // Rollback: delete collections in reverse order
   const chatReadStatus = app.findCollectionByNameOrId("chat_read_status")
   app.delete(chatReadStatus)
 
@@ -503,13 +394,6 @@ migrate((app) => {
   const chats = app.findCollectionByNameOrId("chats")
   app.delete(chats)
 
-  const spaceMembers = app.findCollectionByNameOrId("space_members")
-  app.delete(spaceMembers)
-
-  const spaces = app.findCollectionByNameOrId("spaces")
-  app.delete(spaces)
-
-  // Remove fields from users
   const users = app.findCollectionByNameOrId("users")
   const nameField = users.fields.getByName("name")
   const avatarField = users.fields.getByName("avatar")

@@ -51,7 +51,6 @@ const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
 export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
-  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
 
   if (!chatId) {
     return (
@@ -508,7 +507,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       const callChat = await callsAPI.startCall(chat.id);
       setActiveCallChat(callChat);
       setShowCallView(true);
-      setLocation(`/spaces/${params?.spaceId}/chat`);
+      setLocation('/chat');
     } catch (error) {
       console.error('Failed to start call:', error);
       toastManager.add({
@@ -522,7 +521,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   };
 
   const handleBack = () => {
-    setLocation(`/spaces/${params?.spaceId}/chat`);
+    setLocation('/chat');
   };
 
   // Sync external chat with local state
@@ -616,7 +615,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onRetryUpload={handleRetryUpload}
         onCancelUpload={handleCancelUpload}
         onReaction={handleReaction}
-        onJumpToPresent={() => setLocation(`/spaces/${params?.spaceId}/chat/${chatId}`)}
+        onJumpToPresent={() => setLocation(`/chat/${chatId}`)}
         messagesEndRef={messagesEndRef}
       />
       <ChatInputArea

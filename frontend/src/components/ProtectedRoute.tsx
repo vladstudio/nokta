@@ -16,7 +16,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { t } = useTranslation();
   const [location, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
+  const [, params] = useRoute('/chat/:chatId?');
   const isMobile = useIsMobile();
   const colorScheme = useColorScheme();
   const showCallView = useAtomValue(showCallViewAtom);
@@ -51,7 +51,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  const showSidebar = !['/my', '/admin'].includes(location) && !(isMobile && params?.chatId) && !(isMobile && showCallView);
+  const showSidebar = !['/admin'].includes(location) && !(isMobile && params?.chatId) && !(isMobile && showCallView) && !(isMobile && location === '/settings');
 
   return (
     <div className={clsx("fixed inset-0 flex overflow-hidden", getBgClass())}>

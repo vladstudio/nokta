@@ -6,6 +6,7 @@ interface MenuItem {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  icon?: ReactNode;
 }
 
 interface MenuProps {
@@ -27,8 +28,9 @@ export function Menu({ trigger, items, className = '' }: MenuProps) {
                   key={i}
                   onClick={item.onClick}
                   disabled={item.disabled}
-                  className="px-4 py-2 cursor-pointer hover:bg-(--color-bg-hover) data-highlighted:bg-(--color-bg-hover) disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 cursor-pointer hover:bg-(--color-bg-hover) data-highlighted:bg-(--color-bg-hover) disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
+                  {item.icon}
                   {item.label}
                 </BaseMenu.Item>
               ))}

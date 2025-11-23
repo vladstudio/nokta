@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { User, Space, SpaceMember, Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
+import type { User, Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
@@ -78,56 +78,13 @@ export const users = {
   },
 };
 
-export const spaces = {
-  async list() {
-    return await pb.collection('spaces').getFullList<Space>();
-  },
-
-  async getOne(id: string) {
-    return await pb.collection('spaces').getOne<Space>(id);
-  },
-
-  async create(name: string) {
-    return await pb.collection('spaces').create<Space>({ name });
-  },
-
-  async update(spaceId: string, name: string) {
-    return await pb.collection('spaces').update<Space>(spaceId, { name });
-  },
-
-  async delete(spaceId: string) {
-    await pb.collection('spaces').delete(spaceId);
-  },
-};
-
-export const spaceMembers = {
-  async list(spaceId: string) {
-    const records = await pb.collection('space_members').getFullList<SpaceMember>({
-      filter: pb.filter('space = {:spaceId}', { spaceId }),
-      expand: 'user',
-    });
-    return records;
-  },
-
-  async add(spaceId: string, userId: string) {
-    return await pb.collection('space_members').create<SpaceMember>({ space: spaceId, user: userId });
-  },
-
-  async remove(memberId: string) {
-    await pb.collection('space_members').delete(memberId);
-  },
-};
-
 export const chats = {
-  async list(spaceId: string) {
+  async list() {
     if (!auth.user?.id) {
       throw new Error('User must be authenticated to list chats');
     }
     const records = await pb.collection('chats').getFullList<Chat>({
-      filter: pb.filter('space = {:spaceId} && participants.id ?= {:userId}', {
-        spaceId,
-        userId: auth.user.id
-      }),
+      filter: pb.filter('participants.id ?= {:userId}', { userId: auth.user.id }),
       expand: 'participants,last_message_sender',
       sort: '-last_message_at',
     });
@@ -141,12 +98,11 @@ export const chats = {
     return record;
   },
 
-  async create(spaceId: string, participants: string[], name?: string) {
+  async create(participants: string[], name?: string) {
     if (!auth.user?.id) {
       throw new Error('User must be authenticated to create a chat');
     }
     return await pb.collection('chats').create<Chat>({
-      space: spaceId,
       participants,
       name,
       created_by: auth.user.id,
@@ -316,12 +272,12 @@ export const messages = {
 
 export const chatReadStatus = {
   /**
-   * Get read status for all chats in a space
+   * Get read status for all chats
    * Returns map of chatId -> last_read_at
    */
-  async getForSpace(userId: string, spaceId: string): Promise<Map<string, string>> {
+  async getAll(userId: string): Promise<Map<string, string>> {
     const records = await pb.collection('chat_read_status').getFullList<ChatReadStatus>({
-      filter: pb.filter('user = {:userId} && chat.space = {:spaceId}', { userId, spaceId }),
+      filter: pb.filter('user = {:userId}', { userId }),
       expand: 'chat',
     });
 

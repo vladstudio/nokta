@@ -127,7 +127,6 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
       <ChatDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        spaceId={chat.space}
         chat={chat}
         onChatUpdated={onChatUpdated}
       />

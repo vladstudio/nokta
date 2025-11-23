@@ -13,27 +13,8 @@ export interface User {
   updated: string;
 }
 
-export interface Space {
-  id: string;
-  name: string;
-  created?: string;
-  updated?: string;
-}
-
-export interface SpaceMember {
-  id: string;
-  space: string;
-  user: string;
-  created: string;
-  updated: string;
-  expand?: {
-    user?: User;
-  };
-}
-
 export interface Chat {
   id: string;
-  space: string;
   participants: string[];
   created_by?: string;
   name?: string;

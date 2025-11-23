@@ -1,7 +1,7 @@
 import { Route, Switch, useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
 import { Provider as JotaiProvider } from 'jotai';
-import { auth, spaces } from './services/pocketbase';
+import { auth } from './services/pocketbase';
 import { requestNotificationPermission, getNotificationPermission } from './utils/notifications';
 import { ToastProvider } from './ui';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -9,12 +9,11 @@ import AdminRoute from './components/AdminRoute';
 import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
-import SpacePage from './pages/SpacePage';
-import MyPage from './pages/MyPage';
+import ChatPage from './pages/ChatPage';
 import AdminPage from './pages/AdminPage';
+import UserSettingsPage from './pages/UserSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
-import { LAST_SPACE_KEY } from './components/Sidebar';
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from './hooks/useTheme';
@@ -41,21 +40,9 @@ function App() {
   }, [auth.user?.language, i18n]);
 
   useEffect(() => {
-    if (isAuthenticated && (location === '/' || location === '/spaces')) {
-      spaces.list().then(spaceList => {
-        if (spaceList.length === 0) {
-          setLocation('/my');
-        } else {
-          const lastSpaceId = localStorage.getItem(LAST_SPACE_KEY);
-          const targetSpace = spaceList.find(s => s.id === lastSpaceId) || spaceList[0];
-          setLocation(`/spaces/${targetSpace.id}/chat`);
-        }
-      }).catch((err) => {
-        console.error('Failed to load spaces:', err);
-        setLocation('/my');
-      }).finally(() => {
-        setIsInitialLoading(false);
-      });
+    if (isAuthenticated && location === '/') {
+      setLocation('/chat');
+      setIsInitialLoading(false);
     } else {
       setIsInitialLoading(false);
     }
@@ -95,14 +82,14 @@ function App() {
                 </AdminRoute>
               </ProtectedRoute>
             </Route>
-            <Route path="/my">
+            <Route path="/settings">
               <ProtectedRoute>
-                <MyPage />
+                <UserSettingsPage />
               </ProtectedRoute>
             </Route>
-            <Route path="/spaces/:spaceId/chat/:chatId?">
+            <Route path="/chat/:chatId?">
               <ProtectedRoute>
-                <SpacePage />
+                <ChatPage />
               </ProtectedRoute>
             </Route>
             <Route>

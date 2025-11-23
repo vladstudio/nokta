@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Talk is a real-time chat application with spaces and direct messaging. Frontend is a React SPA, backend is PocketBase (standalone executable).
+Talk is a real-time chat application for direct messaging and group chats. Frontend is a React SPA, backend is PocketBase (standalone executable).
 
 **Tech Stack:**
 - Frontend: React 19 + TypeScript + Vite + Tailwind CSS 4 + Jotai + wouter
@@ -50,9 +50,7 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 
 **Collections:**
 - `users` (auth) - name, email, avatar, language, theme, background, role
-- `spaces` - name
-- `space_members` - space ↔ user relations
-- `chats` - space + participants (DMs or space-wide)
+- `chats` - participants (DMs or group chats)
 - `messages` - chat + sender + content + type (text/image/video/audio)
 - `chat_read_status` - tracks last read message per user per chat
 - `presence` - real-time user online status
@@ -67,9 +65,9 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 
 **Routing** (wouter):
 - `/login` - authentication
-- `/admin` - admin panel (user/space management)
-- `/my` - user settings and spaces list
-- `/spaces/:spaceId/chat/:chatId?` - main chat interface
+- `/admin` - admin panel (user management)
+- `/settings` - user settings (profile, preferences, logout)
+- `/chat/:chatId?` - main chat interface
 
 **State Management:**
 - Jotai for global state (call store)
@@ -77,7 +75,7 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 - PocketBase real-time subscriptions for live data
 
 **Service Layer** (`src/services/pocketbase.ts`):
-Organized by collection: `auth`, `users`, `spaces`, `spaceMembers`, `chats`, `messages`, `chatReadStatus`, `presence`.
+Organized by collection: `auth`, `users`, `chats`, `messages`, `chatReadStatus`, `presence`.
 Each service exports CRUD methods and real-time subscription helpers.
 
 **Custom Hooks** (`src/hooks/`):
@@ -90,8 +88,8 @@ Each service exports CRUD methods and real-time subscription helpers.
 - `useTheme` - theme management (light/dark/system)
 
 **Component Structure:**
-- `pages/` - route-level components
-- `components/` - reusable UI components
+- `pages/` - route-level components (ChatPage, AdminPage, UserSettingsPage, LoginPage)
+- `components/` - reusable UI components (Sidebar, ChatWindow, ChatDialog, etc.)
 - `ui/` - base UI primitives (@base-ui-components/react + custom)
 
 ## Key Patterns
@@ -114,9 +112,7 @@ Uses cursor-based pagination with `useMessageList` hook. Loads older messages on
 Images/videos are compressed client-side before upload. See `useFileUpload` and `useVideoCompression` hooks.
 
 ### Chat Creation Logic
-Backend hook auto-generates:
-- Space-wide "General" chat when space is created
-- Direct message chats between all space members
+Users can create chats with any combination of participants. Backend hook auto-creates read status for all participants.
 See `pb_hooks/chat_hooks.pb.js`
 
 ### Authentication Flow

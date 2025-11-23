@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
-import { auth, spaces, chats } from '../services/pocketbase';
+import { auth, chats } from '../services/pocketbase';
 import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
@@ -12,20 +12,16 @@ import { ScrollArea, useToastManager, Button, Menu } from '../ui';
 import ChatList from './ChatList';
 import ChatDialog from './ChatDialog';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
-import type { Space, Chat, PocketBaseEvent } from '../types';
+import type { Chat, PocketBaseEvent } from '../types';
 import { PhoneIcon, PlusIcon } from "@phosphor-icons/react";
-
-const LAST_SPACE_KEY = 'nokta:lastSpaceId';
 
 export default function Sidebar() {
   const { t } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
-  const [, params] = useRoute('/spaces/:spaceId/chat/:chatId?');
-  const spaceId = params?.spaceId;
+  const [, params] = useRoute('/chat/:chatId?');
   const chatId = params?.chatId;
 
-  const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
@@ -33,59 +29,44 @@ export default function Sidebar() {
   const [, setShowCallView] = useAtom(showCallViewAtom);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const loadSpaces = useCallback(() => {
-    spaces.list().then(setSpaceList).catch(() => setSpaceList([]));
-  }, []);
-
   const loadChats = useCallback(async () => {
-    if (!spaceId) return;
     try {
-      const data = await chats.list(spaceId);
+      const data = await chats.list();
       setChatList(data);
     } catch {
       setChatList([]);
     }
-  }, [spaceId]);
+  }, []);
 
   const loadActiveCalls = useCallback(async () => {
-    if (!spaceId) return;
     try {
-      const calls = await callsAPI.getActiveCallsInSpace(spaceId);
+      const calls = await callsAPI.getActiveCalls();
       setActiveCalls(calls);
     } catch (error) {
       console.error('[Sidebar] loadActiveCalls error:', error);
       setActiveCalls([]);
     }
-  }, [spaceId]);
+  }, []);
 
-  useEffect(() => { loadSpaces(); }, [loadSpaces]);
   useEffect(() => { loadChats(); }, [loadChats]);
   useEffect(() => { if (isVideoCallsEnabled) loadActiveCalls(); }, [loadActiveCalls]);
 
   useEffect(() => {
-    if (!spaceId) return;
     const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
-      if (data.record.space === spaceId) {
-        if (data.action === 'update') {
-          const fullChat = await chats.getOne(data.record.id);
-          setChatList(prev => prev
-            .map(c => c.id === data.record.id ? fullChat : c)
-            .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))
-          );
-        } else if (data.action === 'delete') {
-          setChatList(prev => prev.filter(c => c.id !== data.record.id));
-        }
+      if (data.action === 'update') {
+        const fullChat = await chats.getOne(data.record.id);
+        setChatList(prev => prev
+          .map(c => c.id === data.record.id ? fullChat : c)
+          .sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || ''))
+        );
+      } else if (data.action === 'delete') {
+        setChatList(prev => prev.filter(c => c.id !== data.record.id));
       }
     });
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId]);
+  }, []);
 
-  const currentSpace = useMemo(() =>
-    spaceList.find(s => s.id === spaceId),
-    [spaceList, spaceId]
-  );
-
-  const { unreadCounts } = useUnreadMessages(spaceId, chatList, chatId);
+  const { unreadCounts } = useUnreadMessages(chatList, chatId);
 
   const hasUnread = useMemo(() => {
     return Array.from(unreadCounts.values()).some(count => count > 0);
@@ -131,7 +112,6 @@ export default function Sidebar() {
               try {
                 const chatName = getCallChatName(data.record);
                 const notification = showCallNotification(t('calls.activeCall'), chatName, {
-                  spaceId: spaceId,
                   tag: `active-call-${data.record.id}`,
                 });
 
@@ -160,14 +140,14 @@ export default function Sidebar() {
       // Chat deleted
       setActiveCalls(prev => prev.filter(call => call.id !== data.record.id));
     }
-  }, [spaceId, getCallChatName]);
+  }, [getCallChatName]);
 
   // Subscribe to active calls
   useEffect(() => {
-    if (!isVideoCallsEnabled || !spaceId) return;
-    const unsubscribe = callsAPI.subscribeToActiveCalls(spaceId, handleActiveCallEvent);
+    if (!isVideoCallsEnabled) return;
+    const unsubscribe = callsAPI.subscribeToActiveCalls(handleActiveCallEvent);
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [spaceId, handleActiveCallEvent]);
+  }, [handleActiveCallEvent]);
 
   const handleJoinCall = useCallback(async (callChatId: string) => {
     if (joiningCalls.has(callChatId)) return;
@@ -176,7 +156,7 @@ export default function Sidebar() {
       const chat = await callsAPI.startCall(callChatId);
       setActiveCallChat(chat);
       setShowCallView(true);
-      setLocation(`/spaces/${spaceId}/chat`);
+      setLocation('/chat');
     } catch (error) {
       console.error('Failed to join call:', error);
       toastManager.add({
@@ -191,33 +171,34 @@ export default function Sidebar() {
         return next;
       });
     }
-  }, [joiningCalls, setActiveCallChat, setShowCallView, setLocation, spaceId, toastManager]);
+  }, [joiningCalls, setActiveCallChat, setShowCallView, setLocation, toastManager]);
 
   const handleSelectChat = useCallback((newChatId: string) => {
     setShowCallView(false);
-    setLocation(`/spaces/${spaceId}/chat/${newChatId}`);
-  }, [spaceId, setLocation, setShowCallView]);
+    setLocation(`/chat/${newChatId}`);
+  }, [setLocation, setShowCallView]);
 
   const handleShowActiveCall = useCallback(() => {
     setShowCallView(true);
-    setLocation(`/spaces/${spaceId}/chat`);
-  }, [spaceId, setLocation, setShowCallView]);
+    setLocation('/chat');
+  }, [setLocation, setShowCallView]);
 
   const handleChatCreated = useCallback((chatId: string) => {
     loadChats();
-    setLocation(`/spaces/${spaceId}/chat/${chatId}`);
-  }, [loadChats, setLocation, spaceId]);
+    setLocation(`/chat/${chatId}`);
+  }, [loadChats, setLocation]);
 
   return (
     <>
       <div className="sidebar">
         <div className="w-full p-2 flex items-center g-2">
-          <Button variant="ghost"
-            onClick={() => setLocation('/my')}
-            className="flex-1 flex items-center gap-2 min-w-0"
+          <Button
+            variant="ghost"
+            onClick={() => setLocation('/settings')}
+            className="flex-1 flex items-center gap-2 min-w-0 px-2! text-left!"
           >
             <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5 shrink-0" />
-            <span className="text-xs text-light truncate">{currentSpace?.name || t('mySpacesPage.title')}</span>
+            <span className="text-xs text-light truncate">{auth.user?.name || auth.user?.email}</span>
           </Button>
           <Menu
             className="p-2 rounded font-medium transition-colors duration-75 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-(--color-text-primary) hover:bg-(--color-bg-hover)"
@@ -287,16 +268,11 @@ export default function Sidebar() {
           />
         </ScrollArea>
       </div>
-      {spaceId && (
-        <ChatDialog
-          open={showCreateDialog}
-          onOpenChange={setShowCreateDialog}
-          spaceId={spaceId}
-          onChatCreated={handleChatCreated}
-        />
-      )}
+      <ChatDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onChatCreated={handleChatCreated}
+      />
     </>
   );
 }
-
-export { LAST_SPACE_KEY };

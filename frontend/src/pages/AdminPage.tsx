@@ -1,39 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { spaces, users, spaceMembers } from '../services/pocketbase';
-import { Button, ScrollArea, Dialog, Input, RadioGroup, Select, useToastManager, Card, Checkbox } from '../ui';
-import type { Space, User, SpaceMember } from '../types';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
+import { users } from '../services/pocketbase';
+import { Button, ScrollArea, Dialog, Input, RadioGroup, useToastManager, Card } from '../ui';
+import type { User } from '../types';
+import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
   const [, setLocation] = useLocation();
   const toast = useToastManager();
-  const [activeTab, setActiveTab] = useState<'spaces' | 'users'>('spaces');
-  const [spaceList, setSpaceList] = useState<Space[]>([]);
   const [userList, setUserList] = useState<User[]>([]);
-  const [editingSpace, setEditingSpace] = useState<Space | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [showSpaceDialog, setShowSpaceDialog] = useState(false);
   const [showUserDialog, setShowUserDialog] = useState(false);
-  const [spaceName, setSpaceName] = useState('');
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userRole, setUserRole] = useState<'Member' | 'Admin'>('Member');
-  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
-  const [memberList, setMemberList] = useState<SpaceMember[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState<{ type: 'space' | 'user' | 'member'; item: any } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [userErrors, setUserErrors] = useState<string[]>([]);
-  const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>([]);
-
-  const loadSpaces = useCallback(() => {
-    spaces.list().then(setSpaceList).catch(() => {
-      toast.add({ title: 'Failed to load spaces', data: { type: 'error' } });
-      setSpaceList([]);
-    });
-  }, [toast]);
 
   const loadUsers = useCallback(() => {
     users.list().then(setUserList).catch(() => {
@@ -42,49 +26,9 @@ export default function AdminPage() {
     });
   }, [toast]);
 
-  const loadMembers = useCallback((spaceId: string) => {
-    spaceMembers.list(spaceId).then(setMemberList).catch(() => {
-      toast.add({ title: 'Failed to load members', data: { type: 'error' } });
-      setMemberList([]);
-    });
-  }, [toast]);
-
   useEffect(() => {
-    loadSpaces();
     loadUsers();
-  }, [loadSpaces, loadUsers]);
-
-  const handleSaveSpace = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!spaceName.trim()) return;
-    try {
-      if (editingSpace) {
-        await spaces.update(editingSpace.id, spaceName);
-      } else {
-        await spaces.create(spaceName);
-      }
-      setShowSpaceDialog(false);
-      setSpaceName('');
-      setEditingSpace(null);
-      loadSpaces();
-      toast.add({ title: editingSpace ? 'Space updated' : 'Space created', data: { type: 'success' } });
-    } catch (error) {
-      toast.add({ title: 'Failed to save space', data: { type: 'error' } });
-    }
-  }, [spaceName, editingSpace, loadSpaces, toast]);
-
-  const handleDeleteSpace = useCallback(async () => {
-    if (!confirmDelete || confirmDelete.type !== 'space') return;
-    try {
-      await spaces.delete(confirmDelete.item.id);
-      loadSpaces();
-      toast.add({ title: 'Space deleted', data: { type: 'success' } });
-    } catch (error) {
-      toast.add({ title: 'Failed to delete space', data: { type: 'error' } });
-    } finally {
-      setConfirmDelete(null);
-    }
-  }, [confirmDelete, loadSpaces, toast]);
+  }, [loadUsers]);
 
   const handleSaveUser = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -96,8 +40,6 @@ export default function AdminPage() {
         toast.add({ title: 'User updated', data: { type: 'success' } });
       } else {
         const created = await users.create(userEmail, userName, userRole, userPassword || undefined);
-        const userId = created.user.id;
-        await Promise.all(selectedSpaceIds.map(spaceId => spaceMembers.add(spaceId, userId)));
         if (!userPassword) {
           setGeneratedPassword(created.password);
         }
@@ -118,12 +60,12 @@ export default function AdminPage() {
           : [pbError?.message || 'Failed to save user']
       );
     }
-  }, [userName, userEmail, userPassword, userRole, editingUser, selectedSpaceIds, loadUsers, toast]);
+  }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast]);
 
   const handleDeleteUser = useCallback(async () => {
-    if (!confirmDelete || confirmDelete.type !== 'user') return;
+    if (!confirmDelete) return;
     try {
-      await users.delete(confirmDelete.item.id);
+      await users.delete(confirmDelete.id);
       loadUsers();
       toast.add({ title: 'User deleted', data: { type: 'success' } });
     } catch (error) {
@@ -133,12 +75,6 @@ export default function AdminPage() {
     }
   }, [confirmDelete, loadUsers, toast]);
 
-  const openSpaceDialog = useCallback((space?: Space) => {
-    setEditingSpace(space || null);
-    setSpaceName(space?.name || '');
-    setShowSpaceDialog(true);
-  }, []);
-
   const openUserDialog = useCallback((user?: User) => {
     setEditingUser(user || null);
     setUserName(user?.name || '');
@@ -146,168 +82,40 @@ export default function AdminPage() {
     setUserPassword('');
     setUserRole(user?.role || 'Member');
     setUserErrors([]);
-    setSelectedSpaceIds([]);
     setShowUserDialog(true);
   }, []);
-
-  const openMemberManagement = useCallback((space: Space) => {
-    setSelectedSpace(space);
-    loadMembers(space.id);
-  }, [loadMembers]);
-
-  const handleAddMember = useCallback(async (userId: string) => {
-    if (!selectedSpace || !userId) return;
-    try {
-      await spaceMembers.add(selectedSpace.id, userId);
-      setSelectedUserId('');
-      loadMembers(selectedSpace.id);
-      toast.add({ title: 'Member added', data: { type: 'success' } });
-    } catch (error) {
-      toast.add({ title: 'Failed to add member', data: { type: 'error' } });
-    }
-  }, [selectedSpace, loadMembers, toast]);
-
-  const handleRemoveMember = useCallback(async () => {
-    if (!confirmDelete || confirmDelete.type !== 'member') return;
-    try {
-      await spaceMembers.remove(confirmDelete.item.id);
-      if (selectedSpace) loadMembers(selectedSpace.id);
-      toast.add({ title: 'Member removed', data: { type: 'success' } });
-    } catch (error) {
-      toast.add({ title: 'Failed to remove member', data: { type: 'error' } });
-    } finally {
-      setConfirmDelete(null);
-    }
-  }, [confirmDelete, selectedSpace, loadMembers, toast]);
 
   return (
     <ScrollArea>
       <div className="mx-auto w-full max-w-2xl grid gap-4 p-6">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setLocation('/my')}>
+          <Button variant="ghost" size="icon" onClick={() => setLocation('/chat')}>
             <ArrowLeftIcon size={20} className="text-accent" />
           </Button>
-          <h2 className="font-semibold flex-1">Admin Panel</h2>
+          <h2 className="font-semibold flex-1">Admin Panel - Users</h2>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => setActiveTab('spaces')}
-            isSelected={activeTab === 'spaces'}
-          >
-            Spaces
+        <div className="grid gap-2">
+          <Button variant="default" onClick={() => openUserDialog()}>
+            <PlusIcon size={20} className="text-accent" /> Add User
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => setActiveTab('users')}
-            isSelected={activeTab === 'users'}
-          >
-            Users
-          </Button>
+          {userList.map((user) => (
+            <Card key={user.id} shadow="sm" border padding="sm">
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <div className="font-medium">{user.name || user.email}</div>
+                  <div className="text-xs text-light">{user.email} • {user.role}</div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
+                  <PencilIcon size={20} className="text-accent" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(user)}>
+                  <TrashIcon size={20} className="text-red-600" />
+                </Button>
+              </div>
+            </Card>
+          ))}
         </div>
-
-        {activeTab === 'spaces' && !selectedSpace && (
-          <div className="grid gap-2">
-            <Button variant="default" onClick={() => openSpaceDialog()}>
-              <PlusIcon size={20} className="text-accent" /> Add Space
-            </Button>
-            {spaceList.map((space) => (
-              <Card key={space.id} border shadow="sm" padding="sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 font-medium">{space.name}</div>
-                  <Button variant="ghost" size="icon" onClick={() => openMemberManagement(space)}>
-                    <UsersIcon size={20} className="text-accent" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => openSpaceDialog(space)}>
-                    <PencilIcon size={20} className="text-accent" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'space', item: space })}>
-                    <TrashIcon size={20} className="text-red-600" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'spaces' && selectedSpace && (
-          <div className="grid gap-2">
-            <Button variant="ghost" size="icon" onClick={() => setSelectedSpace(null)}>
-              <ArrowLeftIcon size={20} className="text-accent" />
-            </Button>
-            <h3 className="font-semibold">{selectedSpace.name} - Members</h3>
-            {userList.filter(u => !memberList.some(m => m.user === u.id)).length > 0 && (
-              <Select
-                value={selectedUserId}
-                onChange={(value) => {
-                  if (value) {
-                    handleAddMember(value);
-                  }
-                }}
-                options={userList.filter(u => !memberList.some(m => m.user === u.id)).map(u => ({ value: u.id, label: u.name || u.email }))}
-                placeholder="Add member..."
-              />
-            )}
-            {memberList.map((member) => (
-              <Card key={member.id} shadow="sm" border padding="sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <div className="font-medium">{member.expand?.user?.name || member.expand?.user?.email}</div>
-                    <div className="text-xs text-light">{member.expand?.user?.email}</div>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'member', item: member })}>
-                    <TrashIcon size={20} className="text-red-600" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {activeTab === 'users' && (
-          <div className="grid gap-2">
-            <Button variant="default" onClick={() => openUserDialog()}>
-              <PlusIcon size={20} className="text-accent" /> Add User
-            </Button>
-            {userList.map((user) => (
-              <Card key={user.id} shadow="sm" border padding="sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <div className="font-medium">{user.name || user.email}</div>
-                    <div className="text-xs text-light">{user.email} • {user.role}</div>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
-                    <PencilIcon size={20} className="text-accent" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setConfirmDelete({ type: 'user', item: user })}>
-                    <TrashIcon size={20} className="text-red-600" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        <Dialog
-          open={showSpaceDialog}
-          onOpenChange={setShowSpaceDialog}
-          title={editingSpace ? 'Edit Space' : 'Add Space'}
-          footer={
-            <>
-              <Button variant="outline" className="flex-1 center" onClick={() => setShowSpaceDialog(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" className="flex-1 center" type="submit" form="space-form">
-                Save
-              </Button>
-            </>
-          }
-        >
-          <form id="space-form" onSubmit={handleSaveSpace}>
-            <Input placeholder="Space name" value={spaceName} onChange={(e) => setSpaceName(e.target.value)} />
-          </form>
-        </Dialog>
 
         <Dialog
           open={showUserDialog}
@@ -329,20 +137,6 @@ export default function AdminPage() {
             <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
             {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
             <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
-            {!editingUser && spaceList.length > 0 && (
-              <div className="grid gap-2">
-                <div className="text-sm font-medium">Spaces</div>
-                {spaceList.map(space => (
-                  <label key={space.id} className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      checked={selectedSpaceIds.includes(space.id)}
-                      onCheckedChange={(checked) => setSelectedSpaceIds(prev => checked ? [...prev, space.id] : prev.filter(id => id !== space.id))}
-                    />
-                    <span className="text-sm">{space.name}</span>
-                  </label>
-                ))}
-              </div>
-            )}
             {userErrors.length > 0 && (
               <div className="text-sm text-red-600">
                 {userErrors.map((err, i) => <div key={i}>{err}</div>)}
@@ -377,13 +171,13 @@ export default function AdminPage() {
               <Button variant="outline" className="flex-1 center" onClick={() => setConfirmDelete(null)}>
                 Cancel
               </Button>
-              <Button variant="primary" className="flex-1 center" onClick={confirmDelete?.type === 'space' ? handleDeleteSpace : confirmDelete?.type === 'user' ? handleDeleteUser : handleRemoveMember}>
+              <Button variant="primary" className="flex-1 center" onClick={handleDeleteUser}>
                 Delete
               </Button>
             </>
           }
         >
-          <p>Are you sure you want to delete this {confirmDelete?.type}?</p>
+          <p>Are you sure you want to delete this user?</p>
         </Dialog>
       </div>
     </ScrollArea>
