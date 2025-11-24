@@ -28,10 +28,7 @@
     "name": "Имя"
   },
   "sidebar": {
-    "mySpaces": "Мои пространства",
-    "mySettings": "Мои настройки",
-    "logOut": "Выйти",
-    "selectSpace": "Выберите пространство"
+    "logOut": "Выйти"
   },
   "chatWindow": {
     "noMessages": "Пока нет сообщений. Начните разговор!",
@@ -157,10 +154,6 @@
   "loginPage": {
     "signIn": "Войти"
   },
-  "mySpacesPage": {
-    "title": "Мои пространства",
-    "noSpaces": "Нет доступных пространств"
-  },
   "errorBoundary": {
     "title": "Что-то пошло не так",
     "tryAgain": "Попробовать снова",
@@ -250,6 +243,6 @@
   "notFound": {
     "message": "Не найдено",
     "description": "Страница не существует",
-    "goHome": "Мои пространства"
+    "goHome": "На главную"
   }
 }

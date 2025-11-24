@@ -28,10 +28,7 @@
     "name": "Name"
   },
   "sidebar": {
-    "mySpaces": "My Spaces",
-    "mySettings": "My Settings",
-    "logOut": "Log Out",
-    "selectSpace": "Select space"
+    "logOut": "Log Out"
   },
   "chatWindow": {
     "noMessages": "No messages yet. Start the conversation!",
@@ -157,10 +154,6 @@
   "loginPage": {
     "signIn": "Sign in"
   },
-  "mySpacesPage": {
-    "title": "My Spaces",
-    "noSpaces": "No spaces available"
-  },
   "errorBoundary": {
     "title": "Something went wrong",
     "tryAgain": "Try Again",
@@ -250,6 +243,6 @@
   "notFound": {
     "message": "Not found",
     "description": "Page does not exist",
-    "goHome": "My Spaces"
+    "goHome": "Go Home"
   }
 }
