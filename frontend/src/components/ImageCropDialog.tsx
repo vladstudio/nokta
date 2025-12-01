@@ -60,9 +60,9 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
         <Button className="flex-1 center" onClick={handleAdd} disabled={processing}>{processing ? t('common.processing') : t('common.add')}</Button>
       </>}>
       <div className="space-y-4">
-        <div className="flex justify-center bg-black rounded overflow-hidden">
+        <div className="flex justify-center bg-black/10 p-1 rounded overflow-hidden">
           <ReactCrop crop={crop} onChange={setCrop}>
-            <img ref={imgRef} src={URL.createObjectURL(file)} className="max-h-96" alt="" />
+            <img ref={imgRef} src={URL.createObjectURL(file)} className="max-h-[50dvh]! max-w-full" alt="" />
           </ReactCrop>
         </div>
         <div className="space-y-2">

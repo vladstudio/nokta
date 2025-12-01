@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useRoute, useSearch } from 'wouter';
+import { useLocation, useSearch } from 'wouter';
 import { useAtom } from 'jotai';
 import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
@@ -90,7 +90,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     uploadFiles,
     handleCancelUpload,
     handleRetryUpload,
-  } = useFileUpload(chatId, isOnline, (title, description) => {
+  } = useFileUpload(chatId!, isOnline, (title, description) => {
     toastManager.add({ title, description, data: { type: 'error' } });
   });
 
@@ -229,6 +229,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   // Load chat data
   useEffect(() => {
+    if (!chatId) return;
     chats.getOne(chatId).then(setChat).catch(() => setChat(null));
   }, [chatId]);
 
@@ -372,6 +373,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   }, [loading, hasMore, loadingOlder, loadOlderMessages]);
 
   const handleSend = async (content: string) => {
+    if (!chatId) return;
     if (!isOnline) {
       messageQueue.add(chatId, content);
       return;
@@ -449,7 +451,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       setSelectedMessageId(null);
       toastManager.add({
         title: t('chatWindow.messageDeleted'),
-        description: t('messages.messageDeletedSuccess'),
         data: { type: 'success' },
       });
     } catch (err) {
