@@ -5,7 +5,7 @@ import { Button, Input, FormLabel, ScrollArea, Checkbox, useToastManager, Card }
 import { users, chats, auth } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { ArrowLeftIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, PlusIcon } from '@phosphor-icons/react';
 import type { User } from '../types';
 
 export default function CreateChatView() {
@@ -57,6 +57,7 @@ export default function CreateChatView() {
           <h2 className="font-semibold">{t('chats.createChat')}</h2>
         </div>
         <Button variant="primary" onClick={handleSubmit} disabled={saving || !canCreate}>
+          <PlusIcon size={20} />
           {saving ? t('common.saving') : t('common.create')}
         </Button>
       </header>
