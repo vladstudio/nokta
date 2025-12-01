@@ -55,7 +55,10 @@ export default function Sidebar() {
 
   useEffect(() => {
     const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
-      if (data.action === 'update') {
+      if (data.action === 'create') {
+        const fullChat = await chats.getOne(data.record.id);
+        setChatList(prev => [fullChat, ...prev]);
+      } else if (data.action === 'update') {
         const fullChat = await chats.getOne(data.record.id);
         setChatList(prev => prev.map(c => c.id === data.record.id ? fullChat : c).sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || '')));
       } else if (data.action === 'delete') {
