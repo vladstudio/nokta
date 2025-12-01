@@ -144,7 +144,7 @@ export const messages = {
       : pb.filter('chat = {:chatId}', { chatId });
     const records = await pb.collection('messages').getList<Message>(page, perPage, {
       filter,
-      expand: 'sender',
+      expand: 'sender,reply_to,forwarded_from',
       sort: '-created',
     });
     return records;
@@ -152,7 +152,7 @@ export const messages = {
 
   async getOne(id: string) {
     const record = await pb.collection('messages').getOne<Message>(id, {
-      expand: 'sender',
+      expand: 'sender,reply_to,forwarded_from',
     });
     return record;
   },
@@ -163,12 +163,12 @@ export const messages = {
     const [beforeResult, afterResult] = await Promise.all([
       pb.collection('messages').getList<Message>(1, halfCount, {
         filter: pb.filter('chat = {:chatId} && created < {:created}', { chatId: targetMsg.chat, created: targetMsg.created }),
-        expand: 'sender',
+        expand: 'sender,reply_to,forwarded_from',
         sort: '-created',
       }),
       pb.collection('messages').getList<Message>(1, total - halfCount, {
         filter: pb.filter('chat = {:chatId} && created >= {:created}', { chatId: targetMsg.chat, created: targetMsg.created }),
-        expand: 'sender',
+        expand: 'sender,reply_to,forwarded_from',
         sort: 'created',
       }),
     ]);
@@ -180,12 +180,25 @@ export const messages = {
     };
   },
 
-  async create(chatId: string, content: string) {
+  async create(chatId: string, content: string, replyTo?: string) {
     const record = await pb.collection('messages').create<Message>({
       chat: chatId,
       sender: auth.user?.id,
       type: 'text',
       content,
+      ...(replyTo && { reply_to: replyTo }),
+    });
+    return record;
+  },
+
+  async forward(chatId: string, originalMessage: Message) {
+    const record = await pb.collection('messages').create<Message>({
+      chat: chatId,
+      sender: auth.user?.id,
+      type: originalMessage.type,
+      content: originalMessage.content,
+      ...(originalMessage.file && { file: originalMessage.file }),
+      forwarded_from: originalMessage.id,
     });
     return record;
   },

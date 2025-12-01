@@ -53,6 +53,16 @@ export default function Sidebar() {
   useEffect(() => { loadChats(); }, [loadChats]);
   useEffect(() => { if (isVideoCallsEnabled) loadActiveCalls(); }, [loadActiveCalls]);
 
+  // Listen for chat-created events (from CreateChatView)
+  useEffect(() => {
+    const handler = async (e: CustomEvent<Chat>) => {
+      const fullChat = await chats.getOne(e.detail.id);
+      setChatList(prev => prev.some(c => c.id === fullChat.id) ? prev : [fullChat, ...prev]);
+    };
+    window.addEventListener('chat-created', handler as EventListener);
+    return () => window.removeEventListener('chat-created', handler as EventListener);
+  }, []);
+
   useEffect(() => {
     const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
       if (data.action === 'create') {

@@ -52,6 +52,13 @@
     "voice": "Голос",
     "file": "Файл"
   },
+  "messageActions": {
+    "reply": "Ответить",
+    "forward": "Переслать",
+    "replyingTo": "Ответ на",
+    "forwardTo": "Переслать в",
+    "forwarded": "Переслано"
+  },
   "imageCrop": {
     "title": "Обрезка и сжатие",
     "quality": {

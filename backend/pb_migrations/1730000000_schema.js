@@ -196,6 +196,26 @@ migrate((app) => {
 
   app.save(messages)
 
+  // Add self-referencing fields after collection is saved
+  const savedMessages = app.findCollectionByNameOrId("messages")
+  savedMessages.fields.addAt(8, new Field({
+    name: "reply_to",
+    type: "relation",
+    required: false,
+    collectionId: savedMessages.id,
+    cascadeDelete: false,
+    maxSelect: 1
+  }))
+  savedMessages.fields.addAt(9, new Field({
+    name: "forwarded_from",
+    type: "relation",
+    required: false,
+    collectionId: savedMessages.id,
+    cascadeDelete: false,
+    maxSelect: 1
+  }))
+  app.save(savedMessages)
+
   // Create typing_events collection
   const typingEvents = new Collection({
     name: "typing_events",

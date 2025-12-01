@@ -52,6 +52,13 @@
     "voice": "Voice",
     "file": "File"
   },
+  "messageActions": {
+    "reply": "Reply",
+    "forward": "Forward",
+    "replyingTo": "Replying to",
+    "forwardTo": "Forward to",
+    "forwarded": "Forwarded"
+  },
   "imageCrop": {
     "title": "Crop & Compress Image",
     "quality": {

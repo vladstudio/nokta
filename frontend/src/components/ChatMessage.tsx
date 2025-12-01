@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'wouter';
 import clsx from 'clsx';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
 import { Button, useToastManager } from '../ui';
 import VideoPlayer from './VideoPlayer';
-import { PlayIcon, PauseIcon } from '@phosphor-icons/react';
+import { PlayIcon, PauseIcon, ArrowBendUpLeftIcon } from '@phosphor-icons/react';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -28,11 +29,15 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message, isOwn, currentUserId, isSelected, onSelect, onRetry, onCancelUpload, onReactionClick }: ChatMessageProps) {
   const { t } = useTranslation();
+  const [, setLocation] = useLocation();
   const toastManager = useToastManager();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
   const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
   const [isPlayingVoice, setIsPlayingVoice] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const replyMessage = message.expand?.reply_to;
+  const forwardedMessage = message.expand?.forwarded_from;
 
   useEffect(() => {
     if (!message.reactions) return;
@@ -239,6 +244,18 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           message.isFailed && 'bg-(--color-error-50)! text-(--color-error-600)! border-(--color-error-500)!',
           message.isPending && 'opacity-70'
         )}>
+          {replyMessage && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLocation(`/chat/${message.chat}?msg=${replyMessage.id}`); }}
+              className="flex items-center gap-1 mb-2 px-2 py-1 -mx-2 -mt-1 rounded bg-(--color-bg-hover) hover:bg-(--color-bg-active) transition-colors text-left w-full"
+            >
+              <ArrowBendUpLeftIcon size={12} className="text-light shrink-0" />
+              <span className="text-xs text-light truncate">{replyMessage.content}</span>
+            </button>
+          )}
+          {forwardedMessage && (
+            <div className="text-xs text-light mb-1 italic">{t('messageActions.forwarded')}</div>
+          )}
           {renderContent()}
           {message.reactions && Object.keys(message.reactions).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">

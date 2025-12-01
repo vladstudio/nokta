@@ -39,10 +39,14 @@ export interface Message {
   content: string;
   file?: string;
   reactions?: Record<string, string[]>;
+  reply_to?: string;
+  forwarded_from?: string;
   created?: string;
   updated?: string;
   expand?: {
     sender?: User;
+    reply_to?: Message;
+    forwarded_from?: Message;
   };
 }
 

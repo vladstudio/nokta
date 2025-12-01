@@ -17,6 +17,7 @@ import MessageList from './MessageList';
 import ChatInputArea from './ChatInputArea';
 import EditMessageDialog from './EditMessageDialog';
 import DeleteMessageDialog from './DeleteMessageDialog';
+import ForwardDialog from './ForwardDialog';
 import ImageCropDialog from './ImageCropDialog';
 import VideoCompressionDialog from './VideoCompressionDialog';
 import VoiceRecorder from './VoiceRecorder';
@@ -98,6 +99,8 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [showAddActions, setShowAddActions] = useState(false);
   const [isCreatingCall, setIsCreatingCall] = useState(false);
   const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
@@ -374,6 +377,9 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   const handleSend = async (content: string) => {
     if (!chatId) return;
+    const replyToId = replyingTo?.id;
+    setReplyingTo(null);
+
     if (!isOnline) {
       messageQueue.add(chatId, content);
       return;
@@ -383,7 +389,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
     try {
       messageQueue.updateStatus(tempId, 'sending');
-      await messagesAPI.create(chatId, content);
+      await messagesAPI.create(chatId, content, replyToId);
       messageQueue.remove(tempId);
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -441,6 +447,28 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   const handleDeleteMessage = () => {
     setDeleteDialogOpen(true);
+  };
+
+  const handleReply = () => {
+    if (selectedMessage) {
+      setReplyingTo(selectedMessage);
+      setSelectedMessageId(null);
+    }
+  };
+
+  const handleForward = () => {
+    if (selectedMessage) setForwardDialogOpen(true);
+  };
+
+  const handleForwardConfirm = async (targetChatId: string, msg: Message) => {
+    try {
+      await messagesAPI.forward(targetChatId, msg);
+      setSelectedMessageId(null);
+      toastManager.add({ title: t('messageActions.forwarded'), data: { type: 'success' } });
+    } catch (err) {
+      console.error('Failed to forward message:', err);
+      toastManager.add({ title: t('errors.unknown'), data: { type: 'error' } });
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -624,6 +652,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         selectedMessage={selectedMessage}
         canEditOrDelete={canEditOrDelete}
         currentUserId={currentUser?.id || ''}
+        replyingTo={replyingTo}
         onSend={handleSend}
         onTyping={onTyping}
         onCancelAddActions={() => setShowAddActions(false)}
@@ -641,6 +670,9 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onCopy={handleCopyMessage}
         onEdit={handleEditMessage}
         onDelete={handleDeleteMessage}
+        onReply={handleReply}
+        onForward={handleForward}
+        onCancelReply={() => setReplyingTo(null)}
         onReact={(emoji) => handleReaction(selectedMessageId!, emoji)}
       />
 
@@ -683,6 +715,14 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* Forward Dialog */}
+      <ForwardDialog
+        open={forwardDialogOpen}
+        onOpenChange={setForwardDialogOpen}
+        message={selectedMessage || null}
+        onForward={handleForwardConfirm}
       />
 
       {/* Image Crop Dialog */}
