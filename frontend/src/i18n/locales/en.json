@@ -194,7 +194,8 @@
     "startACall": "Start call",
     "starting": "Starting...",
     "call": "Call",
-    "callRoomNotAvailable": "Call unavailable"
+    "callRoomNotAvailable": "Call unavailable",
+    "returnToCall": "Return to call"
   },
   "messages": {
     "selectChatToStart": "Select a chat",

@@ -194,7 +194,8 @@
     "startACall": "Начать звонок",
     "starting": "Запуск...",
     "call": "Звонок",
-    "callRoomNotAvailable": "Звонок недоступен"
+    "callRoomNotAvailable": "Звонок недоступен",
+    "returnToCall": "Вернуться к звонку"
   },
   "messages": {
     "selectChatToStart": "Выберите чат",

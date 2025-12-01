@@ -28,7 +28,7 @@ export default function Sidebar() {
   const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
-  const [, setShowCallView] = useAtom(showCallViewAtom);
+  const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
 
   // Derived selection state from URL
   const isSettingsSelected = location === '/settings';
@@ -159,7 +159,7 @@ export default function Sidebar() {
           {/* Active calls */}
           {isVideoCallsEnabled && activeCalls.map(call => {
             const isInCall = activeCallChat?.id === call.id;
-            const isSelected = isInCall && !chatId && !isSettingsSelected && !isNewChatSelected;
+            const isSelected = isInCall && showCallView;
             return (
               <SidebarItem
                 key={`call-${call.id}`}
@@ -190,7 +190,7 @@ export default function Sidebar() {
                 subtitle={lastMsg}
                 badge={unreadCounts.get(chat.id) || 0}
                 isOnline={getOnlineStatus(chat)}
-                isSelected={chatId === chat.id}
+                isSelected={chatId === chat.id && !showCallView}
                 onClick={() => { setShowCallView(false); setLocation(`/chat/${chat.id}`); }}
               />
             );
