@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { Alert, Dialog, Button, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager } from '../ui';
 import { auth, pb } from '../services/pocketbase';
+import { preferences } from '../utils/preferences';
 import { UserAvatar } from './Avatar';
-import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface UserSettingsDialogProps {
   open: boolean;
@@ -26,14 +28,13 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
   const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
-  const [language, setLanguage] = useState<'en' | 'ru'>('en');
-  const [theme, setTheme] = useState<'default' | 'wooden'>('default');
+  const [theme, setTheme] = useState<'default' | 'wooden'>(preferences.theme);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<string>('');
   const [birthdayMonth, setBirthdayMonth] = useState<string>('');
   const [birthdayYear, setBirthdayYear] = useState<string>('');
-  const [background, setBackground] = useState<string>('');
+  const [background, setBackground] = useState<string>(preferences.background);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,15 +44,10 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       setEmail(currentUser.email);
       setOldPassword('');
       setPassword('');
-      setLanguage(currentUser.language || 'en');
-      setTheme(currentUser.theme || 'default');
-      setBackground(currentUser.background || '');
+      setTheme(preferences.theme);
+      setBackground(preferences.background);
       setAvatar(null);
-      setAvatarPreview(
-        currentUser.avatar
-          ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
-          : null
-      );
+      setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
       if (currentUser.birthday) {
         const date = new Date(currentUser.birthday);
         setBirthdayDay(date.getDate().toString());
@@ -64,8 +60,10 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       }
       setError(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, currentUser]);
+
+  const handleThemeChange = (v: 'default' | 'wooden') => { setTheme(v); preferences.theme = v; };
+  const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
     setAvatar(file);
@@ -79,13 +77,10 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
   const handleSave = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!currentUser) return;
-
     setError(null);
     setSaving(true);
-
     try {
       const formData = new FormData();
-
       if (name !== currentUser.name) formData.append('name', name);
       if (email !== currentUser.email) formData.append('email', email);
       if (password) {
@@ -93,9 +88,6 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
         formData.append('password', password);
         formData.append('passwordConfirm', password);
       }
-      if (language !== currentUser.language) formData.append('language', language);
-      if (theme !== currentUser.theme) formData.append('theme', theme);
-      if (background !== currentUser.background) formData.append('background', background);
       if (avatar) formData.append('avatar', avatar);
       if (birthdayDay && birthdayMonth && birthdayYear) {
         const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
@@ -103,19 +95,10 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
       } else if (currentUser.birthday) {
         formData.append('birthday', '');
       }
-
       await pb.collection('users').update(currentUser.id, formData);
       await pb.collection('users').authRefresh();
-
-      if (language !== i18n.language) {
-        await i18n.changeLanguage(language);
-      }
-
       onOpenChange(false);
-      toastManager.add({
-        title: t('userSettingsDialog.settingsSaved'),
-        data: { type: 'success' },
-      });
+      toastManager.add({ title: t('userSettingsDialog.settingsSaved'), data: { type: 'success' } });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     } finally {
@@ -127,11 +110,6 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
     auth.logout();
     setLocation('/login');
   };
-
-  const languageOptions = useMemo(() => [
-    { value: 'en' as const, label: t('languages.en') },
-    { value: 'ru' as const, label: t('languages.ru') },
-  ], [t]);
 
   const themeOptions = useMemo(() => [
     { value: 'default' as const, label: t('themes.default') },
@@ -275,35 +253,20 @@ export default function UserSettingsDialog({ open, onOpenChange }: UserSettingsD
 
         <div>
           <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-          <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+          <LanguageSwitcher />
         </div>
-
         <div>
           <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
-          <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
+          <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
         </div>
-
         <div>
           <FormLabel>{t('chats.background')}</FormLabel>
           <div className="grid grid-cols-3 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              isSelected={background === ''}
-              onClick={() => setBackground('')}
-              className="aspect-square center p-1!"
-            >
+            <Button type="button" variant="outline" isSelected={background === ''} onClick={() => handleBackgroundChange('')} className="aspect-square center p-1!">
               <span className="text-xs text-light">None</span>
             </Button>
             {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
-              <Button
-                key={bg}
-                type="button"
-                variant="outline"
-                isSelected={background === bg}
-                onClick={() => setBackground(bg)}
-                className="aspect-square center p-1!"
-              >
+              <Button key={bg} type="button" variant="outline" isSelected={background === bg} onClick={() => handleBackgroundChange(bg)} className="aspect-square center p-1!">
                 <div className={`w-full h-full bg-preview-${bg}`} />
               </Button>
             ))}

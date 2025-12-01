@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { auth } from '../services/pocketbase';
+import { preferences } from '../utils/preferences';
 
 export type Theme = 'default' | 'wooden';
 
@@ -8,32 +8,15 @@ const THEMES: Record<Theme, string> = {
   wooden: '/src/themes/wooden.css',
 };
 
-/**
- * Hook to manage theme loading and application
- * Loads theme CSS file based on user preference
- */
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('default');
+  const [theme, setTheme] = useState<Theme>(preferences.theme);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load theme from user settings
   useEffect(() => {
-    const loadTheme = () => {
-      const userTheme = (auth.user?.theme as Theme) || 'default';
-      setTheme(userTheme);
-      applyTheme(userTheme);
-      setIsLoading(false);
-    };
-
-    // Load theme on mount
-    loadTheme();
-
-    // Listen for auth changes to update theme
-    const unsubscribe = auth.onChange(() => {
-      loadTheme();
-    });
-
-    return unsubscribe;
+    const load = () => { setTheme(preferences.theme); applyTheme(preferences.theme); setIsLoading(false); };
+    load();
+    window.addEventListener('preferences-change', load);
+    return () => window.removeEventListener('preferences-change', load);
   }, []);
 
   return { theme, isLoading };

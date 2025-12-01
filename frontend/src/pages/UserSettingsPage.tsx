@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth, pb } from '../services/pocketbase';
+import { preferences } from '../utils/preferences';
 import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import { ArrowLeftIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 
 interface PocketBaseRecord {
@@ -23,14 +25,13 @@ export default function UserSettingsPage() {
   const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
-  const [language, setLanguage] = useState<'en' | 'ru'>('en');
-  const [theme, setTheme] = useState<'default' | 'wooden'>('default');
+  const [theme, setTheme] = useState<'default' | 'wooden'>(preferences.theme);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<string>('');
   const [birthdayMonth, setBirthdayMonth] = useState<string>('');
   const [birthdayYear, setBirthdayYear] = useState<string>('');
-  const [background, setBackground] = useState<string>('');
+  const [background, setBackground] = useState<string>(preferences.background);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,14 +39,7 @@ export default function UserSettingsPage() {
     if (currentUser) {
       setName(currentUser.name || '');
       setEmail(currentUser.email);
-      setLanguage(currentUser.language || 'en');
-      setTheme(currentUser.theme || 'default');
-      setBackground(currentUser.background || '');
-      setAvatarPreview(
-        currentUser.avatar
-          ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar)
-          : null
-      );
+      setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
       if (currentUser.birthday) {
         const date = new Date(currentUser.birthday);
         setBirthdayDay(date.getDate().toString());
@@ -54,6 +48,9 @@ export default function UserSettingsPage() {
       }
     }
   }, [currentUser]);
+
+  const handleThemeChange = (v: 'default' | 'wooden') => { setTheme(v); preferences.theme = v; };
+  const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
     setAvatar(file);
@@ -78,9 +75,6 @@ export default function UserSettingsPage() {
         formData.append('password', password);
         formData.append('passwordConfirm', password);
       }
-      if (language !== currentUser.language) formData.append('language', language);
-      if (theme !== currentUser.theme) formData.append('theme', theme);
-      if (background !== currentUser.background) formData.append('background', background);
       if (avatar) formData.append('avatar', avatar);
       if (birthdayDay && birthdayMonth && birthdayYear) {
         const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
@@ -90,11 +84,7 @@ export default function UserSettingsPage() {
       }
       await pb.collection('users').update(currentUser.id, formData);
       await pb.collection('users').authRefresh();
-      if (language !== i18n.language) await i18n.changeLanguage(language);
-      toastManager.add({
-        title: t('userSettingsDialog.settingsSaved'),
-        data: { type: 'success' },
-      });
+      toastManager.add({ title: t('userSettingsDialog.settingsSaved'), data: { type: 'success' } });
       setPassword('');
       setOldPassword('');
     } catch (err) {
@@ -108,11 +98,6 @@ export default function UserSettingsPage() {
     auth.logout();
     setLocation('/login');
   };
-
-  const languageOptions = useMemo(() => [
-    { value: 'en' as const, label: t('languages.en') },
-    { value: 'ru' as const, label: t('languages.ru') },
-  ], [t]);
 
   const themeOptions = useMemo(() => [
     { value: 'default' as const, label: t('themes.default') },
@@ -219,33 +204,20 @@ export default function UserSettingsPage() {
               </div>
               <div>
                 <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-                <RadioGroup value={language} onChange={setLanguage} options={languageOptions} />
+                <LanguageSwitcher />
               </div>
               <div>
                 <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
-                <RadioGroup value={theme} onChange={setTheme} options={themeOptions} />
+                <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
               </div>
               <div>
                 <FormLabel>{t('chats.background')}</FormLabel>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    isSelected={background === ''}
-                    onClick={() => setBackground('')}
-                    className="aspect-square center p-1!"
-                  >
+                  <Button type="button" variant="outline" isSelected={background === ''} onClick={() => handleBackgroundChange('')} className="aspect-square center p-1!">
                     <span className="text-xs text-light">None</span>
                   </Button>
                   {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
-                    <Button
-                      key={bg}
-                      type="button"
-                      variant="outline"
-                      isSelected={background === bg}
-                      onClick={() => setBackground(bg)}
-                      className="aspect-square center p-1!"
-                    >
+                    <Button key={bg} type="button" variant="outline" isSelected={background === bg} onClick={() => handleBackgroundChange(bg)} className="aspect-square center p-1!">
                       <div className={`w-full h-full bg-preview-${bg}`} />
                     </Button>
                   ))}

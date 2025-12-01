@@ -39,9 +39,10 @@ export default function ChatDialog({ open, onOpenChange, chat, onChatCreated, on
     }
   }, [open, chat]);
 
+  const currentUserId = auth.user?.id;
   const availableUsers = useMemo(() =>
-    allUsers.filter(u => u.id !== auth.user?.id),
-    [allUsers, auth.user?.id]
+    allUsers.filter(u => u.id !== currentUserId),
+    [allUsers, currentUserId]
   );
 
   const handleSubmit = async (e?: React.FormEvent) => {

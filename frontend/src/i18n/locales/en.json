@@ -23,6 +23,7 @@
     "stop": "Stop",
     "rerecord": "Re-record",
     "tryAgain": "Try Again",
+    "close": "Close",
     "email": "Email",
     "password": "Password",
     "name": "Name"
@@ -227,7 +228,8 @@
     "unexpectedError": "Unexpected error",
     "failedToUpdateSettings": "Failed to update",
     "invalidInput": "Invalid input",
-    "pleaseTryAgain": "Please try again"
+    "pleaseTryAgain": "Please try again",
+    "unknown": "Unknown error"
   },
   "app": {
     "logoAlt": "Nokta"
@@ -244,5 +246,23 @@
     "message": "Not found",
     "description": "Page does not exist",
     "goHome": "Go Home"
+  },
+  "admin": {
+    "title": "Admin Panel - Users",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "member": "Member",
+    "admin": "Admin",
+    "passwordPlaceholder": "Password (auto-generated if empty)",
+    "userCreated": "User created",
+    "userUpdated": "User updated",
+    "userDeleted": "User deleted",
+    "failedToLoadUsers": "Failed to load users",
+    "failedToSaveUser": "Failed to save user",
+    "failedToDeleteUser": "Failed to delete user",
+    "confirmDelete": "Confirm Delete",
+    "confirmDeleteUser": "Are you sure you want to delete this user?",
+    "passwordForNewUser": "Password for new user:",
+    "savePassword": "Save this password - it won't be shown again."
   }
 }

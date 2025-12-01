@@ -12,7 +12,7 @@ const TYPING_TIMEOUT = 3000; // Clear after 3 seconds
 const BROADCAST_DELAY = 500; // Debounce typing events
 
 export function useTypingIndicator(
-  chatId: string,
+  chatId: string | undefined,
   onTypingUsersChange: (users: TypingUser[]) => void
 ) {
   const typingTimerRef = useRef<number | null>(null);

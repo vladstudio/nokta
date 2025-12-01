@@ -4,9 +4,6 @@ export interface User {
   name?: string;
   avatar?: string;
   last_seen?: string;
-  language?: 'en' | 'ru';
-  theme?: 'default' | 'wooden';
-  background?: string;
   birthday?: string;
   role?: 'Member' | 'Admin';
   created: string;

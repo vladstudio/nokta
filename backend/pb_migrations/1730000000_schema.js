@@ -335,34 +335,12 @@ migrate((app) => {
   }))
 
   users.fields.addAt(3, new Field({
-    name: "language",
-    type: "select",
-    required: false,
-    maxSelect: 1,
-    values: ["en", "ru"]
-  }))
-
-  users.fields.addAt(4, new Field({
-    name: "theme",
-    type: "select",
-    required: false,
-    maxSelect: 1,
-    values: ["default", "wooden"]
-  }))
-
-  users.fields.addAt(5, new Field({
     name: "birthday",
     type: "date",
     required: false
   }))
 
-  users.fields.addAt(6, new Field({
-    name: "background",
-    type: "text",
-    required: false
-  }))
-
-  users.fields.addAt(7, new Field({
+  users.fields.addAt(4, new Field({
     name: "role",
     type: "select",
     required: true,
@@ -398,19 +376,13 @@ migrate((app) => {
   const nameField = users.fields.getByName("name")
   const avatarField = users.fields.getByName("avatar")
   const lastSeenField = users.fields.getByName("last_seen")
-  const languageField = users.fields.getByName("language")
-  const themeField = users.fields.getByName("theme")
   const birthdayField = users.fields.getByName("birthday")
-  const backgroundField = users.fields.getByName("background")
   const roleField = users.fields.getByName("role")
 
   if (nameField) users.fields.removeById(nameField.id)
   if (avatarField) users.fields.removeById(avatarField.id)
   if (lastSeenField) users.fields.removeById(lastSeenField.id)
-  if (languageField) users.fields.removeById(languageField.id)
-  if (themeField) users.fields.removeById(themeField.id)
   if (birthdayField) users.fields.removeById(birthdayField.id)
-  if (backgroundField) users.fields.removeById(backgroundField.id)
   if (roleField) users.fields.removeById(roleField.id)
 
   users.listRule = null

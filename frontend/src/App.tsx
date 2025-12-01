@@ -15,15 +15,13 @@ import UserSettingsPage from './pages/UserSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoadingSpinner from './components/LoadingSpinner';
 import './i18n/config';
-import { useTranslation } from 'react-i18next';
 import { useTheme } from './hooks/useTheme';
 
 function App() {
   const [location, setLocation] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isValid);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const { i18n } = useTranslation();
-  useTheme(); // Load and apply user's theme preference
+  useTheme();
 
   useEffect(() => {
     const unsubscribe = auth.onChange(() => {
@@ -32,12 +30,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-  // Sync user language preference with i18n
-  useEffect(() => {
-    if (auth.user?.language) {
-      i18n.changeLanguage(auth.user.language);
-    }
-  }, [auth.user?.language, i18n]);
 
   useEffect(() => {
     if (isAuthenticated && location === '/') {

@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth } from '../services/pocketbase';
 import { Alert, Button, Input } from '../ui';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -55,7 +56,9 @@ export default function LoginPage() {
         </form>
       </div>
       <div className="flex-3" />
-
+      <div className="mb-4">
+        <LanguageSwitcher />
+      </div>
     </div>
   );
 }

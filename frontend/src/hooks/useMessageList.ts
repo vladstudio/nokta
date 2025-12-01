@@ -16,7 +16,7 @@ export interface UseMessageListReturn {
   setTypingUsers: React.Dispatch<React.SetStateAction<Array<{ userId: string; userName: string; timestamp: number }>>>;
 }
 
-export function useMessageList(chatId: string, anchorMessageId?: string): UseMessageListReturn {
+export function useMessageList(chatId: string | undefined, anchorMessageId?: string): UseMessageListReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [pendingMessages, setPendingMessages] = useState<PendingMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +27,7 @@ export function useMessageList(chatId: string, anchorMessageId?: string): UseMes
   const lastLoadTimeRef = useRef(0);
 
   const loadMessages = useCallback(async () => {
+    if (!chatId) { setLoading(false); return; }
     try {
       if (anchorMessageId) {
         const result = await messagesAPI.getAround(anchorMessageId, 50);
@@ -91,6 +92,7 @@ export function useMessageList(chatId: string, anchorMessageId?: string): UseMes
 
   // Initial load and real-time subscriptions
   useEffect(() => {
+    if (!chatId) { setLoading(false); return; }
     setLoading(true);
     setMessages([]);
     setHasMore(false);

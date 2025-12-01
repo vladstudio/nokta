@@ -51,16 +51,6 @@ const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
 export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
-
-  if (!chatId) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
-        <div className="text-light text-sm">{t('messages.selectChatToStart')}</div>
-      </div>
-    );
-  }
-
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const toastManager = useToastManager();
@@ -73,7 +63,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   // Parse anchor message from URL param
   const anchorMessageId = useMemo(() => {
-    const searchParams = new URLSearchParams(searchString);
+    const searchParams = new URLSearchParams(searchString || '');
     return searchParams.get('msg') || undefined;
   }, [searchString]);
 
@@ -573,6 +563,15 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     () => selectedMessage?.sender === currentUser?.id && !selectedMessage?.isPending,
     [selectedMessage, currentUser?.id]
   );
+
+  if (!chatId) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
+        <div className="text-light text-sm">{t('messages.selectChatToStart')}</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { users } from '../services/pocketbase';
 import { Button, ScrollArea, Dialog, Input, RadioGroup, useToastManager, Card } from '../ui';
 import type { User } from '../types';
 import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const toast = useToastManager();
   const [userList, setUserList] = useState<User[]>([]);
@@ -21,10 +23,10 @@ export default function AdminPage() {
 
   const loadUsers = useCallback(() => {
     users.list().then(setUserList).catch(() => {
-      toast.add({ title: 'Failed to load users', data: { type: 'error' } });
+      toast.add({ title: t('admin.failedToLoadUsers'), data: { type: 'error' } });
       setUserList([]);
     });
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     loadUsers();
@@ -37,13 +39,13 @@ export default function AdminPage() {
     try {
       if (editingUser) {
         await users.update(editingUser.id, { name: userName, role: userRole });
-        toast.add({ title: 'User updated', data: { type: 'success' } });
+        toast.add({ title: t('admin.userUpdated'), data: { type: 'success' } });
       } else {
         const created = await users.create(userEmail, userName, userRole, userPassword || undefined);
         if (!userPassword) {
           setGeneratedPassword(created.password);
         }
-        toast.add({ title: 'User created', data: { type: 'success' } });
+        toast.add({ title: t('admin.userCreated'), data: { type: 'success' } });
       }
       setShowUserDialog(false);
       setUserName('');
@@ -56,24 +58,24 @@ export default function AdminPage() {
       const pbError = error as { data?: { data?: Record<string, { message?: string }> }; message?: string };
       setUserErrors(
         pbError?.data?.data
-          ? Object.entries(pbError.data.data).map(([key, e]) => `${key}: ${e?.message || 'Unknown error'}`).filter(Boolean)
-          : [pbError?.message || 'Failed to save user']
+          ? Object.entries(pbError.data.data).map(([key, e]) => `${key}: ${e?.message || t('errors.unknown')}`).filter(Boolean)
+          : [pbError?.message || t('admin.failedToSaveUser')]
       );
     }
-  }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast]);
+  }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast, t]);
 
   const handleDeleteUser = useCallback(async () => {
     if (!confirmDelete) return;
     try {
       await users.delete(confirmDelete.id);
       loadUsers();
-      toast.add({ title: 'User deleted', data: { type: 'success' } });
-    } catch (error) {
-      toast.add({ title: 'Failed to delete user', data: { type: 'error' } });
+      toast.add({ title: t('admin.userDeleted'), data: { type: 'success' } });
+    } catch {
+      toast.add({ title: t('admin.failedToDeleteUser'), data: { type: 'error' } });
     } finally {
       setConfirmDelete(null);
     }
-  }, [confirmDelete, loadUsers, toast]);
+  }, [confirmDelete, loadUsers, toast, t]);
 
   const openUserDialog = useCallback((user?: User) => {
     setEditingUser(user || null);
@@ -92,12 +94,12 @@ export default function AdminPage() {
           <Button variant="ghost" size="icon" onClick={() => setLocation('/chat')}>
             <ArrowLeftIcon size={20} className="text-accent" />
           </Button>
-          <h2 className="font-semibold flex-1">Admin Panel - Users</h2>
+          <h2 className="font-semibold flex-1">{t('admin.title')}</h2>
         </div>
 
         <div className="grid gap-2">
           <Button variant="default" onClick={() => openUserDialog()}>
-            <PlusIcon size={20} className="text-accent" /> Add User
+            <PlusIcon size={20} className="text-accent" /> {t('admin.addUser')}
           </Button>
           {userList.map((user) => (
             <Card key={user.id} shadow="sm" border padding="sm">
@@ -120,23 +122,23 @@ export default function AdminPage() {
         <Dialog
           open={showUserDialog}
           onOpenChange={setShowUserDialog}
-          title={editingUser ? 'Edit User' : 'Add User'}
+          title={editingUser ? t('admin.editUser') : t('admin.addUser')}
           footer={
             <>
               <Button variant="outline" className="flex-1 center" onClick={() => setShowUserDialog(false)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="primary" className="flex-1 center" type="submit" form="user-form">
-                Save
+                {t('common.save')}
               </Button>
             </>
           }
         >
           <form id="user-form" onSubmit={handleSaveUser} className="grid gap-4">
-            <Input placeholder="Name" value={userName} onChange={(e) => setUserName(e.target.value)} />
-            <Input placeholder="Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
-            {!editingUser && <Input placeholder="Password (auto-generated if empty)" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
-            <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: 'Member' }, { value: 'Admin', label: 'Admin' }]} />
+            <Input placeholder={t('common.name')} value={userName} onChange={(e) => setUserName(e.target.value)} />
+            <Input placeholder={t('common.email')} value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
+            {!editingUser && <Input placeholder={t('admin.passwordPlaceholder')} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
+            <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: t('admin.member') }, { value: 'Admin', label: t('admin.admin') }]} />
             {userErrors.length > 0 && (
               <div className="text-sm text-red-600">
                 {userErrors.map((err, i) => <div key={i}>{err}</div>)}
@@ -148,36 +150,28 @@ export default function AdminPage() {
         <Dialog
           open={!!generatedPassword}
           onOpenChange={() => setGeneratedPassword(null)}
-          title="User Created"
-          footer={
-            <Button variant="primary" onClick={() => setGeneratedPassword(null)}>
-              Close
-            </Button>
-          }
+          title={t('admin.userCreated')}
+          footer={<Button variant="primary" onClick={() => setGeneratedPassword(null)}>{t('common.close')}</Button>}
         >
           <div className="grid gap-4">
-            <p className="text-sm">Password for new user:</p>
+            <p className="text-sm">{t('admin.passwordForNewUser')}</p>
             <Input value={generatedPassword || ''} readOnly />
-            <p className="text-xs text-light">Save this password - it won't be shown again.</p>
+            <p className="text-xs text-light">{t('admin.savePassword')}</p>
           </div>
         </Dialog>
 
         <Dialog
           open={!!confirmDelete}
           onOpenChange={() => setConfirmDelete(null)}
-          title="Confirm Delete"
+          title={t('admin.confirmDelete')}
           footer={
             <>
-              <Button variant="outline" className="flex-1 center" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </Button>
-              <Button variant="primary" className="flex-1 center" onClick={handleDeleteUser}>
-                Delete
-              </Button>
+              <Button variant="outline" className="flex-1 center" onClick={() => setConfirmDelete(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" className="flex-1 center" onClick={handleDeleteUser}>{t('common.delete')}</Button>
             </>
           }
         >
-          <p>Are you sure you want to delete this user?</p>
+          <p>{t('admin.confirmDeleteUser')}</p>
         </Dialog>
       </div>
     </ScrollArea>

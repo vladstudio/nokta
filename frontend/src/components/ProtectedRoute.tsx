@@ -6,6 +6,7 @@ import { auth } from '../services/pocketbase';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useColorScheme } from '../hooks/useColorScheme';
 import { showCallViewAtom } from '../store/callStore';
+import { preferences } from '../utils/preferences';
 import Sidebar from './Sidebar';
 import clsx from 'clsx';
 
@@ -21,27 +22,21 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const colorScheme = useColorScheme();
   const showCallView = useAtomValue(showCallViewAtom);
   const [isChecking, setIsChecking] = useState(true);
+  const [background, setBackground] = useState(preferences.background);
 
   useEffect(() => {
-    if (!auth.isValid) {
-      setLocation('/login');
-    } else {
-      setIsChecking(false);
-    }
-
-    const unsubscribe = auth.onChange(() => {
-      if (!auth.isValid) {
-        setLocation('/login');
-      }
-    });
-
+    if (!auth.isValid) { setLocation('/login'); } else { setIsChecking(false); }
+    const unsubscribe = auth.onChange(() => { if (!auth.isValid) setLocation('/login'); });
     return unsubscribe;
   }, [setLocation]);
 
-  const getBgClass = () => {
-    if (!auth.user?.background) return '';
-    return `bg-pattern-${auth.user.background}-${colorScheme}`;
-  };
+  useEffect(() => {
+    const update = () => setBackground(preferences.background);
+    window.addEventListener('preferences-change', update);
+    return () => window.removeEventListener('preferences-change', update);
+  }, []);
+
+  const getBgClass = () => background ? `bg-pattern-${background}-${colorScheme}` : '';
 
   if (isChecking) {
     return (

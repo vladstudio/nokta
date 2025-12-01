@@ -23,6 +23,7 @@
     "stop": "Стоп",
     "rerecord": "Перезаписать",
     "tryAgain": "Попробовать снова",
+    "close": "Закрыть",
     "email": "Email",
     "password": "Пароль",
     "name": "Имя"
@@ -227,7 +228,8 @@
     "unexpectedError": "Непредвиденная ошибка",
     "failedToUpdateSettings": "Не удалось обновить",
     "invalidInput": "Неверный ввод",
-    "pleaseTryAgain": "Пожалуйста, попробуйте снова"
+    "pleaseTryAgain": "Пожалуйста, попробуйте снова",
+    "unknown": "Неизвестная ошибка"
   },
   "app": {
     "logoAlt": "Nokta"
@@ -244,5 +246,23 @@
     "message": "Не найдено",
     "description": "Страница не существует",
     "goHome": "На главную"
+  },
+  "admin": {
+    "title": "Админ-панель - Пользователи",
+    "addUser": "Добавить",
+    "editUser": "Редактировать",
+    "member": "Участник",
+    "admin": "Админ",
+    "passwordPlaceholder": "Пароль (автогенерация если пусто)",
+    "userCreated": "Пользователь создан",
+    "userUpdated": "Пользователь обновлен",
+    "userDeleted": "Пользователь удален",
+    "failedToLoadUsers": "Не удалось загрузить",
+    "failedToSaveUser": "Не удалось сохранить",
+    "failedToDeleteUser": "Не удалось удалить",
+    "confirmDelete": "Подтвердите удаление",
+    "confirmDeleteUser": "Удалить этого пользователя?",
+    "passwordForNewUser": "Пароль для нового пользователя:",
+    "savePassword": "Сохраните пароль - он больше не будет показан."
   }
 }
