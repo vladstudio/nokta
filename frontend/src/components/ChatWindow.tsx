@@ -576,7 +576,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-(--color-bg-primary)">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <LoadingSpinner size="sm" />
         <div className="text-light text-sm">{t('common.loading')}</div>
       </div>
