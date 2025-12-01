@@ -127,7 +127,6 @@
   "chats": {
     "createChat": "Создать чат",
     "editChat": "Редактировать чат",
-    "selectMembers": "Выберите участников",
     "groupName": "Название чата (необязательно)",
     "groupNamePlaceholder": "Введите название...",
     "participants": "Участники",

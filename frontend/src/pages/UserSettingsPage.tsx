@@ -6,6 +6,7 @@ import { preferences } from '../utils/preferences';
 import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { ArrowLeftIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 
 interface PocketBaseRecord {
@@ -16,9 +17,10 @@ interface PocketBaseRecord {
 }
 
 export default function UserSettingsPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const toastManager = useToastManager();
   const [, setLocation] = useLocation();
+  const isMobile = useIsMobile();
   const currentUser = auth.user;
 
   const [name, setName] = useState('');
@@ -143,20 +145,25 @@ export default function UserSettingsPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <header className="flex items-center gap-2 p-4 border-b border-(--color-border)">
-        <Button variant="ghost" onClick={() => setLocation('/chat')} className="p-2!">
-          <ArrowLeftIcon size={20} />
-        </Button>
-        <h1 className="text-lg font-semibold">{t('userSettingsDialog.title')}</h1>
-        <div className="flex-1" />
-        {auth.user?.role === 'Admin' && (
-          <Button variant="ghost" onClick={() => setLocation('/admin')}>
-            <ShieldCheckIcon size={16} className="mr-1" /> Admin
+      <header className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
+        <div className="flex items-center gap-2">
+          {isMobile && (
+            <button onClick={() => setLocation('/chat')} className="p-1 -ml-2">
+              <ArrowLeftIcon size={20} className="text-accent" />
+            </button>
+          )}
+          <h2 className="font-semibold">{t('userSettingsDialog.title')}</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {auth.user?.role === 'Admin' && (
+            <Button variant="ghost" onClick={() => setLocation('/admin')} className="text-accent">
+              <ShieldCheckIcon size={20} className="text-accent" /> Admin
+            </Button>
+          )}
+          <Button variant="ghost" onClick={handleLogout} className="text-accent">
+            {t('sidebar.logOut')}
           </Button>
-        )}
-        <Button variant="ghost" onClick={handleLogout}>
-          {t('sidebar.logOut')}
-        </Button>
+        </div>
       </header>
       <ScrollArea>
         <div className="mx-auto w-full max-w-md p-6">

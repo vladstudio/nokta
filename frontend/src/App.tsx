@@ -13,6 +13,7 @@ import ChatPage from './pages/ChatPage';
 import AdminPage from './pages/AdminPage';
 import UserSettingsPage from './pages/UserSettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import CreateChatView from './components/CreateChatView';
 import LoadingSpinner from './components/LoadingSpinner';
 import './i18n/config';
 import { useTheme } from './hooks/useTheme';
@@ -77,6 +78,11 @@ function App() {
             <Route path="/settings">
               <ProtectedRoute>
                 <UserSettingsPage />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/new">
+              <ProtectedRoute>
+                <CreateChatView />
               </ProtectedRoute>
             </Route>
             <Route path="/chat/:chatId?">

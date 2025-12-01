@@ -127,7 +127,6 @@
   "chats": {
     "createChat": "Create Chat",
     "editChat": "Edit Chat",
-    "selectMembers": "Select members",
     "groupName": "Chat Name (Optional)",
     "groupNamePlaceholder": "Enter name...",
     "participants": "Participants",

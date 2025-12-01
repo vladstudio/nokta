@@ -160,7 +160,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           onClick={togglePlayback}
           className="flex items-center justify-center w-8 h-8 rounded-full bg-(--color-bg-hover) hover:bg-(--color-bg-active) transition-colors"
         >
-          {isPlayingVoice ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+          {isPlayingVoice ? <PauseIcon size={20} className="text-accent" /> : <PlayIcon size={20} className="text-accent" />}
         </button>
         <span className="text-sm">{duration}</span>
         <audio

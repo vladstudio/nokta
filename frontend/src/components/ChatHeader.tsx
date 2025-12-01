@@ -102,7 +102,6 @@ export default function ChatHeader({
           <Button
             onClick={onStartCall}
             variant="ghost"
-            size="default"
             className="flex items-center gap-2 text-accent"
             disabled={isCreatingCall || !!activeCallChat}
             title={activeCallChat ? t('calls.leaveCurrentCallFirst') : t('calls.startACall')}

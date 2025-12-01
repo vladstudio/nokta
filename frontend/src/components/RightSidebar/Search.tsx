@@ -83,7 +83,7 @@ export default function Search({ chatId, onClose, isMobile }: SearchProps) {
       <div className="p-2 bg-(--color-bg-primary)">
         <div className="relative">
           <MagnifyingGlassIcon
-            size={16}
+            size={20}
             className="absolute left-2 top-1/2 -translate-y-1/2 text-light"
           />
           <Input
