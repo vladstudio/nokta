@@ -248,7 +248,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   // Mark chat as read when opened
   useEffect(() => {
-    if (currentUser?.id) {
+    if (currentUser?.id && chatId) {
       chatReadStatus.markAsRead(currentUser.id, chatId);
     }
   }, [chatId, currentUser?.id]);
@@ -256,7 +256,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   // Mark as read when window regains focus
   useEffect(() => {
     const handleFocus = () => {
-      if (currentUser?.id) {
+      if (currentUser?.id && chatId) {
         chatReadStatus.markAsRead(currentUser.id, chatId);
       }
     };
