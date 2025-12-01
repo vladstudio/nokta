@@ -1,5 +1,4 @@
 export { Alert } from './Alert';
-export { default as Avatar } from './Avatar';
 export { default as Badge } from './Badge';
 export { default as OnlineIndicator } from './OnlineIndicator';
 export { Button } from './Button';
@@ -13,7 +12,6 @@ export { Menu } from './Menu';
 export { Popover } from './Popover';
 export { ScrollArea } from './ScrollArea';
 export { Dialog } from './Dialog';
-export { Switch } from './Switch';
 export { ToastProvider, useToastManager } from './Toast';
 export type { ToastType } from './Toast';
 export { FileUpload } from './FileUpload';

@@ -108,20 +108,6 @@ class MessageCache {
       request.onerror = () => reject(request.error);
     });
   }
-
-  async clear(): Promise<void> {
-    if (!this.db) await this.init();
-    if (!this.db) return;
-
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([MESSAGES_STORE], 'readwrite');
-      const store = transaction.objectStore(MESSAGES_STORE);
-      const request = store.clear();
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
 }
 
 export const messageCache = new MessageCache();

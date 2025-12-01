@@ -50,11 +50,7 @@ class MessageQueue {
     this.notifyListeners();
   }
 
-  getForChat(chatId: string): PendingMessage[] {
-    return this.queue.filter((m) => m.chatId === chatId);
-  }
-
-  incrementRetry(tempId: string) {
+  private incrementRetry(tempId: string) {
     const msg = this.queue.find((m) => m.tempId === tempId);
     if (msg) {
       msg.retries++;
@@ -96,10 +92,6 @@ class MessageQueue {
     }
 
     this.processing = false;
-  }
-
-  getPendingCount(): number {
-    return this.queue.length;
   }
 }
 

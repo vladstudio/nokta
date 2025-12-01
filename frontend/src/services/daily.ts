@@ -24,12 +24,5 @@ export const dailyAPI = {
 
     if (!response.ok) throw new Error('Failed to create Daily.co room');
     return await response.json();
-  },
-
-  async deleteRoom(roomName: string) {
-    await fetch(`${DAILY_API_URL}/rooms/${roomName}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${DAILY_API_KEY}` }
-    });
   }
 };
