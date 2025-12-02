@@ -31,7 +31,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadUsers();
-    stats.get().then(setSystemStats).catch(() => {});
+    stats.get().then(setSystemStats).catch(console.error);
   }, [loadUsers]);
 
   const handleSaveUser = useCallback(async (e?: React.FormEvent) => {
