@@ -209,7 +209,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       id={`msg-${message.id}`}
       onClick={onSelect}
       className={clsx(
-        'p-2 flex cursor-pointer transition-colors hover:bg-(--color-bg-hover) rounded',
+        'p-2 flex cursor-pointer transition-colors [&:hover:not(:has(.msg-content:hover))]:bg-(--color-bg-hover) rounded',
         isOwn ? 'justify-end' : 'justify-start',
         isSelected && 'bg-(--color-bg-active)!'
       )}
@@ -244,8 +244,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
             </button>
           )}
         </div>
-        <div className={clsx(
-          'rounded-xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
+        <div onClick={(e) => e.stopPropagation()} className={clsx(
+          'msg-content rounded-xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
           isOwn
             ? 'bg-(--color-bg-primary)/30 backdrop-blur-lg'
             : 'bg-(--color-bg-primary)',
