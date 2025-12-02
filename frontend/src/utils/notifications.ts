@@ -7,7 +7,11 @@ declare global {
   interface Window { __TAURI__?: { notification?: unknown } }
 }
 
-const isTauri = () => !!window.__TAURI__;
+const isTauri = () => {
+  const result = !!window.__TAURI__;
+  console.log('[notifications] isTauri:', result, 'window.__TAURI__:', window.__TAURI__);
+  return result;
+};
 
 export interface NotificationPermissionState {
   granted: boolean;
@@ -33,10 +37,20 @@ export async function getNotificationPermission(): Promise<NotificationPermissio
  * Request notification permission from user
  */
 export async function requestNotificationPermission(): Promise<boolean> {
+  console.log('[notifications] requestNotificationPermission called');
   if (isTauri()) {
-    const { requestPermission, isPermissionGranted } = await import('@tauri-apps/plugin-notification');
-    if (await isPermissionGranted()) return true;
-    return (await requestPermission()) === 'granted';
+    try {
+      const { requestPermission, isPermissionGranted } = await import('@tauri-apps/plugin-notification');
+      const alreadyGranted = await isPermissionGranted();
+      console.log('[notifications] Tauri permission already granted:', alreadyGranted);
+      if (alreadyGranted) return true;
+      const result = await requestPermission();
+      console.log('[notifications] Tauri requestPermission result:', result);
+      return result === 'granted';
+    } catch (err) {
+      console.error('[notifications] Tauri permission error:', err);
+      return false;
+    }
   }
   if (!('Notification' in window)) return false;
   if (Notification.permission === 'granted') return true;
@@ -48,17 +62,24 @@ export async function requestNotificationPermission(): Promise<boolean> {
  * Internal helper to create a notification
  */
 async function createNotification(title: string, options: NotificationOptions): Promise<Notification | null> {
+  console.log('[notifications] createNotification:', title, options.body);
   const perm = await getNotificationPermission();
-  if (!perm.granted) return null;
+  console.log('[notifications] permission state:', perm);
+  if (!perm.granted) {
+    console.log('[notifications] permission not granted, skipping');
+    return null;
+  }
   try {
     if (isTauri()) {
       const { sendNotification } = await import('@tauri-apps/plugin-notification');
+      console.log('[notifications] sending Tauri notification');
       sendNotification({ title, body: options.body || '' });
+      console.log('[notifications] Tauri notification sent');
       return null;
     }
     return new Notification(title, options);
   } catch (err) {
-    console.error('Failed to show notification:', err);
+    console.error('[notifications] Failed to show notification:', err);
     return null;
   }
 }
@@ -66,9 +87,10 @@ async function createNotification(title: string, options: NotificationOptions): 
 /**
  * Show a notification for a new message
  */
-export function showMessageNotification(title: string, body: string, options?: { chatId?: string; icon?: string; tag?: string }) {
+export async function showMessageNotification(title: string, body: string, options?: { chatId?: string; icon?: string; tag?: string }) {
+  console.log('[notifications] showMessageNotification:', title, body);
   const truncated = body.length > 100 ? body.substring(0, 100) + '...' : body;
-  createNotification(title, {
+  return createNotification(title, {
     body: truncated,
     icon: options?.icon || '/logo.png',
     tag: options?.tag || `chat-${options?.chatId}`,
