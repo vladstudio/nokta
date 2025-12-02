@@ -393,5 +393,11 @@ export const invitations = {
   },
 };
 
+export const stats = {
+  async get(): Promise<{ dataSizeMB: number; freeSpaceMB: number }> {
+    return await pb.send('/api/stats', {});
+  },
+};
+
 export { pb };
 export default pb;

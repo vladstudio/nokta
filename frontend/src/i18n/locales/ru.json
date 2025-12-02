@@ -108,7 +108,7 @@
     "title": "Редактировать сообщение"
   },
   "deleteMessageDialog": {
-    "title": "Удалить сообщение"
+    "title": "Удалить сообщение?"
   },
   "userSettingsDialog": {
     "title": "Мои настройки",
@@ -216,7 +216,8 @@
     "cameraAccessDenied": "Доступ к камере/микрофону запрещен",
     "recordingFailed": "Ошибка записи",
     "voiceRecorded": "Записано",
-    "cannotRecordOffline": "Запись недоступна без сети"
+    "cannotRecordOffline": "Запись недоступна без сети",
+    "dropFileHere": "Перетащите файл сюда"
   },
   "presence": {
     "online": "В сети",
@@ -278,6 +279,8 @@
     "confirmDelete": "Подтвердите удаление",
     "confirmDeleteUser": "Удалить этого пользователя?",
     "passwordForNewUser": "Пароль для нового пользователя:",
-    "savePassword": "Сохраните пароль - он больше не будет показан."
+    "savePassword": "Сохраните пароль - он больше не будет показан.",
+    "dataSize": "Данные",
+    "freeSpace": "Свободно"
   }
 }

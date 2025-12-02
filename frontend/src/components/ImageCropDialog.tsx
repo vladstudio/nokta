@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import imageCompression from 'browser-image-compression';
 import { Dialog, Button } from '../ui';
@@ -12,36 +12,34 @@ interface ImageCropDialogProps {
   onComplete: (file: File) => void;
 }
 
-type Quality = 'lq' | 'md' | 'hq';
-
 const QUALITY_PRESETS = {
   lq: { maxSizeMB: 0.3, maxWidthOrHeight: 800 },
   md: { maxSizeMB: 0.7, maxWidthOrHeight: 1920 },
   hq: { maxSizeMB: 1.5, maxWidthOrHeight: 3840 },
-};
+} as const;
 
 export default function ImageCropDialog({ open, onOpenChange, file, onComplete }: ImageCropDialogProps) {
   const { t } = useTranslation();
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>({ x: 0, y: 0, width: 100, height: 100, unit: '%' });
-  const [quality, setQuality] = useState<Quality>('md');
+  const [quality, setQuality] = useState<keyof typeof QUALITY_PRESETS>('md');
   const [processing, setProcessing] = useState(false);
+  const imageUrl = useMemo(() => URL.createObjectURL(file), [file]);
 
   const handleAdd = async () => {
-    if (!crop || !imgRef.current) return;
+    const img = imgRef.current;
+    if (!img) return;
     setProcessing(true);
     try {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
-      const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-      const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-      const pixelCrop: PixelCrop = {
-        x: crop.x * scaleX, y: crop.y * scaleY,
-        width: crop.width * scaleX, height: crop.height * scaleY, unit: 'px'
-      };
-      canvas.width = pixelCrop.width;
-      canvas.height = pixelCrop.height;
-      ctx.drawImage(imgRef.current, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+      const x = (crop.x / 100) * img.naturalWidth;
+      const y = (crop.y / 100) * img.naturalHeight;
+      const w = (crop.width / 100) * img.naturalWidth;
+      const h = (crop.height / 100) * img.naturalHeight;
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
       const blob = await new Promise<Blob>((res, rej) => canvas.toBlob(b => b ? res(b) : rej(), 'image/jpeg', 0.95));
       const compressed = await imageCompression(new File([blob], file.name, { type: 'image/jpeg' }), {
         ...QUALITY_PRESETS[quality], fileType: 'image/webp', useWebWorker: true,
@@ -62,7 +60,7 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
       <div className="space-y-4">
         <div className="flex justify-center bg-black/10 p-1 rounded overflow-hidden">
           <ReactCrop crop={crop} onChange={setCrop}>
-            <img ref={imgRef} src={URL.createObjectURL(file)} className="max-h-[50dvh]! max-w-full" alt="" />
+            <img ref={imgRef} src={imageUrl} className="max-h-[50dvh]! max-w-full" alt="" />
           </ReactCrop>
         </div>
         <div className="space-y-2">

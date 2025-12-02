@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { users } from '../services/pocketbase';
+import { users, stats } from '../services/pocketbase';
 import { Button, ScrollArea, Dialog, Input, RadioGroup, useToastManager, Card } from '../ui';
 import type { User } from '../types';
 import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon } from "@phosphor-icons/react";
@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [userErrors, setUserErrors] = useState<string[]>([]);
+  const [systemStats, setSystemStats] = useState<{ dataSizeMB: number; freeSpaceMB: number } | null>(null);
 
   const loadUsers = useCallback(() => {
     users.list().then(setUserList).catch(() => {
@@ -30,6 +31,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadUsers();
+    stats.get().then(setSystemStats).catch(() => {});
   }, [loadUsers]);
 
   const handleSaveUser = useCallback(async (e?: React.FormEvent) => {
@@ -96,6 +98,12 @@ export default function AdminPage() {
           </Button>
           <h2 className="font-semibold flex-1">{t('admin.title')}</h2>
         </div>
+
+        {systemStats && (
+          <Card shadow="sm" border padding="sm">
+            <div className="text-xs text-light">{t('admin.dataSize')}: {systemStats.dataSizeMB} MB • {t('admin.freeSpace')}: {systemStats.freeSpaceMB} MB</div>
+          </Card>
+        )}
 
         <div className="grid gap-2">
           <Button variant="default" onClick={() => openUserDialog()}>

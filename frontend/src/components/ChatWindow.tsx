@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { UploadSimpleIcon } from '@phosphor-icons/react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useSearch } from 'wouter';
@@ -107,12 +108,14 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
   const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
   const [quickVideoRecorderOpen, setQuickVideoRecorderOpen] = useState(false);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const dragCounterRef = useRef(0);
   const scrollStateRef = useRef({
     lastMsgId: '',
     pendingCount: 0,
@@ -228,6 +231,37 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
     const file = new File([blob], `quick_video_${Date.now()}.mp4`, { type: 'video/mp4' });
     uploadFiles([file], 'video', durationStr);
+  };
+
+  // Drag and drop handlers
+  const handleDrag = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    handleDrag(e);
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes('Files')) setIsDraggingFile(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    handleDrag(e);
+    if (--dragCounterRef.current === 0) setIsDraggingFile(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    handleDrag(e);
+    dragCounterRef.current = 0;
+    setIsDraggingFile(false);
+
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (!isOnline) {
+      toastManager.add({ title: t('common.noConnection'), description: t('videoUpload.cannotUploadOffline'), data: { type: 'error' } });
+      return;
+    }
+
+    if (file.type.startsWith('image/')) setCropDialogFile(file);
+    else if (file.type.startsWith('video/')) handleVideoInputChange({ target: { files: [file], value: '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
+    else handleFileChange({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
   // Load chat data
@@ -612,7 +646,21 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div
+      className="flex-1 flex flex-col min-h-0 relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDrag}
+      onDrop={handleDrop}
+    >
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-50 bg-(--color-bg-elevated)/90 flex items-center justify-center border-2 border-dashed border-(--color-accent) rounded-lg m-2 pointer-events-none">
+          <div className="text-center">
+            <UploadSimpleIcon size={48} className="text-accent mx-auto mb-2" />
+            <div className="text-(--color-text-default) font-medium">{t('messages.dropFileHere')}</div>
+          </div>
+        </div>
+      )}
       <ChatHeader
         chat={chat}
         chatName={getChatDisplayName(chat, currentUser?.id, {
