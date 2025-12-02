@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { User, Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
+import type { User, Chat, Message, ChatReadStatus, Invitation, PocketBaseEvent } from '../types';
 
 const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
@@ -342,6 +342,54 @@ export const chatReadStatus = {
 
   unsubscribe(subscriptionId?: string) {
     return pb.collection('chat_read_status').unsubscribe(subscriptionId);
+  },
+};
+
+export const invitations = {
+  async list() {
+    return await pb.collection('invitations').getFullList<Invitation>({
+      filter: pb.filter('invited_by = {:userId} && used != true', { userId: auth.user?.id }),
+      sort: '-created',
+    });
+  },
+
+  async create() {
+    const code = crypto.randomUUID().replace(/-/g, '');
+    const expires = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+    return await pb.collection('invitations').create<Invitation>({
+      code,
+      invited_by: auth.user?.id,
+      expires_at: expires,
+      used: false,
+    });
+  },
+
+  async getByCode(code: string) {
+    const records = await pb.collection('invitations').getFullList<Invitation>({
+      filter: pb.filter('code = {:code}', { code }),
+      expand: 'invited_by',
+    });
+    return records[0] || null;
+  },
+
+  async markUsed(id: string) {
+    return await pb.collection('invitations').update<Invitation>(id, { used: true });
+  },
+
+  async delete(id: string) {
+    await pb.collection('invitations').delete(id);
+  },
+
+  async signup(code: string, name: string, email: string, password: string) {
+    const invite = await this.getByCode(code);
+    if (!invite || invite.used || new Date(invite.expires_at) < new Date()) {
+      throw new Error('Invalid or expired invitation');
+    }
+    const { user } = await users.create(email, name, 'Member', password);
+    await this.markUsed(invite.id);
+    await auth.login(email, password);
+    await chats.create([user.id, invite.invited_by]);
+    return user;
   },
 };
 

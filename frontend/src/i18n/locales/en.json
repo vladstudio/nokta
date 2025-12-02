@@ -26,7 +26,8 @@
     "close": "Close",
     "email": "Email",
     "password": "Password",
-    "name": "Name"
+    "name": "Name",
+    "copied": "Copied"
   },
   "sidebar": {
     "logOut": "Log Out"
@@ -250,6 +251,16 @@
     "message": "Not found",
     "description": "Page does not exist",
     "goHome": "Go Home"
+  },
+  "invites": {
+    "title": "Invites",
+    "create": "New",
+    "empty": "No pending invitations",
+    "expires": "Expires",
+    "invitedBy": "Invited by {{name}}",
+    "signup": "Sign Up",
+    "invalidOrExpired": "Invalid or expired invitation",
+    "passwordMin": "Password must be at least 10 characters"
   },
   "admin": {
     "title": "Admin Panel - Users",

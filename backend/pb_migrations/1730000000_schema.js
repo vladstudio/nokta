@@ -323,6 +323,60 @@ migrate((app) => {
 
   app.save(chatReadStatus)
 
+  // Create invitations collection
+  const invitations = new Collection({
+    name: "invitations",
+    type: "base"
+  })
+
+  invitations.fields.addAt(0, new Field({
+    name: "code",
+    type: "text",
+    required: true,
+    min: 32,
+    max: 32
+  }))
+
+  invitations.fields.addAt(1, new Field({
+    name: "invited_by",
+    type: "relation",
+    required: true,
+    collectionId: app.findCollectionByNameOrId("users").id,
+    cascadeDelete: true,
+    maxSelect: 1
+  }))
+
+  invitations.fields.addAt(2, new Field({
+    name: "expires_at",
+    type: "date",
+    required: true
+  }))
+
+  invitations.fields.addAt(3, new Field({
+    name: "used",
+    type: "bool",
+    required: false
+  }))
+
+  invitations.fields.addAt(4, new Field({
+    name: "created",
+    type: "autodate",
+    onCreate: true,
+    onUpdate: false
+  }))
+
+  invitations.listRule = ''
+  invitations.viewRule = ''
+  invitations.createRule = '@request.auth.id != ""'
+  invitations.updateRule = ''
+  invitations.deleteRule = 'invited_by = @request.auth.id'
+
+  invitations.indexes = [
+    "CREATE UNIQUE INDEX idx_invitations_code ON invitations (code)"
+  ]
+
+  app.save(invitations)
+
   // Update users collection
   const users = app.findCollectionByNameOrId("users")
 
@@ -372,7 +426,7 @@ migrate((app) => {
 
   users.listRule = '@request.auth.id != ""'
   users.viewRule = '@request.auth.id != ""'
-  users.createRule = '@request.auth.role = "Admin"'
+  users.createRule = ''
   users.updateRule = '@request.auth.role = "Admin" || @request.auth.id = id'
   users.deleteRule = '@request.auth.role = "Admin"'
 
@@ -380,6 +434,9 @@ migrate((app) => {
 
   return null
 }, (app) => {
+  const invitations = app.findCollectionByNameOrId("invitations")
+  app.delete(invitations)
+
   const chatReadStatus = app.findCollectionByNameOrId("chat_read_status")
   app.delete(chatReadStatus)
 

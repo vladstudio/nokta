@@ -7,7 +7,7 @@ import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, 
 import { UserAvatar } from '../components/Avatar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { ArrowLeftIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { ArrowLeftIcon, ShieldCheckIcon, EnvelopeIcon } from '@phosphor-icons/react';
 
 interface PocketBaseRecord {
   id: string;
@@ -160,6 +160,9 @@ export default function UserSettingsPage() {
               <ShieldCheckIcon size={20} className="text-accent" /> Admin
             </Button>
           )}
+          <Button variant="ghost" onClick={() => setLocation('/invites')} className="text-accent">
+            <EnvelopeIcon size={20} /> {t('invites.title')}
+          </Button>
           <Button variant="ghost" onClick={handleLogout} className="text-accent">
             {t('sidebar.logOut')}
           </Button>

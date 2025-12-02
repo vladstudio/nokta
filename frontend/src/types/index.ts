@@ -77,3 +77,13 @@ export interface UserPresenceData {
   id: string;
   last_seen: string;
 }
+
+export interface Invitation {
+  id: string;
+  code: string;
+  invited_by: string;
+  expires_at: string;
+  used?: boolean;
+  created?: string;
+  expand?: { invited_by?: User };
+}

@@ -12,6 +12,8 @@ import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
 import AdminPage from './pages/AdminPage';
 import UserSettingsPage from './pages/UserSettingsPage';
+import InvitesPage from './pages/InvitesPage';
+import SignupPage from './pages/SignupPage';
 import NotFoundPage from './pages/NotFoundPage';
 import CreateChatView from './components/CreateChatView';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -68,6 +70,7 @@ function App() {
           <ConnectionBanner />
           <Switch>
             <Route path="/login" component={LoginPage} />
+            <Route path="/signup/:code" component={SignupPage} />
             <Route path="/admin">
               <ProtectedRoute>
                 <AdminRoute>
@@ -78,6 +81,11 @@ function App() {
             <Route path="/settings">
               <ProtectedRoute>
                 <UserSettingsPage />
+              </ProtectedRoute>
+            </Route>
+            <Route path="/invites">
+              <ProtectedRoute>
+                <InvitesPage />
               </ProtectedRoute>
             </Route>
             <Route path="/new">
