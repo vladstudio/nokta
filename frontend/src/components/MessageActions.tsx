@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Popover } from '../ui';
 import { ArrowBendUpLeftIcon, ArrowBendUpRightIcon, CopyIcon, DotsThreeIcon, PencilIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
+
+const STORAGE_KEY = 'quick_emojis';
 
 interface MessageActionsProps {
   onCancel: () => void;
@@ -13,7 +16,26 @@ interface MessageActionsProps {
   userReactions?: string[];
 }
 
-const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉'];
+const DEFAULT_QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉'];
+
+function getStoredQuickEmojis(): string[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length === 4) return parsed;
+    }
+  } catch {}
+  return DEFAULT_QUICK_EMOJIS;
+}
+
+function updateStoredQuickEmojis(emoji: string): string[] {
+  const current = getStoredQuickEmojis();
+  if (current.includes(emoji)) return current;
+  const updated = [emoji, ...current.slice(0, 3)];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return updated;
+}
 const MORE_EMOJIS = [
   // Happy faces
   '😊', '😄', '😁', '🙂', '😃', '🥰', '😇', '☺️',
@@ -43,6 +65,12 @@ const MORE_EMOJIS = [
 
 export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReply, onForward, onReact, userReactions }: MessageActionsProps) {
   const { t } = useTranslation();
+  const [quickEmojis, setQuickEmojis] = useState(getStoredQuickEmojis);
+
+  const handleReact = (emoji: string) => {
+    setQuickEmojis(updateStoredQuickEmojis(emoji));
+    onReact?.(emoji);
+  };
 
   return (
     <div className="flex items-center gap-1 w-full">
@@ -54,13 +82,13 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
       {onForward && <Button variant="ghost" onClick={onForward}><ArrowBendUpRightIcon size={20} className="text-accent" /><span className="hidden sm:inline ml-1">{t('messageActions.forward')}</span></Button>}
       {onReact && (
         <>
-          {QUICK_EMOJIS.map(emoji => (
-            <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl center">{emoji}</Button>
+          {quickEmojis.map(emoji => (
+            <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => handleReact(emoji)} className="text-xl center">{emoji}</Button>
           ))}
           <Popover trigger={<Button as="div" variant="ghost" size="icon" className="text-xl center"><DotsThreeIcon weight="bold" size={20} className="text-accent" /></Button>}>
             <div className="grid grid-cols-8 gap-1">
               {MORE_EMOJIS.map(emoji => (
-                <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => onReact(emoji)} className="text-xl center">{emoji}</Button>
+                <Button key={emoji} variant="ghost" size="icon" isSelected={userReactions?.includes(emoji)} onClick={() => handleReact(emoji)} className="text-xl center">{emoji}</Button>
               ))}
             </div>
           </Popover>
