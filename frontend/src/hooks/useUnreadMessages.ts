@@ -263,6 +263,12 @@ export function useUnreadMessages(
     }
   }, [userId]);
 
+  // Update native app tray icon based on unread status
+  useEffect(() => {
+    const totalUnread = Array.from(unreadCounts.values()).reduce((a, b) => a + b, 0);
+    (window as any).electronAPI?.setUnreadStatus(totalUnread > 0);
+  }, [unreadCounts]);
+
   return {
     unreadCounts,
     markChatAsRead,

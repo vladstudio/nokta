@@ -23,6 +23,7 @@
     "productName": "Nokta",
     "directories": { "output": "dist" },
     "files": ["electron/**/*", "assets/**/*"],
+    "electronLanguages": ["en"],
     "mac": {
       "icon": "assets/icon.icns",
       "category": "public.app-category.social-networking",

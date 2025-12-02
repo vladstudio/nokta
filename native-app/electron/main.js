@@ -11,7 +11,7 @@ const store = {
   getAll: () => { try { return JSON.parse(fs.readFileSync(configPath, 'utf8')); } catch { return {}; } }
 };
 
-let mainWindow, tray;
+let mainWindow, tray, trayIcons;
 
 const promptServerUrl = () => {
   try {
@@ -39,8 +39,17 @@ const createWindow = () => {
 };
 
 const createTray = () => {
-  const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/icon-black.png')).resize({ width: 16, height: 16 });
-  tray = new Tray(icon);
+  // Create template images - macOS auto-inverts for dark mode
+  const createTemplateIcon = (filename) => {
+    const icon = nativeImage.createFromPath(path.join(__dirname, '../assets', filename)).resize({ width: 16, height: 16 });
+    icon.setTemplateImage(true);
+    return icon;
+  };
+  trayIcons = {
+    normal: createTemplateIcon('icon-black.png'),
+    unread: createTemplateIcon('icon-black-unread.png')
+  };
+  tray = new Tray(trayIcons.normal);
   tray.setToolTip('Nokta');
 
   const updateMenu = () => {
@@ -71,4 +80,11 @@ app.on('window-all-closed', e => e.preventDefault());
 // IPC for notifications from renderer
 ipcMain.handle('show-notification', (_, { title, body }) => {
   if (Notification.isSupported()) new Notification({ title, body }).show();
+});
+
+// IPC for unread status - updates tray icon
+ipcMain.handle('set-unread-status', (_, hasUnread) => {
+  if (tray && trayIcons) {
+    tray.setImage(hasUnread ? trayIcons.unread : trayIcons.normal);
+  }
 });
