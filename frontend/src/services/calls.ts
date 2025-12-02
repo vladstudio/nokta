@@ -57,10 +57,10 @@ export const callsAPI = {
     // Remove user from participants
     const updatedParticipants = callParticipants.filter(id => id !== userId);
 
-    // Update chat
+    // Update chat - end call if only 1 participant remains (lonely user gets kicked)
     const updatedChat = await pb.collection('chats').update<Chat>(chatId, {
       call_participants: updatedParticipants,
-      is_active_call: updatedParticipants.length > 0
+      is_active_call: updatedParticipants.length > 1
     });
 
     return updatedChat;
