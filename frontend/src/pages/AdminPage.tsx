@@ -135,7 +135,7 @@ export default function AdminPage() {
           }
         >
           <form id="user-form" onSubmit={handleSaveUser} className="grid gap-4">
-            <Input placeholder={t('common.name')} value={userName} onChange={(e) => setUserName(e.target.value)} />
+            <Input placeholder={t('common.name')} value={userName} onChange={(e) => setUserName(e.target.value)} maxLength={24} />
             <Input placeholder={t('common.email')} value={userEmail} onChange={(e) => setUserEmail(e.target.value)} disabled={!!editingUser} />
             {!editingUser && <Input placeholder={t('admin.passwordPlaceholder')} value={userPassword} onChange={(e) => setUserPassword(e.target.value)} />}
             <RadioGroup value={userRole} onChange={(value) => setUserRole(value as 'Member' | 'Admin')} options={[{ value: 'Member', label: t('admin.member') }, { value: 'Admin', label: t('admin.admin') }]} />

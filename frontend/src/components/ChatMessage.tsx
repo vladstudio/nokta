@@ -49,8 +49,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   }, [message.reactions]);
 
   const renderUploadingState = () => (
-    <div className="space-y-1">
-      <p className="text-sm">{t('common.uploading')} {message.content}... {message.uploadProgress || 0}%</p>
+    <div className="space-y-1 max-w-full">
+      <p className="text-sm truncate">{t('common.uploading')} {message.content}... {message.uploadProgress || 0}%</p>
       <button
         onClick={(e) => { e.stopPropagation(); message.tempId && onCancelUpload?.(message.tempId); }}
         className="text-xs text-light hover:text-(--color-text-primary) underline"
@@ -61,8 +61,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   );
 
   const renderFailedState = () => (
-    <div className="space-y-2">
-      <p className="text-sm text-(--color-error-600)">{t('common.uploadFailed')}: {message.content}</p>
+    <div className="space-y-2 max-w-full">
+      <p className="text-sm text-(--color-error-600) truncate">{t('common.uploadFailed')}: {message.content}</p>
       <button
         onClick={(e) => { e.stopPropagation(); message.tempId && onRetry?.(message.tempId); }}
         className="text-xs text-(--color-error-500) hover:text-(--color-error-600) underline"
@@ -76,7 +76,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     <p className="text-sm whitespace-pre-wrap wrap-break-word">
       {message.content.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
         part.match(/^https?:\/\//) ?
-          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline hover:text-(--color-primary-600)">{part}</a>
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline hover:text-(--color-primary-600) break-all">{part}</a>
           : part
       )}
     </p>
@@ -103,11 +103,11 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       <a
         href={fileUrl + '?download=1'}
         download={message.file}
-        className="flex items-center gap-2 hover:underline"
+        className="flex items-center gap-2 hover:underline max-w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-lg">📄</span>
-        <span className="text-sm">{message.file}</span>
+        <span className="text-lg shrink-0">📄</span>
+        <span className="text-sm truncate">{message.file}</span>
       </a>
     );
   };
@@ -214,7 +214,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         isSelected && 'bg-(--color-bg-active)!'
       )}
     >
-      <div className={clsx('flex flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
+      <div className={clsx('flex flex-col gap-1 min-w-0 max-w-full', isOwn ? 'items-end' : 'items-start')}>
         <div className="flex items-baseline gap-2 px-1">
           <span className="text-xs font-medium text-light">
             {isOwn ? t('common.you') : senderName}
@@ -245,7 +245,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           )}
         </div>
         <div onClick={(e) => e.stopPropagation()} className={clsx(
-          'msg-content rounded-xl px-4 py-2 max-w-lg wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
+          'msg-content rounded-xl px-4 py-2 max-w-lg min-w-0 wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
           isOwn
             ? 'bg-(--color-bg-primary)/30 backdrop-blur-lg'
             : 'bg-(--color-bg-primary)',

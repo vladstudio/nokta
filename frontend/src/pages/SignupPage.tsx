@@ -57,7 +57,7 @@ export default function SignupPage() {
         <img src="/favicon.svg" alt="Logo" className="w-20 h-20 m-8" />
         {invite ? (
             <form className="grid gap-4 w-full" onSubmit={handleSubmit}>
-              <Input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={t('common.name')} />
+              <Input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={t('common.name')} maxLength={24} />
               <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t('common.email')} />
               <Input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder={t('common.password')} minLength={10} />
               {error && <Alert variant="error">{error}</Alert>}
