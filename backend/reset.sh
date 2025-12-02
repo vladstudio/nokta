@@ -92,6 +92,15 @@ if [ -z "$TOKEN" ]; then
     exit 1
 fi
 
+# Enable rate limiting for auth endpoints
+echo "🔒 Enabling rate limiting..."
+curl -s -X PATCH "http://127.0.0.1:8090/api/settings" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    -d '{"rateLimits":{"enabled":true,"rules":[{"label":"/api/collections/users/auth-with-password","audience":"","duration":900,"maxRequests":5},{"label":"/api/collections/_superusers/auth-with-password","audience":"","duration":900,"maxRequests":3}]}}' > /dev/null 2>&1
+echo "✓ Rate limiting enabled (5 attempts / 15 min)"
+echo ""
+
 # Create admin user via API with superuser token
 curl -s -X POST "http://127.0.0.1:8090/api/collections/users/records" \
     -H "Content-Type: application/json" \
