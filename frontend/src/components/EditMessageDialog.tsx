@@ -43,7 +43,6 @@ export default function EditMessageDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={t('editMessageDialog.title')}
-      description={t('editMessageDialog.description')}
       footer={
         <>
           <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
@@ -58,11 +57,12 @@ export default function EditMessageDialog({
       <form id="edit-message-form" onSubmit={handleSave}>
         <Input
           as="textarea"
+          autoHeight
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          rows={4}
           placeholder={t('messageInput.placeholder')}
           autoFocus
+          className="max-h-[70dvh]"
         />
       </form>
     </Dialog>

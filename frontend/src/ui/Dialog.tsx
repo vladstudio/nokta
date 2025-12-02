@@ -32,12 +32,12 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
           <Card shadow="lg" padding="lg" className="grid gap-4">
             <BaseDialog.Title className="text-lg font-semibold text-(--color-text-primary)">{title}</BaseDialog.Title>
             {description && (
-              <BaseDialog.Description className="mt-2 text-sm text-light">
+              <BaseDialog.Description className="text-sm text-light">
                 {description}
               </BaseDialog.Description>
             )}
-            <div className="mt-4">{children}</div>
-            {footer && <div className="mt-6 flex justify-end gap-3">{footer}</div>}
+            {children}
+            {footer && <div className="flex justify-end gap-3">{footer}</div>}
           </Card>
           <BaseDialog.Close className="absolute top-4 right-4 text-light hover:text-(--color-text-primary)" aria-label="Close">
             <XIcon className="w-5 h-5" />

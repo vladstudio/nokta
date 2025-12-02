@@ -104,8 +104,7 @@
     "unsupportedFormat": "Video format not supported by your browser"
   },
   "editMessageDialog": {
-    "title": "Edit Message",
-    "description": "Make changes to your message"
+    "title": "Edit Message"
   },
   "deleteMessageDialog": {
     "title": "Delete Message",
