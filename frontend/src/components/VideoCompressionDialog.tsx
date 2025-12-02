@@ -75,8 +75,11 @@ export default function VideoCompressionDialog({
 
   const getEstimatedSize = (q: VideoQuality) => {
     if (!metadata) return '...';
-    const estimated = metadata.size * QUALITY_ESTIMATES[q].multiplier;
-    return formatFileSize(estimated);
+    const bytes = metadata.size * QUALITY_ESTIMATES[q].multiplier;
+    if (bytes < 1024) return `~${Math.round(bytes)} B`;
+    if (bytes < 1024 * 1024) return `~${Math.round(bytes / 1024)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `~${Math.round(bytes / (1024 * 1024))} MB`;
+    return `~${Math.round(bytes / (1024 * 1024 * 1024))} GB`;
   };
 
   return (
@@ -84,14 +87,14 @@ export default function VideoCompressionDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={t('videoCompression.title')}
-      maxWidth="2xl"
+      maxWidth="4xl"
       footer={
         <>
           <Button className="flex-1 center" variant="outline" onClick={handleCancel} disabled={isCompressing}>
             {t('common.cancel')}
           </Button>
           <Button className="flex-1 center" onClick={handleAdd} disabled={isCompressing || !metadata}>
-            {isCompressing ? `${t('videoCompression.compressing')}... ${progress}%` : t('common.add')}
+            {isCompressing ? <>{t('videoCompression.compressing')}... <span className="font-mono">{progress}%</span></> : t('common.add')}
           </Button>
         </>
       }
@@ -132,7 +135,7 @@ export default function VideoCompressionDialog({
                 <div className="flex flex-col items-center">
                   <span>{t(`videoCompression.quality${q.toUpperCase()}`)}</span>
                   <span className="text-xs text-light font-normal!">
-                    {getEstimatedSize(q)} {t('videoCompression.estimatedSize')}
+                    {getEstimatedSize(q)}
                   </span>
                 </div>
               </Button>
