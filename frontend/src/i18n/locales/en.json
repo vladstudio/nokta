@@ -260,6 +260,8 @@
     "expires": "Expires",
     "invitedBy": "Invited by {{name}}",
     "signup": "Sign Up",
+    "welcome": "Welcome!",
+    "createPassword": "Create password",
     "invalidOrExpired": "Invalid or expired invitation",
     "passwordMin": "Password must be at least 10 characters"
   },

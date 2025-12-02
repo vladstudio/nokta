@@ -55,11 +55,12 @@ export default function SignupPage() {
       <div className="flex-1" />
       <div className="max-w-md w-full center flex-col gap-4">
         <img src="/favicon.svg" alt="Logo" className="w-20 h-20 m-8" />
+        <h1 className="text-2xl font-semibold mb-4">{t('invites.welcome')}</h1>
         {invite ? (
             <form className="grid gap-4 w-full" onSubmit={handleSubmit}>
               <Input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={t('common.name')} maxLength={24} />
               <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t('common.email')} />
-              <Input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder={t('common.password')} minLength={10} />
+              <Input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder={t('invites.createPassword')} minLength={10} />
               {error && <Alert variant="error">{error}</Alert>}
               <Button type="submit" disabled={submitting} className="w-full center">
                 {submitting ? t('common.loading') : t('invites.signup')}
