@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { preferences } from '../utils/preferences';
 
-export type Theme = 'default' | 'wooden';
+export type Theme = 'default' | 'wooden' | 'golden' | 'high-contrast';
 
 const THEMES: Record<Theme, string> = {
   default: '/themes/default.css',
   wooden: '/themes/wooden.css',
+  golden: '/themes/golden.css',
+  'high-contrast': '/themes/high-contrast.css',
 };
 
 export function useTheme() {
