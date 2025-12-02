@@ -8,15 +8,15 @@ Real-time chat app with video/audio calls. React frontend + PocketBase backend.
 
 1. Edit 5 variables in [`cloud-init.yaml`](cloud-init.yaml):
    ```yaml
-   DOMAIN="nokta.example.com"
-   ADMIN_EMAIL="you@example.com"
+   DOMAIN="your-domain.com"
+   ADMIN_EMAIL="you@your-domain.com"
    ADMIN_PASSWORD="change-this-password"
    DAILY_API_KEY="your-daily-co-api-key"
    SSH_KEY="ssh-rsa AAAAB3... your-public-key"
    ```
    Usually you can get your SSH key value with `cat .ssh/id_rsa.pub` .
 
-2. Create server (Hetzner/DigitalOcean/Vultr), paste into **User Data**
+2. Create server (Hetzner/DigitalOcean/Vultr), paste the entire `cloud-init.yaml` into **User Data / Cloud Init / Cloud Config**
 
 3. Wait ~5 min, visit `https://your-domain.com`
 

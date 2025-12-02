@@ -6,7 +6,7 @@
 # 1. Edit the 5 variables below
 # 2. Point your domain's DNS to your server IP
 # 3. Create Ubuntu 24.04 server on Hetzner/DigitalOcean/Vultr
-# 4. Paste this entire file into "User Data" field
+# 4. Paste this entire file into "User Data / Cloud Init / Cloud Config"
 # 5. Wait ~5 minutes, then visit https://your-domain.com
 #
 
@@ -40,15 +40,13 @@ runcmd:
 
     # --- Create User ---
     useradd -m -s /bin/bash "$APP_USER"
+    echo "$APP_USER:$ADMIN_PASSWORD" | chpasswd
+    usermod -aG sudo "$APP_USER"
     mkdir -p /home/$APP_USER/.ssh
     echo "$SSH_KEY" > /home/$APP_USER/.ssh/authorized_keys
     chmod 700 /home/$APP_USER/.ssh
     chmod 600 /home/$APP_USER/.ssh/authorized_keys
     chown -R $APP_USER:$APP_USER /home/$APP_USER/.ssh
-
-    # Sudo for service management only
-    echo "$APP_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart nokta-*, /bin/systemctl reload caddy, /bin/systemctl stop nokta-*, /bin/systemctl start nokta-*" > /etc/sudoers.d/$APP_USER
-    chmod 0440 /etc/sudoers.d/$APP_USER
 
     # --- Harden SSH ---
     cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup
@@ -146,7 +144,7 @@ runcmd:
     chown $APP_USER:$APP_USER $APP_DIR/frontend/.env
 
     # --- Build Frontend ---
-    sudo -u $APP_USER bash -c "cd $APP_DIR/frontend && ~/.bun/bin/bun install --frozen-lockfile && ~/.bun/bin/bun run build"
+    sudo -u $APP_USER bash -c "cd $APP_DIR/frontend && ~/.bun/bin/bun install && ~/.bun/bin/bun run build"
 
     # Fix permissions for Caddy
     chmod 711 /home/$APP_USER
@@ -302,7 +300,7 @@ runcmd:
 
     echo "Building frontend..."
     cd $APP_DIR/frontend
-    ~/.bun/bin/bun install --frozen-lockfile
+    ~/.bun/bin/bun install
     ~/.bun/bin/bun run build
 
     chmod 755 $APP_DIR $APP_DIR/frontend $APP_DIR/frontend/dist
@@ -318,6 +316,9 @@ runcmd:
 
     # --- Daily Backups ---
     sudo -u $APP_USER bash -c "(crontab -l 2>/dev/null || true; echo \"0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1\") | crontab -"
+
+    # Make install log readable
+    chmod 644 /var/log/nokta-install.log
 
     echo "=== Nokta Installation Complete ==="
     echo "Visit: https://$DOMAIN"
