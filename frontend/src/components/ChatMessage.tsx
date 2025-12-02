@@ -209,7 +209,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       id={`msg-${message.id}`}
       onClick={onSelect}
       className={clsx(
-        'p-2 flex cursor-pointer transition-colors [&:hover:not(:has(.msg-content:hover))]:bg-(--color-bg-hover) rounded',
+        'p-2 flex transition-colors [&:not(:has(.msg-content:hover))]:cursor-pointer [&:hover:not(:has(.msg-content:hover))]:bg-(--color-bg-hover) rounded',
         isOwn ? 'justify-end' : 'justify-start',
         isSelected && 'bg-(--color-bg-active)!'
       )}
