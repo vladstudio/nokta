@@ -42,7 +42,7 @@ export default function SignupPage() {
       await invitations.signup(code!, name, email, password);
       setLocation('/chat');
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('chats.failedToCreate'));
+      setError(err instanceof Error ? err.message : t('invites.invalidOrExpired'));
     } finally {
       setSubmitting(false);
     }
@@ -56,7 +56,6 @@ export default function SignupPage() {
       <div className="max-w-md w-full center flex-col gap-4">
         <img src="/favicon.svg" alt="Logo" className="w-20 h-20 m-8" />
         {invite ? (
-          <>
             <form className="grid gap-4 w-full" onSubmit={handleSubmit}>
               <Input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={t('common.name')} />
               <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t('common.email')} />
@@ -66,7 +65,6 @@ export default function SignupPage() {
                 {submitting ? t('common.loading') : t('invites.signup')}
               </Button>
             </form>
-          </>
         ) : (
           <Alert variant="error">{error || t('invites.invalidOrExpired')}</Alert>
         )}

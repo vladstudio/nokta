@@ -13,7 +13,7 @@ export default function InvitesPage() {
   const [list, setList] = useState<Invitation[]>([]);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => { invitations.list().then(setList); }, []);
+  useEffect(() => { invitations.list().then(setList).catch(() => {}); }, []);
 
   const handleCreate = async () => {
     setCreating(true);
@@ -31,8 +31,10 @@ export default function InvitesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await invitations.delete(id);
-    setList(list.filter(i => i.id !== id));
+    try {
+      await invitations.delete(id);
+      setList(list.filter(i => i.id !== id));
+    } catch { /* ignore */ }
   };
 
   const formatExpiry = (date: string) => {

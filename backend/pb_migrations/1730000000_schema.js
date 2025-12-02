@@ -368,7 +368,7 @@ migrate((app) => {
   invitations.listRule = ''
   invitations.viewRule = ''
   invitations.createRule = '@request.auth.id != ""'
-  invitations.updateRule = ''
+  invitations.updateRule = '@request.auth.id != ""'
   invitations.deleteRule = 'invited_by = @request.auth.id'
 
   invitations.indexes = [

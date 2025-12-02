@@ -386,8 +386,8 @@ export const invitations = {
       throw new Error('Invalid or expired invitation');
     }
     const { user } = await users.create(email, name, 'Member', password);
-    await this.markUsed(invite.id);
     await auth.login(email, password);
+    await this.markUsed(invite.id);
     await chats.create([user.id, invite.invited_by]);
     return user;
   },
