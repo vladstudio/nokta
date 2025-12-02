@@ -1,16 +1,34 @@
 {
   "name": "nokta",
   "version": "1.0.0",
+  "main": "electron/main.js",
   "scripts": {
-    "dev": "tauri dev",
-    "build": "tauri build"
+    "dev": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2"
+    "electron": "^33",
+    "electron-builder": "^25"
   },
-  "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-notification": "^2",
-    "@tauri-apps/plugin-store": "^2"
+  "dependencies": {},
+  "build": {
+    "appId": "com.nokta.app",
+    "productName": "Nokta",
+    "directories": { "output": "dist" },
+    "files": ["electron/**/*", "assets/**/*"],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.social-networking",
+      "entitlements": "entitlements.mac.plist",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Nokta needs camera access for video calls",
+        "NSMicrophoneUsageDescription": "Nokta needs microphone access for voice and video calls"
+      }
+    },
+    "win": { "icon": "assets/icon.png" },
+    "linux": { "icon": "assets/icon.png", "category": "Network" }
   }
 }
