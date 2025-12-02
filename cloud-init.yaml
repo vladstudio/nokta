@@ -1,0 +1,323 @@
+#cloud-config
+#
+# Nokta - One-click server deployment
+#
+# INSTRUCTIONS:
+# 1. Edit the 5 variables below
+# 2. Point your domain's DNS to your server IP
+# 3. Create Ubuntu 24.04 server on Hetzner/DigitalOcean/Vultr
+# 4. Paste this entire file into "User Data" field
+# 5. Wait ~5 minutes, then visit https://your-domain.com
+#
+
+runcmd:
+  - |
+    set -e
+    exec > /var/log/nokta-install.log 2>&1
+
+    # ==============================================================
+    # USER CONFIG - EDIT THESE 5 LINES
+    # ==============================================================
+    DOMAIN="nokta.example.com"
+    ADMIN_EMAIL="you@example.com"
+    ADMIN_PASSWORD="change-this-password"
+    DAILY_API_KEY="your-daily-co-api-key"
+    SSH_KEY="ssh-rsa AAAAB3... your-public-key"
+    # ==============================================================
+
+    APP_USER="nokta"
+    APP_DIR="/home/$APP_USER/nokta"
+    PB_VERSION="0.23.6"
+
+    echo "=== Nokta Installation Started ==="
+
+    # --- System Setup ---
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      curl wget git unzip ufw fail2ban logrotate \
+      debian-keyring debian-archive-keyring apt-transport-https
+
+    # --- Create User ---
+    useradd -m -s /bin/bash "$APP_USER"
+    mkdir -p /home/$APP_USER/.ssh
+    echo "$SSH_KEY" > /home/$APP_USER/.ssh/authorized_keys
+    chmod 700 /home/$APP_USER/.ssh
+    chmod 600 /home/$APP_USER/.ssh/authorized_keys
+    chown -R $APP_USER:$APP_USER /home/$APP_USER/.ssh
+
+    # Sudo for service management only
+    echo "$APP_USER ALL=(ALL) NOPASSWD: /bin/systemctl restart nokta-*, /bin/systemctl reload caddy, /bin/systemctl stop nokta-*, /bin/systemctl start nokta-*" > /etc/sudoers.d/$APP_USER
+    chmod 0440 /etc/sudoers.d/$APP_USER
+
+    # --- Harden SSH ---
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup
+    cat > /etc/ssh/sshd_config << EOF
+    UsePAM yes
+    PermitRootLogin no
+    MaxAuthTries 3
+    LoginGraceTime 20
+    PasswordAuthentication no
+    PermitEmptyPasswords no
+    ChallengeResponseAuthentication no
+    X11Forwarding no
+    AllowUsers $APP_USER
+    AcceptEnv LANG LC_*
+    Subsystem sftp /usr/lib/openssh/sftp-server
+    EOF
+    systemctl restart ssh
+
+    # --- Firewall ---
+    ufw --force reset
+    ufw default deny incoming
+    ufw default allow outgoing
+    ufw allow 22/tcp
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    ufw --force enable
+
+    # --- Fail2ban ---
+    cat > /etc/fail2ban/jail.local << EOF
+    [DEFAULT]
+    bantime = 3600
+    findtime = 600
+    maxretry = 3
+
+    [sshd]
+    enabled = true
+    EOF
+    systemctl enable fail2ban
+    systemctl restart fail2ban
+
+    # --- System Hardening ---
+    cat >> /etc/sysctl.conf << EOF
+
+    # Security hardening
+    net.ipv4.conf.all.accept_redirects = 0
+    net.ipv6.conf.all.accept_redirects = 0
+    net.ipv4.conf.all.send_redirects = 0
+    net.ipv4.conf.all.accept_source_route = 0
+    net.ipv6.conf.all.accept_source_route = 0
+    net.ipv4.icmp_echo_ignore_broadcasts = 1
+    net.ipv4.tcp_syncookies = 1
+    EOF
+    sysctl -p > /dev/null 2>&1
+    timedatectl set-timezone UTC
+
+    # --- Install Caddy ---
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+    apt-get update
+    apt-get install -y caddy
+
+    # --- Install bun ---
+    sudo -u $APP_USER bash -c 'curl -fsSL https://bun.sh/install | bash'
+
+    # --- Download Nokta ---
+    curl -L https://github.com/vladstudio/nokta/archive/refs/heads/main.tar.gz | tar -xz -C /home/$APP_USER
+    mv /home/$APP_USER/nokta-main $APP_DIR
+    chown -R $APP_USER:$APP_USER $APP_DIR
+
+    # --- Download PocketBase ---
+    ARCH=$(uname -m)
+    case "$ARCH" in
+      x86_64) PB_ARCH="linux_amd64" ;;
+      aarch64|arm64) PB_ARCH="linux_arm64" ;;
+      *) echo "Unsupported arch: $ARCH"; exit 1 ;;
+    esac
+    curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_${PB_ARCH}.zip" -o /tmp/pb.zip
+    unzip -o /tmp/pb.zip -d $APP_DIR/backend/
+    rm /tmp/pb.zip
+    chmod +x $APP_DIR/backend/pocketbase
+    chown $APP_USER:$APP_USER $APP_DIR/backend/pocketbase
+
+    # --- Configure Environment ---
+    cat > $APP_DIR/backend/.env << EOF
+    ADMIN_EMAIL=$ADMIN_EMAIL
+    ADMIN_PASSWORD=$ADMIN_PASSWORD
+    EOF
+    chmod 600 $APP_DIR/backend/.env
+    chown $APP_USER:$APP_USER $APP_DIR/backend/.env
+
+    cat > $APP_DIR/frontend/.env << EOF
+    VITE_POCKETBASE_URL=https://$DOMAIN
+    VITE_DAILY_CO_API_KEY=$DAILY_API_KEY
+    EOF
+    chown $APP_USER:$APP_USER $APP_DIR/frontend/.env
+
+    # --- Build Frontend ---
+    sudo -u $APP_USER bash -c "cd $APP_DIR/frontend && ~/.bun/bin/bun install --frozen-lockfile && ~/.bun/bin/bun run build"
+
+    # Fix permissions for Caddy
+    chmod 711 /home/$APP_USER
+    chmod 755 $APP_DIR $APP_DIR/frontend $APP_DIR/frontend/dist
+
+    # --- Configure Caddy ---
+    mkdir -p /var/log/caddy
+    cat > /etc/caddy/Caddyfile << EOF
+    $DOMAIN {
+        encode gzip
+
+        handle /_/* {
+            reverse_proxy localhost:8090
+        }
+
+        handle /api/* {
+            reverse_proxy localhost:8090
+        }
+
+        handle {
+            root * $APP_DIR/frontend/dist
+            try_files {path} /index.html
+            file_server
+        }
+
+        header {
+            X-Frame-Options "SAMEORIGIN"
+            X-Content-Type-Options "nosniff"
+            X-XSS-Protection "1; mode=block"
+        }
+
+        log {
+            output file /var/log/caddy/nokta.log
+            format json
+        }
+    }
+    EOF
+    chown -R caddy:caddy /var/log/caddy
+
+    # --- Create Systemd Service ---
+    cat > /etc/systemd/system/nokta-backend.service << EOF
+    [Unit]
+    Description=Nokta Backend
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=$APP_USER
+    WorkingDirectory=$APP_DIR/backend
+    ExecStart=$APP_DIR/backend/pocketbase serve --http=127.0.0.1:8090
+    Restart=always
+    RestartSec=5
+
+    NoNewPrivileges=true
+    PrivateTmp=true
+    ProtectSystem=strict
+    ProtectHome=read-only
+    ReadWritePaths=$APP_DIR/backend/pb_data
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    # --- Initialize PocketBase ---
+    cd $APP_DIR/backend
+    sudo -u $APP_USER ./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
+
+    # --- Start Services ---
+    systemctl daemon-reload
+    systemctl enable nokta-backend
+    systemctl start nokta-backend
+    sleep 5
+    systemctl reload caddy
+
+    # --- Create Admin User & Enable Rate Limiting ---
+    sleep 3
+    TOKEN=$(curl -s -X POST http://127.0.0.1:8090/api/admins/auth-with-password \
+      -H "Content-Type: application/json" \
+      -d "{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+
+    if [ -n "$TOKEN" ]; then
+      # Create admin user
+      curl -s -X POST http://127.0.0.1:8090/api/collections/users/records \
+        -H "Authorization: $TOKEN" \
+        -H "Content-Type: application/json" \
+        -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\",\"passwordConfirm\":\"$ADMIN_PASSWORD\",\"name\":\"Admin\",\"role\":\"Admin\"}" || true
+
+      # Enable rate limiting
+      curl -s -X PATCH http://127.0.0.1:8090/api/settings \
+        -H "Authorization: $TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"rateLimits":{"enabled":true,"rules":[{"label":"/api/collections/users/auth-with-password","audience":"","duration":900,"maxRequests":5},{"label":"/api/collections/_superusers/auth-with-password","audience":"","duration":900,"maxRequests":3}]}}' || true
+    fi
+
+    # --- Log Rotation ---
+    cat > /etc/logrotate.d/nokta << EOF
+    $APP_DIR/backend/*.log {
+        daily
+        rotate 14
+        compress
+        missingok
+        notifempty
+    }
+    EOF
+
+    # --- Maintenance Scripts ---
+    cat > $APP_DIR/backup.sh << 'SCRIPT'
+    #!/bin/bash
+    set -e
+    BACKUP_DIR="$HOME/nokta-backups"
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    mkdir -p $BACKUP_DIR
+    tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta/backend pb_data
+    find $BACKUP_DIR -name "pb_data_*.tar.gz" -mtime +7 -delete
+    echo "Backup: $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz"
+    SCRIPT
+
+    cat > $APP_DIR/update.sh << 'SCRIPT'
+    #!/bin/bash
+    set -e
+    APP_DIR="$HOME/nokta"
+    PB_VERSION="0.23.6"
+
+    echo "Backing up..."
+    $APP_DIR/backup.sh
+
+    echo "Stopping backend..."
+    sudo systemctl stop nokta-backend
+
+    cp $APP_DIR/backend/.env /tmp/.env.backend.backup
+    cp $APP_DIR/frontend/.env /tmp/.env.frontend.backup
+    mv $APP_DIR/backend/pb_data /tmp/pb_data.backup
+
+    echo "Downloading update..."
+    rm -rf $APP_DIR
+    curl -L https://github.com/vladstudio/nokta/archive/refs/heads/main.tar.gz | tar -xz -C $HOME
+    mv $HOME/nokta-main $APP_DIR
+
+    ARCH=$(uname -m)
+    case "$ARCH" in
+      x86_64) PB_ARCH="linux_amd64" ;;
+      aarch64|arm64) PB_ARCH="linux_arm64" ;;
+    esac
+    curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_${PB_ARCH}.zip" -o /tmp/pb.zip
+    unzip -o /tmp/pb.zip -d $APP_DIR/backend/
+    rm /tmp/pb.zip
+    chmod +x $APP_DIR/backend/pocketbase
+
+    mv /tmp/.env.backend.backup $APP_DIR/backend/.env
+    mv /tmp/.env.frontend.backup $APP_DIR/frontend/.env
+    mv /tmp/pb_data.backup $APP_DIR/backend/pb_data
+    chmod 600 $APP_DIR/backend/.env
+
+    echo "Building frontend..."
+    cd $APP_DIR/frontend
+    ~/.bun/bin/bun install --frozen-lockfile
+    ~/.bun/bin/bun run build
+
+    chmod 755 $APP_DIR $APP_DIR/frontend $APP_DIR/frontend/dist
+
+    sudo systemctl start nokta-backend
+    sudo systemctl reload caddy
+
+    echo "Update complete!"
+    SCRIPT
+
+    chmod +x $APP_DIR/backup.sh $APP_DIR/update.sh
+    chown $APP_USER:$APP_USER $APP_DIR/backup.sh $APP_DIR/update.sh
+
+    # --- Daily Backups ---
+    sudo -u $APP_USER bash -c "(crontab -l 2>/dev/null || true; echo \"0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1\") | crontab -"
+
+    echo "=== Nokta Installation Complete ==="
+    echo "Visit: https://$DOMAIN"
