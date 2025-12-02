@@ -31,6 +31,7 @@ ssh nokta@SERVER_IP                  # SSH access
 ~/nokta/backup.sh                    # Manual backup
 ~/nokta/update.sh                    # Update to latest
 sudo systemctl restart nokta-backend # Restart backend
+sudo reboot                          # Reboot server
 ```
 
 
@@ -59,6 +60,7 @@ cd ~/nokta/backend && ./pocketbase superuser update EMAIL NEW_PASSWORD
 sudo systemctl stop nokta-backend
 tar -xzf ~/nokta-backups/pb_data_TIMESTAMP.tar.gz -C ~/nokta/backend
 sudo systemctl start nokta-backend
+sudo reboot
 ```
 
 ## Local Development
