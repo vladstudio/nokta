@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import clsx from 'clsx';
 import type { Message, User } from '../types';
@@ -7,7 +7,6 @@ import { messages as messagesAPI, users as usersAPI } from '../services/pocketba
 import { UserAvatar } from './Avatar';
 import { Button, useToastManager } from '../ui';
 import VideoPlayer from './VideoPlayer';
-import { PlayIcon, PauseIcon } from '@phosphor-icons/react';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -33,8 +32,6 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
   const toastManager = useToastManager();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
   const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
-  const [isPlayingVoice, setIsPlayingVoice] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const replyMessage = message.expand?.reply_to;
   const forwardedMessage = message.expand?.forwarded_from;
@@ -139,43 +136,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
 
   const renderVoiceMessage = () => {
     if (!message.file) return null;
-
     const voiceUrl = messagesAPI.getFileURL(message);
-    const duration = message.content || '0:00';
-
-    const togglePlayback = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!audioRef.current) return;
-
-      if (isPlayingVoice) {
-        audioRef.current.pause();
-        setIsPlayingVoice(false);
-      } else {
-        audioRef.current.play().catch((error) => {
-          console.error('Failed to play voice message:', error);
-          setIsPlayingVoice(false);
-        });
-        setIsPlayingVoice(true);
-      }
-    };
-
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          onClick={togglePlayback}
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-(--color-bg-hover) hover:bg-(--color-bg-active) transition-colors"
-        >
-          {isPlayingVoice ? <PauseIcon size={20} className="text-accent" /> : <PlayIcon size={20} className="text-accent" />}
-        </button>
-        <span className="text-sm">{duration}</span>
-        <audio
-          ref={audioRef}
-          src={voiceUrl}
-          onEnded={() => setIsPlayingVoice(false)}
-          className="hidden"
-        />
-      </div>
-    );
+    return <audio src={voiceUrl} controls className="h-10" />;
   };
 
   const renderContent = () => {
