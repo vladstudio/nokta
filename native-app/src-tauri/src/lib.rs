@@ -46,7 +46,7 @@ fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let menu = Menu::with_items(app, &[&open, &autostart_item, &forget, &quit])?;
 
     TrayIconBuilder::new()
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(tauri::include_image!("icons/icon-black.png"))
         .menu(&menu)
         .on_menu_event(move |app, event| match event.id.as_ref() {
             "open" => { let _ = app.get_webview_window("main").map(|w| w.show()); }
