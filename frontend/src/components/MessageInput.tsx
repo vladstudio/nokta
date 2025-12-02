@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
 import { PaperPlaneTiltIcon, PlusIcon } from "@phosphor-icons/react";
@@ -16,6 +16,10 @@ export default function MessageInput({ onSend, onTyping, onAddClick, onPasteImag
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const autoResize = useCallback(() => {
     const textarea = textareaRef.current;

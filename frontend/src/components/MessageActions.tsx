@@ -45,11 +45,13 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center gap-1 w-full">
       <Button variant="ghost" size="icon" onClick={onCancel}>
         <XIcon size={20} className="text-accent" />
       </Button>
       <div className="bg-(--color-border-default) w-px h-6" />
+      {onReply && <Button variant="ghost" onClick={onReply}><ArrowBendUpLeftIcon size={20} className="text-accent" /><span className="hidden sm:inline ml-1">{t('messageActions.reply')}</span></Button>}
+      {onForward && <Button variant="ghost" onClick={onForward}><ArrowBendUpRightIcon size={20} className="text-accent" /><span className="hidden sm:inline ml-1">{t('messageActions.forward')}</span></Button>}
       {onReact && (
         <>
           {QUICK_EMOJIS.map(emoji => (
@@ -64,8 +66,6 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
           </Popover>
         </>
       )}
-      {onReply && <Button variant="ghost" onClick={onReply}><ArrowBendUpLeftIcon size={20} className="text-accent" /><span className="hidden sm:inline ml-1">{t('messageActions.reply')}</span></Button>}
-      {onForward && <Button variant="ghost" onClick={onForward}><ArrowBendUpRightIcon size={20} className="text-accent" /><span className="hidden sm:inline ml-1">{t('messageActions.forward')}</span></Button>}
       {onCopy && <Button variant="ghost" size="icon" onClick={onCopy}><CopyIcon size={20} className="text-accent" /></Button>}
       {onEdit && <Button variant="ghost" size="icon" onClick={onEdit}><PencilIcon size={20} className="text-accent" /></Button>}
       {onDelete && <Button variant="ghost" size="icon" onClick={onDelete}><TrashSimpleIcon size={20} className="text-accent" /></Button>}

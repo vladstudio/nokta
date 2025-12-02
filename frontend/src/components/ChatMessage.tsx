@@ -7,7 +7,7 @@ import { messages as messagesAPI, users as usersAPI } from '../services/pocketba
 import { UserAvatar } from './Avatar';
 import { Button, useToastManager } from '../ui';
 import VideoPlayer from './VideoPlayer';
-import { PlayIcon, PauseIcon, ArrowBendUpLeftIcon } from '@phosphor-icons/react';
+import { PlayIcon, PauseIcon } from '@phosphor-icons/react';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -224,6 +224,14 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
               {new Date(message.created).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
+          {replyMessage && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setLocation(`/chat/${message.chat}?msg=${replyMessage.id}`); }}
+              className="text-xs text-light hover:underline truncate max-w-32"
+            >
+              ↩ {replyMessage.content}
+            </button>
+          )}
           {message.isPending && message.type === 'text' && (
             <span className="text-xs text-light">{t('common.uploading')}...</span>
           )}
@@ -244,15 +252,6 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           message.isFailed && 'bg-(--color-error-50)! text-(--color-error-600)! border-(--color-error-500)!',
           message.isPending && 'opacity-70'
         )}>
-          {replyMessage && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setLocation(`/chat/${message.chat}?msg=${replyMessage.id}`); }}
-              className="flex items-center gap-1 mb-2 px-2 py-1 -mx-2 -mt-1 rounded bg-(--color-bg-hover) hover:bg-(--color-bg-active) transition-colors text-left w-full"
-            >
-              <ArrowBendUpLeftIcon size={12} className="text-light shrink-0" />
-              <span className="text-xs text-light truncate">{replyMessage.content}</span>
-            </button>
-          )}
           {forwardedMessage && (
             <div className="text-xs text-light mb-1 italic">{t('messageActions.forwarded')}</div>
           )}
