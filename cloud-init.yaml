@@ -250,69 +250,8 @@ runcmd:
     }
     EOF
 
-    # --- Maintenance Scripts ---
-    cat > $APP_DIR/backup.sh << 'SCRIPT'
-    #!/bin/bash
-    set -e
-    BACKUP_DIR="$HOME/nokta-backups"
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    mkdir -p $BACKUP_DIR
-    tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta/backend pb_data
-    find $BACKUP_DIR -name "pb_data_*.tar.gz" -mtime +7 -delete
-    echo "Backup: $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz"
-    SCRIPT
-
-    cat > $APP_DIR/update.sh << 'SCRIPT'
-    #!/bin/bash
-    set -e
-    APP_DIR="$HOME/nokta"
-    PB_VERSION="0.23.6"
-
-    echo "Backing up..."
-    $APP_DIR/backup.sh
-
-    echo "Stopping backend..."
-    sudo systemctl stop nokta-backend
-
-    cp $APP_DIR/backend/.env /tmp/.env.backend.backup
-    cp $APP_DIR/frontend/.env /tmp/.env.frontend.backup
-    mv $APP_DIR/backend/pb_data /tmp/pb_data.backup
-
-    echo "Downloading update..."
-    rm -rf $APP_DIR
-    curl -L https://github.com/vladstudio/nokta/archive/refs/heads/main.tar.gz | tar -xz -C $HOME
-    mv $HOME/nokta-main $APP_DIR
-
-    ARCH=$(uname -m)
-    case "$ARCH" in
-      x86_64) PB_ARCH="linux_amd64" ;;
-      aarch64|arm64) PB_ARCH="linux_arm64" ;;
-    esac
-    curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_${PB_ARCH}.zip" -o /tmp/pb.zip
-    unzip -o /tmp/pb.zip -d $APP_DIR/backend/
-    rm /tmp/pb.zip
-    chmod +x $APP_DIR/backend/pocketbase
-
-    mv /tmp/.env.backend.backup $APP_DIR/backend/.env
-    mv /tmp/.env.frontend.backup $APP_DIR/frontend/.env
-    mv /tmp/pb_data.backup $APP_DIR/backend/pb_data
-    chmod 600 $APP_DIR/backend/.env
-
-    echo "Building frontend..."
-    cd $APP_DIR/frontend
-    ~/.bun/bin/bun install
-    ~/.bun/bin/bun run build
-
-    chmod 755 $APP_DIR $APP_DIR/frontend $APP_DIR/frontend/dist
-
-    sudo systemctl start nokta-backend
-    sudo systemctl reload caddy
-
-    echo "Update complete!"
-    SCRIPT
-
+    # --- Maintenance Scripts (scripts are in repo, just set permissions) ---
     chmod +x $APP_DIR/backup.sh $APP_DIR/update.sh
-    chown $APP_USER:$APP_USER $APP_DIR/backup.sh $APP_DIR/update.sh
 
     # --- Daily Backups ---
     sudo -u $APP_USER bash -c "(crontab -l 2>/dev/null || true; echo \"0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1\") | crontab -"
