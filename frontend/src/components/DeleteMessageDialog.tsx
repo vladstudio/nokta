@@ -27,7 +27,6 @@ export default function DeleteMessageDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={t('deleteMessageDialog.title')}
-      description={t('deleteMessageDialog.description')}
       footer={
         <>
           <Button variant="outline" className="flex-1 center" onClick={handleCancel}>

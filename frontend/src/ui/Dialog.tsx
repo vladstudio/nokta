@@ -8,13 +8,12 @@ interface DialogProps {
   onOpenChange: (open: boolean) => void;
   trigger?: ReactNode;
   title: string;
-  description?: string;
   children: ReactNode;
   footer?: ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
-export function Dialog({ open, onOpenChange, trigger, title, description, children, footer, maxWidth = 'md' }: DialogProps) {
+export function Dialog({ open, onOpenChange, trigger, title, children, footer, maxWidth = 'md' }: DialogProps) {
   const maxWidthClass = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -31,11 +30,6 @@ export function Dialog({ open, onOpenChange, trigger, title, description, childr
         <BaseDialog.Popup className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full ${maxWidthClass}`}>
           <Card shadow="lg" padding="lg" className="grid gap-4">
             <BaseDialog.Title className="text-lg font-semibold text-(--color-text-primary)">{title}</BaseDialog.Title>
-            {description && (
-              <BaseDialog.Description className="text-sm text-light">
-                {description}
-              </BaseDialog.Description>
-            )}
             {children}
             {footer && <div className="flex justify-end gap-3">{footer}</div>}
           </Card>

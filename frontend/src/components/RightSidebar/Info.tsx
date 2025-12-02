@@ -88,7 +88,6 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title={t('chats.deleteChat')}
-        description={t('chats.confirmDeleteForAll')}
         footer={
           <>
             <Button variant="outline" className="flex-1 center" onClick={() => setDeleteDialogOpen(false)}>
@@ -108,7 +107,6 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
         open={leaveDialogOpen}
         onOpenChange={setLeaveDialogOpen}
         title={t('chats.leaveChat')}
-        description={t('chats.confirmLeave')}
         footer={
           <>
             <Button variant="outline" className="flex-1 center" onClick={() => setLeaveDialogOpen(false)}>
