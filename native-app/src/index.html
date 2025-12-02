@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nokta</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, system-ui, sans-serif; background: oklch(0.24 0.012 264); color: oklch(0.98 0 247); height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .setup { text-align: center; max-width: 400px; padding: 2rem; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    p { color: oklch(0.71 0.02 261); margin-bottom: 2rem; }
+    input { width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid oklch(0.4 0.012 256); background: oklch(0.28 0.012 256); color: oklch(0.98 0 247); font-size: 1rem; margin-bottom: 1rem; }
+    input:focus { outline: none; border-color: oklch(0.62 0.19 259); }
+    button { width: 100%; padding: 1rem; border-radius: 8px; border: none; background: oklch(0.62 0.19 259); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    button:hover { background: oklch(0.55 0.22 262); }
+    button:disabled { background: oklch(0.4 0.012 256); color: oklch(0.71 0.02 261); cursor: not-allowed; }
+    .error { color: oklch(0.71 0.17 22); font-size: 0.875rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="setup">
+    <h1>Nokta</h1>
+    <p>Enter your chat server URL</p>
+    <input type="text" id="url" placeholder="https://nokta.example.com">
+    <div class="error" id="error"></div>
+    <button id="connect">Connect</button>
+  </div>
+  <script>
+    const { invoke } = window.__TAURI__.core;
+    const url = document.getElementById('url');
+    const btn = document.getElementById('connect');
+    const error = document.getElementById('error');
+
+    async function init() {
+      const saved = await invoke('get_server_url');
+      if (saved) await invoke('load_chat', { url: saved });
+    }
+
+    btn.onclick = async () => {
+      const val = url.value.trim().replace(/\/$/, '');
+      if (!val) return;
+      error.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Connecting...';
+      try {
+        await fetch(val + '/api/health', { mode: 'no-cors' });
+        await invoke('set_server_url', { url: val });
+        await invoke('load_chat', { url: val });
+      } catch (e) {
+        error.textContent = 'Cannot reach server. Check the URL.';
+        btn.disabled = false;
+        btn.textContent = 'Connect';
+      }
+    };
+
+    url.onkeydown = (e) => e.key === 'Enter' && btn.click();
+    init();
+  </script>
+</body>
+</html>

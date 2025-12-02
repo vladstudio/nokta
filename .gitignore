@@ -51,6 +51,9 @@ backend/pb_data/
 backend/pocketbase
 backend/pocketbase.exe
 
+# Native app (Tauri/Rust)
+native-app/src-tauri/target/
+
 # OS files
 .DS_Store
 Thumbs.db

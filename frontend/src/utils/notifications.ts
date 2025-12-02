@@ -1,6 +1,13 @@
 /**
  * Browser notification utility for new message alerts
+ * Supports native Tauri notifications when running in desktop app
  */
+
+declare global {
+  interface Window { __TAURI__?: { notification?: unknown } }
+}
+
+const isTauri = () => !!window.__TAURI__;
 
 export interface NotificationPermissionState {
   granted: boolean;
@@ -11,63 +18,45 @@ export interface NotificationPermissionState {
 /**
  * Check current notification permission status
  */
-export function getNotificationPermission(): NotificationPermissionState {
-  if (!('Notification' in window)) {
-    return { granted: false, denied: true, canRequest: false };
+export async function getNotificationPermission(): Promise<NotificationPermissionState> {
+  if (isTauri()) {
+    const { isPermissionGranted } = await import('@tauri-apps/plugin-notification');
+    const granted = await isPermissionGranted();
+    return { granted, denied: false, canRequest: !granted };
   }
-
-  const permission = Notification.permission;
-
-  return {
-    granted: permission === 'granted',
-    denied: permission === 'denied',
-    canRequest: permission === 'default',
-  };
+  if (!('Notification' in window)) return { granted: false, denied: true, canRequest: false };
+  const p = Notification.permission;
+  return { granted: p === 'granted', denied: p === 'denied', canRequest: p === 'default' };
 }
 
 /**
  * Request notification permission from user
- * Should be called on user interaction (e.g., button click, app mount)
  */
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (!('Notification' in window)) {
-    console.warn('Browser does not support notifications');
-    return false;
+  if (isTauri()) {
+    const { requestPermission, isPermissionGranted } = await import('@tauri-apps/plugin-notification');
+    if (await isPermissionGranted()) return true;
+    return (await requestPermission()) === 'granted';
   }
-
-  if (Notification.permission === 'granted') {
-    return true;
-  }
-
-  if (Notification.permission === 'denied') {
-    console.warn('User has denied notification permission');
-    return false;
-  }
-
-  try {
-    const permission = await Notification.requestPermission();
-    return permission === 'granted';
-  } catch (err) {
-    console.error('Failed to request notification permission:', err);
-    return false;
-  }
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  return (await Notification.requestPermission()) === 'granted';
 }
 
 /**
- * Internal helper to create a notification with common logic
+ * Internal helper to create a notification
  */
-function createNotification(
-  title: string,
-  notificationOptions: NotificationOptions
-): Notification | null {
-  const permission = getNotificationPermission();
-
-  if (!permission.granted) {
-    return null;
-  }
-
+async function createNotification(title: string, options: NotificationOptions): Promise<Notification | null> {
+  const perm = await getNotificationPermission();
+  if (!perm.granted) return null;
   try {
-    return new Notification(title, notificationOptions);
+    if (isTauri()) {
+      const { sendNotification } = await import('@tauri-apps/plugin-notification');
+      sendNotification({ title, body: options.body || '' });
+      return null;
+    }
+    return new Notification(title, options);
   } catch (err) {
     console.error('Failed to show notification:', err);
     return null;
@@ -76,66 +65,29 @@ function createNotification(
 
 /**
  * Show a notification for a new message
- *
- * @param title - Chat name or sender name
- * @param body - Message content (truncated if too long)
- * @param options - Additional notification options
  */
-export function showMessageNotification(
-  title: string,
-  body: string,
-  options?: {
-    chatId?: string;
-    icon?: string;
-    tag?: string;
-  }
-): Notification | null {
-  const truncatedBody = body.length > 100
-    ? body.substring(0, 100) + '...'
-    : body;
-
-  return createNotification(title, {
-    body: truncatedBody,
+export function showMessageNotification(title: string, body: string, options?: { chatId?: string; icon?: string; tag?: string }) {
+  const truncated = body.length > 100 ? body.substring(0, 100) + '...' : body;
+  createNotification(title, {
+    body: truncated,
     icon: options?.icon || '/logo.png',
     tag: options?.tag || `chat-${options?.chatId}`,
     badge: '/logo-badge.png',
-    requireInteraction: false,
-    silent: false,
-    data: {
-      chatId: options?.chatId,
-      timestamp: Date.now(),
-    },
+    data: { chatId: options?.chatId, timestamp: Date.now() },
   });
 }
 
 /**
  * Show a notification for an incoming call
- *
- * @param callerName - Name of the person calling
- * @param chatName - Name of the chat
- * @param options - Additional notification options
  */
-export function showCallNotification(
-  callerName: string,
-  chatName: string,
-  options?: {
-    inviteId?: string;
-    icon?: string;
-    tag?: string;
-  }
-): Notification | null {
-  return createNotification(`Incoming call from ${callerName}`, {
+export function showCallNotification(callerName: string, chatName: string, options?: { inviteId?: string; icon?: string; tag?: string }) {
+  createNotification(`Incoming call from ${callerName}`, {
     body: `In ${chatName}`,
     icon: options?.icon || '/logo.png',
     tag: options?.tag || `call-invite-${options?.inviteId}`,
     badge: '/logo-badge.png',
     requireInteraction: true,
-    silent: false,
-    data: {
-      inviteId: options?.inviteId,
-      timestamp: Date.now(),
-      type: 'call-invite',
-    },
+    data: { inviteId: options?.inviteId, timestamp: Date.now(), type: 'call-invite' },
   });
 }
 

@@ -46,21 +46,13 @@ function App() {
   // Request notification permission
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    const requestPermissions = async () => {
-      const permission = getNotificationPermission();
-
-      if (permission.canRequest) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        const granted = await requestNotificationPermission();
-        if (granted) {
-          console.log('Notification permission granted');
-        }
+    (async () => {
+      const perm = await getNotificationPermission();
+      if (perm.canRequest) {
+        await new Promise(r => setTimeout(r, 2000));
+        await requestNotificationPermission();
       }
-    };
-
-    requestPermissions();
+    })();
   }, [isAuthenticated]);
 
   return (
