@@ -12,13 +12,15 @@ export default function InvitesPage() {
   const toastManager = useToastManager();
   const [list, setList] = useState<Invitation[]>([]);
   const [creating, setCreating] = useState(false);
+  const [newestId, setNewestId] = useState<string | null>(null);
 
-  useEffect(() => { invitations.list().then(setList).catch(() => {}); }, []);
+  useEffect(() => { invitations.list().then(setList).catch(() => { }); }, []);
 
   const handleCreate = async () => {
     setCreating(true);
     try {
       const inv = await invitations.create();
+      setNewestId(inv.id);
       setList([inv, ...list]);
     } finally {
       setCreating(false);
@@ -56,24 +58,26 @@ export default function InvitesPage() {
         </Button>
       </header>
       <ScrollArea>
-        <div className="mx-auto w-full max-w-md p-4 space-y-2">
-          {list.length === 0 && (
-            <p className="text-center text-light py-8">{t('invites.empty')}</p>
-          )}
+        <div className="mx-auto w-full max-w-md p-4 grid gap-4">
+          <p className="text-sm text-light text-center">{t('invites.description')}</p>
           {list.map(inv => (
-            <Card key={inv.id} border padding="sm" className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <code className="text-sm truncate block">{inv.code.slice(0, 8)}...</code>
-                <span className="text-xs text-light">{t('invites.expires')}: {formatExpiry(inv.expires_at)}</span>
+            <Card key={inv.id} border padding="sm" className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <code className="text-sm truncate block">{inv.code.slice(0, 8)}...</code>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" onClick={() => handleCopy(inv.code)} className="text-accent">
+                    <CopyIcon size={16} /> {t('invites.copyLink')}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
+                    <TrashIcon size={16} />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => handleCopy(inv.code)}>
-                  <CopyIcon size={16} />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
-                  <TrashIcon size={16} />
-                </Button>
-              </div>
+              {newestId === inv.id && (
+                <p className="text-xs text-light">{t('invites.copyHint')} {t('invites.expires')}: {formatExpiry(inv.expires_at)}</p>
+              )}
             </Card>
           ))}
         </div>

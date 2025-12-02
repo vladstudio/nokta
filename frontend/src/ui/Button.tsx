@@ -33,8 +33,8 @@ type ButtonProps = BaseButtonProps & (ButtonAsButton | ButtonAsAnchor | ButtonAs
 
 const variants: Record<Variant, string> = {
   default: 'border border-(--color-border-default) text-(--color-text-primary) bg-(--color-bg-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
-  primary: 'bg-(--color-primary-600) text-white hover:bg-(--color-primary-700) focus:ring-(--color-primary-500)',
-  ghost: 'text-(--color-text-primary) hover:bg-(--color-bg-hover)',
+  primary: 'border border-(--color-primary-600) bg-(--color-primary-600) text-white hover:border-(--color-primary-700) hover:bg-(--color-primary-700) focus:ring-(--color-primary-500)',
+  ghost: 'border border-transparent text-(--color-text-primary) hover:bg-(--color-bg-hover)',
   outline: 'border border-(--color-border-default) text-(--color-text-primary) hover:bg-(--color-bg-hover) focus:ring-(--color-text-secondary)',
 };
 

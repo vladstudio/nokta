@@ -258,6 +258,9 @@
   "invites": {
     "title": "Invites",
     "create": "New",
+    "description": "Invite others to join this chat app.",
+    "copyLink": "Copy link",
+    "copyHint": "Share this link with the person you want to invite.",
     "empty": "No pending invitations",
     "expires": "Expires",
     "invitedBy": "Invited by {{name}}",
