@@ -103,10 +103,7 @@ export default function Sidebar() {
           if (!exists) {
             const currentUserId = auth.user?.id;
             if (currentUserId && !data.record.call_participants?.includes(currentUserId)) {
-              try {
-                const notification = showCallNotification(t('calls.activeCall'), getCallChatName(data.record), { tag: `active-call-${data.record.id}` });
-                if (notification) notification.onclick = () => { window.focus(); notification.close(); };
-              } catch {}
+              showCallNotification(t('calls.activeCall'), getCallChatName(data.record), { tag: `active-call-${data.record.id}` });
             }
             return [...prev, data.record];
           }
@@ -179,9 +176,15 @@ export default function Sidebar() {
                 isSelected={isSelected}
                 onClick={isInCall ? handleShowActiveCall : () => {}}
                 action={!isInCall && (
-                  <Button variant="primary" onClick={() => handleJoinCall(call.id)} disabled={joiningCalls.has(call.id)} className="text-xs">
-                    {joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex size-2 rounded-full bg-green-500"></span>
+                    </span>
+                    <Button variant="primary" onClick={() => handleJoinCall(call.id)} disabled={joiningCalls.has(call.id)} className="text-xs">
+                      {joiningCalls.has(call.id) ? t('calls.joining') : t('calls.joinCall')}
+                    </Button>
+                  </div>
                 )}
               />
             );

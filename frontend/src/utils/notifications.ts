@@ -55,14 +55,12 @@ export async function showMessageNotification(title: string, body: string, optio
   });
 }
 
-export function showCallNotification(callerName: string, chatName: string, options?: { inviteId?: string; icon?: string; tag?: string }) {
-  createNotification(`Incoming call from ${callerName}`, {
+export function showCallNotification(title: string, chatName: string, options?: { tag?: string }) {
+  return createNotification(title, {
     body: `In ${chatName}`,
-    icon: options?.icon || '/logo.png',
-    tag: options?.tag || `call-invite-${options?.inviteId}`,
+    icon: '/logo.png',
+    tag: options?.tag,
     badge: '/logo-badge.png',
-    requireInteraction: true,
-    data: { inviteId: options?.inviteId, timestamp: Date.now(), type: 'call-invite' },
   });
 }
 

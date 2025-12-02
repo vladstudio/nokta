@@ -95,6 +95,17 @@ export default function ChatPage() {
       if (!currentUserId) return;
 
       if (data.action === 'delete' || data.action === 'update') {
+        const wasMultiple = (activeCallChat.call_participants?.length || 0) > 1;
+        const nowAlone = data.record.call_participants?.length === 1;
+
+        // Auto-leave if others left and we're alone (prevents stale calls)
+        if (wasMultiple && nowAlone && data.record.call_participants?.includes(currentUserId)) {
+          callsAPI.leaveCall(data.record.id, currentUserId);
+          setActiveCallChat(null);
+          setShowCallView(false);
+          return;
+        }
+
         if (data.record.call_participants?.includes(currentUserId) && data.record.is_active_call) {
           setActiveCallChat(data.record);
         } else {
