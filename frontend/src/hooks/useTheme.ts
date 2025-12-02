@@ -4,8 +4,8 @@ import { preferences } from '../utils/preferences';
 export type Theme = 'default' | 'wooden';
 
 const THEMES: Record<Theme, string> = {
-  default: '/src/themes/default.css',
-  wooden: '/src/themes/wooden.css',
+  default: '/themes/default.css',
+  wooden: '/themes/wooden.css',
 };
 
 export function useTheme() {
