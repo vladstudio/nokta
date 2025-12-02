@@ -18,7 +18,11 @@ Real-time chat app with video/audio calls. React frontend + PocketBase backend.
 
 2. Create server (Hetzner/DigitalOcean/Vultr), paste the entire `cloud-init.yaml` into **User Data / Cloud Init / Cloud Config**
 
-3. Wait ~5 min, visit `https://your-domain.com`
+3. Wait ~5 min
+   
+4. visit **Admin panel:** `https://your-domain.com/_/` . Create your first users in `users` collection. Make sure to have at least one user with role `Admin`.
+   
+5. Start chatting: `https://your-domain.com`
 
 ## After Deployment
 
@@ -29,7 +33,7 @@ ssh nokta@SERVER_IP                  # SSH access
 sudo systemctl restart nokta-backend # Restart backend
 ```
 
-**Admin panel:** `https://your-domain.com/_/`
+
 
 ### Optional: Enable MFA
 
