@@ -17,10 +17,6 @@ export default function MessageInput({ onSend, onTyping, onAddClick, onPasteImag
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
-
   const autoResize = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
