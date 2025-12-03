@@ -7,6 +7,7 @@ import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { usePresence } from '../hooks/usePresence';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { showCallNotification } from '../utils/notifications';
 import { isVideoCallsEnabled } from '../config/features';
 import { getChatDisplayName } from '../utils/chatUtils';
@@ -23,6 +24,7 @@ export default function Sidebar() {
   const [location, setLocation] = useLocation();
   const [, chatParams] = useRoute('/chat/:chatId');
   const chatId = chatParams?.chatId;
+  const { isOnline } = useConnectionStatus();
 
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
@@ -165,6 +167,12 @@ export default function Sidebar() {
       </div>
       <ScrollArea>
         <div className="p-2 grid gap-1">
+          {/* Offline banner */}
+          {!isOnline && (
+            <div className="text-xs text-center text-(--color-error-500) py-2">
+              {t('connectionBanner.offline')}
+            </div>
+          )}
           {/* Active calls */}
           {isVideoCallsEnabled && activeCalls.map(call => {
             const isInCall = activeCallChat?.id === call.id;

@@ -6,7 +6,6 @@ import { requestNotificationPermission, getNotificationPermission } from './util
 import { ToastProvider } from './ui';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import ConnectionBanner from './components/ConnectionBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import ChatPage from './pages/ChatPage';
@@ -59,7 +58,6 @@ function App() {
     <JotaiProvider>
       <ToastProvider>
         <ErrorBoundary>
-          <ConnectionBanner />
           <Switch>
             <Route path="/login" component={LoginPage} />
             <Route path="/signup/:code" component={SignupPage} />
