@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import imageCompression from 'browser-image-compression';
-import { Dialog, Button } from '../ui';
+import { Dialog, Button, Slider } from '../ui';
 
 interface ImageCropDialogProps {
   open: boolean;
@@ -53,25 +53,20 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} title={t('imageCrop.title')} maxWidth="2xl"
-      footer={<>
-        <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)} disabled={processing}>{t('common.cancel')}</Button>
-        <Button className="flex-1 center" onClick={handleAdd} disabled={processing}>{processing ? t('common.processing') : t('common.add')}</Button>
-      </>}>
-      <div className="space-y-4">
+      footer={<Button className="flex-1 center" onClick={handleAdd} disabled={processing}>{processing ? t('common.processing') : t('common.add')}</Button>}>
+      <div className="grid gap-4">
         <div className="flex justify-center bg-black/10 p-1 rounded overflow-hidden">
           <ReactCrop crop={crop} onChange={setCrop}>
             <img ref={imgRef} src={imageUrl} className="max-h-[50dvh]! max-w-full" alt="" />
           </ReactCrop>
         </div>
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-light">{t('videoCompression.quality')}:</div>
-          <div className="flex gap-2">
-            {(['lq', 'md', 'hq'] as const).map(q => (
-              <Button key={q} variant="outline" className="flex-1 center" isSelected={quality === q} onClick={() => setQuality(q)} disabled={processing}>
-                {t(`imageCrop.quality.${q}`)}
-              </Button>
-            ))}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-light whitespace-nowrap flex-1 text-right">
+            <div>{t(`videoCompression.quality`)}:</div>
           </div>
+          <div className="w-32">
+            <Slider value={['lq', 'md', 'hq'].indexOf(quality)} onValueChange={v => setQuality((['lq', 'md', 'hq'] as const)[v])} min={0} max={2} step={1} showTicks disabled={processing} className="flex-1" /></div>
+          <div className="text-sm text-light whitespace-nowrap flex-1">{t(`imageCrop.quality.${quality}`)}</div>
         </div>
       </div>
     </Dialog>

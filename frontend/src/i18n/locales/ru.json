@@ -38,7 +38,6 @@
     "areTyping": "печатают...",
     "messageUpdated": "Сообщение обновлено",
     "messageDeleted": "Сообщение удалено",
-    "copied": "Скопировано",
     "imageCopied": "Изображение скопировано",
     "defaultChatName": "Чат",
     "jumpToPresent": "К последним"
@@ -81,14 +80,6 @@
     "compressing": "Сжатие",
     "compressionFailed": "Ошибка сжатия",
     "formatNotSupported": "Формат не поддерживается"
-  },
-  "videoQuality": {
-    "title": "Качество",
-    "veryLow": "Очень низкое",
-    "low": "Низкое",
-    "medium": "Среднее",
-    "high": "Высокое",
-    "veryHigh": "Очень высокое"
   },
   "videoUpload": {
     "invalidType": "Неверный тип файла",
@@ -136,7 +127,6 @@
     "groupNamePlaceholder": "Введите название...",
     "participants": "Участники",
     "background": "Фон",
-    "leaveGroup": "Покинуть чат",
     "leaveChat": "Покинуть чат",
     "deleteChat": "Удалить чат",
     "renameChat": "Переименовать чат",

@@ -208,16 +208,10 @@ export default function VoiceRecorder({ open, onOpenChange, onSend }: VoiceRecor
       title={t('messages.voiceMessage')}
       maxWidth="sm"
       footer={
-        <>
-          <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
-            <XIcon size={20} className="text-accent" />
-            {t('common.cancel')}
-          </Button>
-          <Button variant="primary" className="flex-1 center" onClick={handleSend} disabled={!audioBlob}>
-            <PaperPlaneRightIcon size={20} className="text-accent" />
-            {t('common.send')}
-          </Button>
-        </>
+        <Button variant="primary" className="flex-1 center" onClick={handleSend} disabled={!audioBlob}>
+          <PaperPlaneRightIcon size={20} className="text-accent" />
+          {t('common.send')}
+        </Button>
       }
     >
       <div className="flex flex-col gap-4">

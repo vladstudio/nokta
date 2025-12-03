@@ -190,11 +190,11 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
   };
 
   const qualityOptions: { value: VideoQuality; label: string }[] = [
-    { value: 'vlq', label: t('videoQuality.veryLow') },
-    { value: 'lq', label: t('videoQuality.low') },
-    { value: 'md', label: t('videoQuality.medium') },
-    { value: 'hq', label: t('videoQuality.high') },
-    { value: 'vhq', label: t('videoQuality.veryHigh') },
+    { value: 'vlq', label: t('videoCompression.qualityVLQ') },
+    { value: 'lq', label: t('videoCompression.qualityLQ') },
+    { value: 'md', label: t('videoCompression.qualityMD') },
+    { value: 'hq', label: t('videoCompression.qualityHQ') },
+    { value: 'vhq', label: t('videoCompression.qualityVHQ') },
   ];
 
   return (
@@ -204,21 +204,15 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
       title={t('messages.quickVideoMessage')}
       maxWidth="md"
       footer={
-        <>
-          <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
-            <XIcon size={20} />
-            {t('common.cancel')}
-          </Button>
-          <Button
-            variant="primary"
-            className="flex-1 center"
-            onClick={handleSend}
-            disabled={!videoBlob || state === 'processing'}
-          >
-            <PaperPlaneRightIcon size={20} />
-            {t('common.send')}
-          </Button>
-        </>
+        <Button
+          variant="primary"
+          className="flex-1 center"
+          onClick={handleSend}
+          disabled={!videoBlob || state === 'processing'}
+        >
+          <PaperPlaneRightIcon size={20} />
+          {t('common.send')}
+        </Button>
       }
     >
       <div className="flex flex-col gap-4">
@@ -251,7 +245,7 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
         {state === 'stopped' && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">
-              {t('videoQuality.title')}
+              {t('videoCompression.quality')}
             </label>
             <div className="flex flex-wrap gap-2">
               {qualityOptions.map(option => (

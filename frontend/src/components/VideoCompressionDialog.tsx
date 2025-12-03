@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, Button } from '../ui';
+import { Dialog, Button, Slider } from '../ui';
 import { useVideoCompression } from '../hooks/useVideoCompression';
 import { formatFileSize, formatDuration } from '../utils/videoUtils';
 import type { VideoMetadata, VideoQuality } from '../types/video';
@@ -12,13 +12,8 @@ interface VideoCompressionDialogProps {
   onComplete: (file: File, metadata: VideoMetadata) => void;
 }
 
-const QUALITY_ESTIMATES = {
-  vlq: { label: 'Very Low', multiplier: 0.05 },
-  lq: { label: 'Low', multiplier: 0.1 },
-  md: { label: 'Medium', multiplier: 0.3 },
-  hq: { label: 'High', multiplier: 0.6 },
-  vhq: { label: 'Very High', multiplier: 0.85 },
-};
+const QUALITIES: VideoQuality[] = ['vlq', 'lq', 'md', 'hq', 'vhq'];
+const QUALITY_MULTIPLIERS = { vlq: 0.05, lq: 0.1, md: 0.3, hq: 0.6, vhq: 0.85 };
 
 export default function VideoCompressionDialog({
   open,
@@ -66,16 +61,9 @@ export default function VideoCompressionDialog({
     }
   };
 
-  const handleCancel = () => {
-    if (isCompressing) {
-      cancel();
-    }
-    onOpenChange(false);
-  };
-
   const getEstimatedSize = (q: VideoQuality) => {
     if (!metadata) return '...';
-    const bytes = metadata.size * QUALITY_ESTIMATES[q].multiplier;
+    const bytes = metadata.size * QUALITY_MULTIPLIERS[q];
     if (bytes < 1024) return `~${Math.round(bytes)} B`;
     if (bytes < 1024 * 1024) return `~${Math.round(bytes / 1024)} KB`;
     if (bytes < 1024 * 1024 * 1024) return `~${Math.round(bytes / (1024 * 1024))} MB`;
@@ -89,17 +77,12 @@ export default function VideoCompressionDialog({
       title={t('videoCompression.title')}
       maxWidth="4xl"
       footer={
-        <>
-          <Button className="flex-1 center" variant="outline" onClick={handleCancel} disabled={isCompressing}>
-            {t('common.cancel')}
-          </Button>
-          <Button className="flex-1 center" onClick={handleAdd} disabled={isCompressing || !metadata}>
-            {isCompressing ? <>{t('videoCompression.compressing')}... <span className="font-mono">{progress}%</span></> : t('common.add')}
-          </Button>
-        </>
+        <Button className="flex-1 center" onClick={handleAdd} disabled={isCompressing || !metadata}>
+          {isCompressing ? <>{t('videoCompression.compressing')}... <span className="font-mono">{progress}%</span></> : t('common.add')}
+        </Button>
       }
     >
-      <div className="space-y-4">
+      <div className="grid gap-4">
         {/* Video Preview */}
         <div className="relative w-full bg-black rounded overflow-hidden">
           <video
@@ -112,34 +95,16 @@ export default function VideoCompressionDialog({
           </video>
         </div>
 
-        {/* Original File Info */}
-        {metadata && (
-          <div className="text-sm text-(--color-text-secondary)">
-            {t('videoCompression.original')}: {formatFileSize(metadata.size)} • {formatDuration(metadata.duration)}
-          </div>
-        )}
-
         {/* Quality Selection */}
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-light">{t('videoCompression.quality')}:</div>
-          <div className="flex gap-2">
-            {(['vlq', 'lq', 'md', 'hq', 'vhq'] as const).map((q) => (
-              <Button
-                key={q}
-                isSelected={quality === q}
-                variant="outline"
-                onClick={() => setQuality(q)}
-                disabled={isCompressing}
-                className="flex-1 center"
-              >
-                <div className="flex flex-col items-center">
-                  <span>{t(`videoCompression.quality${q.toUpperCase()}`)}</span>
-                  <span className="text-xs text-light font-normal!">
-                    {getEstimatedSize(q)}
-                  </span>
-                </div>
-              </Button>
-            ))}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-light whitespace-nowrap flex-1 text-right">
+            <div>{t(`videoCompression.quality`)}:</div>
+          </div>
+          <div className="w-32">
+            <Slider value={QUALITIES.indexOf(quality)} onValueChange={v => setQuality(QUALITIES[v])} min={0} max={4} step={1} showTicks disabled={isCompressing} />
+          </div>
+          <div className="text-sm text-light whitespace-nowrap flex-1">
+            {t(`videoCompression.quality${quality.toUpperCase()}`)} ({getEstimatedSize(quality)})
           </div>
         </div>
 

@@ -80,12 +80,9 @@ export default function ChatDialog({ open, onOpenChange, chat, onChatCreated, on
       onOpenChange={onOpenChange}
       title={isEditing ? t('chats.editChat') : t('chats.createChat')}
       footer={
-        <>
-          <Button variant="outline" className="flex-1 center" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
-          <Button variant="primary" className="flex-1 center" type="submit" form="chat-form" disabled={saving || (selectedUsers.length === 0 && !chatName.trim())}>
-            {saving ? t('common.saving') : (isEditing ? t('common.save') : t('common.create'))}
-          </Button>
-        </>
+        <Button variant="primary" className="flex-1 center" type="submit" form="chat-form" disabled={saving || (selectedUsers.length === 0 && !chatName.trim())}>
+          {saving ? t('common.saving') : (isEditing ? t('common.save') : t('common.create'))}
+        </Button>
       }
     >
       <form id="chat-form" onSubmit={handleSubmit} className="grid gap-4">

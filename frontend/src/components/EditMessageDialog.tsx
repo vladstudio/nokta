@@ -34,24 +34,15 @@ export default function EditMessageDialog({
     }
   };
 
-  const handleCancel = () => {
-    onOpenChange(false);
-  };
-
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
       title={t('editMessageDialog.title')}
       footer={
-        <>
-          <Button variant="outline" className="flex-1 center" onClick={handleCancel}>
-            {t('common.cancel')}
-          </Button>
-          <Button variant="primary" className="flex-1 center" type="submit" form="edit-message-form" disabled={!content.trim()}>
-            {t('common.save')}
-          </Button>
-        </>
+        <Button variant="primary" className="flex-1 center" type="submit" form="edit-message-form" disabled={!content.trim()}>
+          {t('common.save')}
+        </Button>
       }
     >
       <form id="edit-message-form" onSubmit={handleSave}>

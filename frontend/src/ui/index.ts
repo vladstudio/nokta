@@ -15,3 +15,4 @@ export { Dialog } from './Dialog';
 export { ToastProvider, useToastManager } from './Toast';
 export type { ToastType } from './Toast';
 export { FileUpload } from './FileUpload';
+export { Slider } from './Slider';

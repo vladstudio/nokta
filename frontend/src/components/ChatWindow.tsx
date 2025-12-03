@@ -527,7 +527,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     try {
       if (selectedMessage.type === 'text') {
         await navigator.clipboard.writeText(selectedMessage.content);
-        toastManager.add({ title: t('chatWindow.copied'), data: { type: 'success' } });
+        toastManager.add({ title: t('common.copied'), data: { type: 'success' } });
       } else if (selectedMessage.type === 'image' && selectedMessage.file) {
         const imageUrl = messagesAPI.getFileURL(selectedMessage);
         const response = await fetch(imageUrl);

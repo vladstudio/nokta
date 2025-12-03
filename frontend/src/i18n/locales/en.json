@@ -38,7 +38,6 @@
     "areTyping": "are typing...",
     "messageUpdated": "Message updated",
     "messageDeleted": "Message deleted",
-    "copied": "Copied",
     "imageCopied": "Image copied",
     "defaultChatName": "Chat",
     "jumpToPresent": "Jump to present"
@@ -81,14 +80,6 @@
     "compressing": "Compressing",
     "compressionFailed": "Compression failed",
     "formatNotSupported": "Video format not supported"
-  },
-  "videoQuality": {
-    "title": "Quality",
-    "veryLow": "Very Low",
-    "low": "Low",
-    "medium": "Medium",
-    "high": "High",
-    "veryHigh": "Very High"
   },
   "videoUpload": {
     "invalidType": "Invalid file type",
@@ -136,7 +127,6 @@
     "groupNamePlaceholder": "Enter name...",
     "participants": "Participants",
     "background": "Background",
-    "leaveGroup": "Leave Chat",
     "leaveChat": "Leave Chat",
     "deleteChat": "Delete Chat",
     "renameChat": "Rename Chat",
