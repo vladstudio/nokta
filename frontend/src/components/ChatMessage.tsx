@@ -119,6 +119,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       <div className="flex flex-col gap-2">
         <VideoPlayer
           videoUrl={videoUrl}
+          posterUrl={messagesAPI.getFileURL(message, '600x600')}
           className="max-h-80"
           onError={() => {
             console.error('Video playback failed');
