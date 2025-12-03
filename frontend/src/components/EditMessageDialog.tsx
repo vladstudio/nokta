@@ -53,7 +53,7 @@ export default function EditMessageDialog({
           onChange={(e) => setContent(e.target.value)}
           placeholder={t('messageInput.placeholder')}
           autoFocus
-          className="max-h-[70dvh]"
+          className="max-h-[64dvh]"
         />
       </form>
     </Dialog>
