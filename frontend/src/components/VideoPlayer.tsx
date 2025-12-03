@@ -37,7 +37,7 @@ export default function VideoPlayer({
   }, []);
 
   return (
-    <div className={className}>
+    <div>
       <video
         ref={videoRef}
         src={videoUrl}
@@ -45,7 +45,7 @@ export default function VideoPlayer({
         controls
         onDoubleClick={handleDoubleClick}
         onError={onError}
-        className="max-w-sm rounded cursor-pointer"
+        className={`max-w-sm rounded cursor-pointer ${className || ''}`}
         preload="metadata"
       >
         Your browser does not support video playback.

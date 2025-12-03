@@ -85,7 +85,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       <img
         src={imageUrl}
         alt={message.content || 'Image'}
-        className="max-w-xs rounded cursor-pointer"
+        className="max-w-xs max-h-80 rounded cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           window.open(messagesAPI.getFileURL(message), '_blank');
@@ -119,6 +119,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       <div className="flex flex-col gap-2">
         <VideoPlayer
           videoUrl={videoUrl}
+          className="max-h-80"
           onError={() => {
             console.error('Video playback failed');
             toastManager.add({
