@@ -27,9 +27,9 @@ export const SidebarItem = memo(function SidebarItem({
   return (
     <div className="flex items-center gap-1">
       <Button
-        variant="ghost"
         onClick={onClick}
         isSelected={isSelected}
+        variant="ghost"
         className="flex-1 p-2! text-left flex items-center gap-2 min-w-0"
       >
         {icon && <div className="shrink-0">{icon}</div>}

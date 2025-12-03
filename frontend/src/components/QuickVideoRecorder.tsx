@@ -258,7 +258,6 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
                 <Button
                   key={option.value}
                   variant="outline"
-                  size="sm"
                   isSelected={selectedQuality === option.value}
                   onClick={() => setSelectedQuality(option.value)}
                 >

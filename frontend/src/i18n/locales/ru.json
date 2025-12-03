@@ -240,8 +240,7 @@
     "unknown": "Неизвестная ошибка"
   },
   "app": {
-    "logoAlt": "Nokta",
-    "newVersionAvailable": "Доступна новая версия, нажмите для обновления"
+    "logoAlt": "Nokta"
   },
   "search": {
     "title": "Поиск",

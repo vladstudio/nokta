@@ -240,8 +240,7 @@
     "unknown": "Unknown error"
   },
   "app": {
-    "logoAlt": "Nokta",
-    "newVersionAvailable": "New version available, click to reload"
+    "logoAlt": "Nokta"
   },
   "search": {
     "title": "Search",
