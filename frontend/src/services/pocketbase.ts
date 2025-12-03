@@ -18,9 +18,22 @@ function generateSecurePassword(length = 24): string {
 // Disable auto-cancellation - app makes legitimate concurrent requests
 pb.autoCancellation(false);
 
+// Android bridge for native app push notifications
+declare global {
+  interface Window {
+    NoktaAndroid?: {
+      registerPushToken(authToken: string, userId: string): void;
+    };
+  }
+}
+
 export const auth = {
   async login(email: string, password: string) {
     const authData = await pb.collection('users').authWithPassword(email, password);
+    // Register push token on Android native app
+    if (window.NoktaAndroid) {
+      window.NoktaAndroid.registerPushToken(pb.authStore.token, authData.record.id);
+    }
     return authData.record as unknown as User;
   },
 

@@ -16,13 +16,17 @@ runcmd:
     exec > /var/log/nokta-install.log 2>&1
 
     # ==============================================================
-    # USER CONFIG - EDIT THESE 5 LINES
+    # USER CONFIG - EDIT THESE LINES
     # ==============================================================
     DOMAIN="nokta.example.com"
     ADMIN_EMAIL="you@example.com"
     ADMIN_PASSWORD="change-this-password"
     DAILY_API_KEY="your-daily-co-api-key"
     SSH_KEY="ssh-rsa AAAAB3... your-public-key"
+    # Optional: Firebase service account JSON (base64 encoded) for Android push notifications
+    # Get from: Firebase Console → Project Settings → Service accounts → Generate new private key
+    # Encode with: cat firebase-service-account.json | base64 | tr -d '\n'
+    FIREBASE_SA_BASE64=""
     # ==============================================================
 
     APP_USER="nokta"
@@ -184,7 +188,7 @@ runcmd:
     EOF
     chown -R caddy:caddy /var/log/caddy
 
-    # --- Create Systemd Service ---
+    # --- Create Systemd Service for PocketBase ---
     cat > /etc/systemd/system/nokta-backend.service << EOF
     [Unit]
     Description=Nokta Backend
@@ -208,6 +212,35 @@ runcmd:
     WantedBy=multi-user.target
     EOF
 
+    # --- Setup Firebase (if configured) ---
+    if [ -n "$FIREBASE_SA_BASE64" ]; then
+      echo "$FIREBASE_SA_BASE64" | base64 -d > $APP_DIR/backend/firebase-service-account.json
+      chmod 600 $APP_DIR/backend/firebase-service-account.json
+      chown $APP_USER:$APP_USER $APP_DIR/backend/firebase-service-account.json
+
+      # Install FCM service dependencies
+      sudo -u $APP_USER bash -c "cd $APP_DIR/backend && ~/.bun/bin/bun install"
+
+      # Create FCM service
+      cat > /etc/systemd/system/nokta-fcm.service << EOF
+    [Unit]
+    Description=Nokta FCM Push Service
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=$APP_USER
+    WorkingDirectory=$APP_DIR/backend
+    ExecStart=/home/$APP_USER/.bun/bin/bun run fcm-service.ts
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+      systemctl enable nokta-fcm
+    fi
+
     # --- Initialize PocketBase ---
     cd $APP_DIR/backend
     sudo -u $APP_USER ./pocketbase superuser create "$ADMIN_EMAIL" "$ADMIN_PASSWORD" || true
@@ -216,6 +249,9 @@ runcmd:
     systemctl daemon-reload
     systemctl enable nokta-backend
     systemctl start nokta-backend
+    if [ -n "$FIREBASE_SA_BASE64" ]; then
+      systemctl start nokta-fcm
+    fi
     sleep 5
     systemctl reload caddy
 

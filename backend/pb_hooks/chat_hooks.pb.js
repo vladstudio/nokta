@@ -69,3 +69,86 @@ onRecordAfterCreateSuccess((e) => {
 
   e.next()
 }, "messages")
+
+/**
+ * Send FCM push notification when a message is created
+ * Calls the local FCM service (bun run fcm) which handles Google OAuth2
+ */
+onRecordAfterCreateSuccess((e) => {
+  const chatId = e.record.get("chat")
+  const senderId = e.record.get("sender")
+  const content = e.record.get("content")
+  const messageType = e.record.get("type")
+
+  try {
+    // Get chat participants
+    const chat = e.app.findRecordById("chats", chatId)
+    const participants = chat.get("participants") || []
+
+    // Get sender info for notification title
+    const senderRecord = e.app.findRecordById("users", senderId)
+    const senderName = senderRecord.get("name") || senderRecord.get("email") || "Someone"
+
+    // Build notification body based on message type
+    let body = content || ""
+    if (messageType === "image") body = "Sent an image"
+    else if (messageType === "video") body = "Sent a video"
+    else if (messageType === "voice") body = "Sent a voice message"
+    else if (messageType === "file") body = "Sent a file"
+
+    // Get FCM tokens for all participants except sender
+    const recipientIds = participants.filter(id => id !== senderId)
+    if (recipientIds.length === 0) {
+      e.next()
+      return
+    }
+
+    // Find device tokens for recipients
+    const tokens = []
+    recipientIds.forEach(userId => {
+      try {
+        const userTokens = e.app.findRecordsByFilter(
+          "device_tokens",
+          `user = {:userId}`,
+          null, 0, 0,
+          { userId }
+        )
+        userTokens.forEach(t => tokens.push(t.get("token")))
+      } catch (err) {
+        // No tokens for this user
+      }
+    })
+
+    if (tokens.length === 0) {
+      e.next()
+      return
+    }
+
+    // Send to local FCM service
+    try {
+      const response = $http.send({
+        url: "http://127.0.0.1:9090",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokens: tokens,
+          title: senderName,
+          body: body,
+          data: {
+            chatId: chatId,
+            senderId: senderId,
+            type: "new_message"
+          }
+        }),
+        timeout: 15
+      })
+      console.log(`[chat_hooks] FCM service response:`, response.raw)
+    } catch (err) {
+      console.error(`[chat_hooks] FCM service error:`, err.message)
+    }
+  } catch (err) {
+    console.error(`[chat_hooks] Failed to send FCM notification:`, err.message)
+  }
+
+  e.next()
+}, "messages")

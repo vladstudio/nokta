@@ -432,8 +432,69 @@ migrate((app) => {
 
   app.save(users)
 
+  // Create device_tokens collection
+  const deviceTokens = new Collection({
+    name: "device_tokens",
+    type: "base"
+  })
+
+  deviceTokens.fields.addAt(0, new Field({
+    name: "user",
+    type: "relation",
+    required: true,
+    collectionId: users.id,
+    cascadeDelete: true,
+    maxSelect: 1
+  }))
+
+  deviceTokens.fields.addAt(1, new Field({
+    name: "token",
+    type: "text",
+    required: true,
+    min: 1,
+    max: 500
+  }))
+
+  deviceTokens.fields.addAt(2, new Field({
+    name: "platform",
+    type: "select",
+    required: true,
+    maxSelect: 1,
+    values: ["android", "ios", "web"]
+  }))
+
+  deviceTokens.fields.addAt(3, new Field({
+    name: "created",
+    type: "autodate",
+    onCreate: true,
+    onUpdate: false
+  }))
+
+  deviceTokens.fields.addAt(4, new Field({
+    name: "updated",
+    type: "autodate",
+    onCreate: true,
+    onUpdate: true
+  }))
+
+  deviceTokens.listRule = 'user = @request.auth.id'
+  deviceTokens.viewRule = 'user = @request.auth.id'
+  deviceTokens.createRule = '@request.auth.id != "" && user = @request.auth.id'
+  deviceTokens.updateRule = 'user = @request.auth.id'
+  deviceTokens.deleteRule = 'user = @request.auth.id'
+
+  deviceTokens.indexes = [
+    "CREATE UNIQUE INDEX idx_device_tokens_token ON device_tokens (token)",
+    "CREATE INDEX idx_device_tokens_user ON device_tokens (user)"
+  ]
+
+  app.save(deviceTokens)
+
   return null
 }, (app) => {
+  const deviceTokens = app.findCollectionByNameOrId("device_tokens")
+  app.delete(deviceTokens)
+
   const invitations = app.findCollectionByNameOrId("invitations")
   app.delete(invitations)
 

@@ -4,10 +4,12 @@
   "type": "module",
   "description": "Setup and utility scripts for PocketBase",
   "scripts": {
-    "setup": "node setup-test-data.js"
+    "setup": "node setup-test-data.js",
+    "fcm": "bun run fcm-service.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
+    "google-auth-library": "^9.14.0",
     "pocketbase": "^0.23.0"
   }
 }

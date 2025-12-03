@@ -12,9 +12,9 @@ Real-time chat app with video/audio calls. React frontend + PocketBase backend.
    ADMIN_EMAIL="you@your-domain.com"
    ADMIN_PASSWORD="change-this-password"
    DAILY_API_KEY="your-daily-co-api-key"
-   SSH_KEY="ssh-rsa AAAAB3... your-public-key"
+   SSH_KEY="ssh-rsa AAAAB3..." # usually you can get your key value with cat .ssh/id_rsa.pub
+   FIREBASE_SA_BASE64="" # Optional, for Android push notifications: see below
    ```
-   Usually you can get your SSH key value with `cat .ssh/id_rsa.pub` .
 
 2. Create server (Hetzner/DigitalOcean/Vultr), paste the entire `cloud-init.yaml` into **User Data / Cloud Init / Cloud Config**
 
@@ -28,10 +28,11 @@ Real-time chat app with video/audio calls. React frontend + PocketBase backend.
 
 ```bash
 ssh nokta@SERVER_IP                  # SSH access
+cloud-init status                    # Check cloud-init status
 ~/nokta/backup.sh                    # Manual backup
 ~/nokta/update.sh                    # Update to latest
 sudo systemctl restart nokta-backend # Restart backend
-sudo reboot                          # Reboot server
+sudo reboot                          # Reboot entire server
 ```
 
 
@@ -74,3 +75,23 @@ cd frontend && bun install && bun dev # :3000
 ```
 
 Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, password `1234567890`
+
+## Android Push Notifications (Optional)
+
+To enable background push notifications on the Android app:
+
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Add an Android app with package name `com.nokta.app`
+3. Download `google-services.json` → place in `native-app/android/app/`
+4. Go to Project Settings → Service accounts → Generate new private key
+5. Save as `backend/firebase-service-account.json`
+6. Encode for cloud-init (if deploying to server):
+   ```bash
+   cat backend/firebase-service-account.json | base64 | tr -d '\n'
+   ```
+7. For local development, run the FCM service alongside PocketBase:
+   ```bash
+   cd backend && bun install && bun run fcm  # :9090
+   ```
+
+For production deployment, the FCM service runs automatically via systemd.

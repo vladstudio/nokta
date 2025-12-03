@@ -50,6 +50,7 @@ CLAUDE.md
 backend/pb_data/
 backend/pocketbase
 backend/pocketbase.exe
+backend/firebase-service-account.json
 
 # Native app (Tauri/Rust)
 native-app/src-tauri/target/

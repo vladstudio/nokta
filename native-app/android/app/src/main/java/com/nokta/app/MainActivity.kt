@@ -7,14 +7,26 @@ import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.webkit.*
 import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import android.webkit.JavascriptInterface
+import com.google.firebase.messaging.FirebaseMessaging
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.concurrent.thread
 
 class MainActivity : ComponentActivity() {
+    inner class NoktalBridge {
+        @JavascriptInterface
+        fun registerPushToken(authToken: String, userId: String) {
+            registerFcmToken(authToken, userId)
+        }
+    }
     private lateinit var webView: WebView
     private val prefs by lazy { getSharedPreferences("nokta", MODE_PRIVATE) }
     private val permissions = buildList {
@@ -31,6 +43,7 @@ class MainActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
+            addJavascriptInterface(NoktalBridge(), "NoktaAndroid")
             webViewClient = WebViewClient()
             webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {
@@ -62,5 +75,27 @@ class MainActivity : ComponentActivity() {
                 webView.loadUrl(url)
             }
             .setNegativeButton("Cancel") { _, _ -> finish() }.show()
+    }
+
+    private fun registerFcmToken(authToken: String, userId: String) {
+        FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
+            val serverUrl = prefs.getString("serverUrl", null) ?: return@addOnSuccessListener
+            thread {
+                try {
+                    val url = URL("$serverUrl/api/collections/device_tokens/records")
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.setRequestProperty("Authorization", authToken)
+                    conn.doOutput = true
+                    conn.outputStream.write("""{"token":"$fcmToken","platform":"android","user":"$userId"}""".toByteArray())
+                    val code = conn.responseCode
+                    Log.d("Nokta", "FCM token registration: $code")
+                    conn.disconnect()
+                } catch (e: Exception) {
+                    Log.e("Nokta", "Failed to register FCM token", e)
+                }
+            }
+        }
     }
 }
