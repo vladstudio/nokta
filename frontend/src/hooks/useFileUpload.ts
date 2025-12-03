@@ -27,7 +27,8 @@ export interface UseFileUploadReturn {
 export function useFileUpload(
   chatId: string,
   isOnline: boolean,
-  onError: (title: string, description: string) => void
+  onError: (title: string, description: string) => void,
+  onUploadStart?: () => void
 ): UseFileUploadReturn {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [fileInputType, setFileInputType] = useState<'image' | 'file'>('image');
@@ -117,6 +118,7 @@ export function useFileUpload(
     }));
 
     setUploadingFiles(prev => [...prev, ...uploads]);
+    onUploadStart?.();
     uploads.forEach(upload => uploadFile(upload));
   };
 
@@ -175,6 +177,7 @@ export function useFileUpload(
     }
 
     setUploadingFiles(prev => [...prev, ...uploads]);
+    onUploadStart?.();
     uploads.forEach(upload => uploadFile(upload));
   };
 

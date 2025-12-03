@@ -94,7 +94,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     handleRetryUpload,
   } = useFileUpload(chatId!, isOnline, (title, description) => {
     toastManager.add({ title, description, data: { type: 'error' } });
-  });
+  }, () => setShowAddActions(false));
 
   // Local UI state
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
@@ -140,7 +140,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       return;
     }
     imageInputRef.current?.click();
-    setShowAddActions(false);
   };
 
   const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,7 +165,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       return;
     }
     videoInputRef.current?.click();
-    setShowAddActions(false);
   };
 
   const handleVideoInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,7 +207,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       return;
     }
     setVoiceRecorderOpen(true);
-    setShowAddActions(false);
   };
 
   const handleVoiceSend = (blob: Blob, duration: number) => {
@@ -224,7 +221,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       return;
     }
     setQuickVideoRecorderOpen(true);
-    setShowAddActions(false);
   };
 
   const handleQuickVideoSend = (blob: Blob, duration: number, _quality: VideoQuality) => {
@@ -736,7 +732,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       <input
         ref={imageInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/gif,image/webp"
         className="hidden"
         onChange={handleImageInputChange}
       />
