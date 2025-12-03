@@ -8,6 +8,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- Meta Tags -->
     <meta name="description" content="Real-time chat application for seamless communication" />
     <meta name="theme-color" content="#ef5806" />
@@ -26,5 +29,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>navigator.serviceWorker?.register('/sw.js')</script>
   </body>
 </html>
