@@ -71,10 +71,33 @@ class MainActivity : ComponentActivity() {
         AlertDialog.Builder(this).setTitle("Enter Nokta server URL").setView(input)
             .setPositiveButton("OK") { _, _ ->
                 val url = input.text.toString().trimEnd('/')
-                prefs.edit().putString("serverUrl", url).apply()
-                webView.loadUrl(url)
+                validateAndLoadServer(url)
             }
             .setNegativeButton("Cancel") { _, _ -> finish() }.show()
+    }
+
+    private fun validateAndLoadServer(url: String) {
+        thread {
+            try {
+                val conn = URL("$url/api/nokta").openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                val response = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+                if (response.contains("\"app\":\"nokta\"")) {
+                    runOnUiThread {
+                        prefs.edit().putString("serverUrl", url).apply()
+                        webView.loadUrl(url)
+                    }
+                } else throw Exception("Invalid server")
+            } catch (e: Exception) {
+                runOnUiThread {
+                    AlertDialog.Builder(this).setTitle("Error")
+                        .setMessage("Invalid Nokta server. Please check the URL and try again.")
+                        .setPositiveButton("OK") { _, _ -> promptServerUrl() }.show()
+                }
+            }
+        }
     }
 
     private fun registerFcmToken(authToken: String, userId: String) {

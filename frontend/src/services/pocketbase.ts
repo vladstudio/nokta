@@ -412,5 +412,11 @@ export const stats = {
   },
 };
 
+export const nokta = {
+  async getInfo(): Promise<{ app: string; version: string }> {
+    return await pb.send('/api/nokta', { method: 'GET' });
+  },
+};
+
 export { pb };
 export default pb;

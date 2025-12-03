@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
-import { auth, chats } from '../services/pocketbase';
+import { auth, chats, nokta } from '../services/pocketbase';
 import { callsAPI } from '../services/calls';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
@@ -29,6 +29,7 @@ export default function Sidebar() {
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
+  const [newVersion, setNewVersion] = useState<string | null>(null);
 
   // Derived selection state from URL
   const isSettingsSelected = location === '/settings';
@@ -52,6 +53,19 @@ export default function Sidebar() {
 
   useEffect(() => { loadChats(); }, [loadChats]);
   useEffect(() => { if (isVideoCallsEnabled) loadActiveCalls(); }, [loadActiveCalls]);
+
+  // Check for new version every 5 minutes
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const { version } = await nokta.getInfo();
+        if (version !== __APP_VERSION__) setNewVersion(version);
+      } catch { /* ignore */ }
+    };
+    check();
+    const id = setInterval(check, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   // Listen for chat-created events (from CreateChatView)
   useEffect(() => {
@@ -161,6 +175,11 @@ export default function Sidebar() {
           <PlusIcon size={20} className="text-accent" />
         </Button>
       </div>
+      {newVersion && (
+        <button onClick={() => location.reload()} className="m-2 p-2 text-xs bg-accent/10 text-accent rounded-md hover:bg-accent/20">
+          {t('app.newVersionAvailable')} → {newVersion}
+        </button>
+      )}
       <ScrollArea>
         <div className="p-2 grid gap-1">
           {/* Active calls */}
