@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -29,6 +30,11 @@ class MainActivity : ComponentActivity() {
     }
     private lateinit var webView: WebView
     private val prefs by lazy { getSharedPreferences("nokta", MODE_PRIVATE) }
+    private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        fileUploadCallback?.onReceiveValue(if (uri != null) arrayOf(uri) else null)
+        fileUploadCallback = null
+    }
     private val permissions = buildList {
         add(Manifest.permission.CAMERA)
         add(Manifest.permission.RECORD_AUDIO)
@@ -48,6 +54,17 @@ class MainActivity : ComponentActivity() {
             webChromeClient = object : WebChromeClient() {
                 override fun onPermissionRequest(request: PermissionRequest) {
                     request.grant(request.resources)
+                }
+                override fun onShowFileChooser(
+                    webView: WebView?,
+                    filePathCallback: ValueCallback<Array<Uri>>?,
+                    fileChooserParams: FileChooserParams?
+                ): Boolean {
+                    fileUploadCallback?.onReceiveValue(null)
+                    fileUploadCallback = filePathCallback
+                    val mimeType = fileChooserParams?.acceptTypes?.firstOrNull()?.takeIf { it.isNotEmpty() } ?: "*/*"
+                    fileChooserLauncher.launch(mimeType)
+                    return true
                 }
             }
         }
