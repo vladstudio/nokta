@@ -88,7 +88,7 @@ export default function VideoCompressionDialog({
           <video
             src={videoUrl}
             controls
-            className="w-full max-h-96"
+            className="w-full max-h-[80dvh]! sm:max-h-[50dvh]!"
             preload="metadata"
           >
             Your browser does not support video playback.

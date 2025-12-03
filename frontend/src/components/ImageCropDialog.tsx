@@ -57,7 +57,7 @@ export default function ImageCropDialog({ open, onOpenChange, file, onComplete }
       <div className="grid gap-4">
         <div className="flex justify-center bg-black/10 p-1 rounded overflow-hidden">
           <ReactCrop crop={crop} onChange={setCrop}>
-            <img ref={imgRef} src={imageUrl} className="max-h-[50dvh]! max-w-full" alt="" />
+            <img ref={imgRef} src={imageUrl} className="max-h-[80dvh]! sm:max-h-[50dvh]! max-w-full" alt="" />
           </ReactCrop>
         </div>
         <div className="flex items-center gap-4">
