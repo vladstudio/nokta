@@ -42,10 +42,12 @@ export default function ImageCropDialog({ open, onOpenChange, files, onComplete 
     });
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
-    const x = (c.x / 100) * img.naturalWidth;
-    const y = (c.y / 100) * img.naturalHeight;
-    const w = (c.width / 100) * img.naturalWidth;
-    const h = (c.height / 100) * img.naturalHeight;
+    const scale = img.naturalWidth / (imgRef.current?.width || img.naturalWidth);
+    const pct = c.unit === '%';
+    const x = pct ? (c.x / 100) * img.naturalWidth : c.x * scale;
+    const y = pct ? (c.y / 100) * img.naturalHeight : c.y * scale;
+    const w = pct ? (c.width / 100) * img.naturalWidth : c.width * scale;
+    const h = pct ? (c.height / 100) * img.naturalHeight : c.height * scale;
     canvas.width = w;
     canvas.height = h;
     ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
