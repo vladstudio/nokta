@@ -41,7 +41,9 @@ export default function UserSettingsPage() {
     if (currentUser) {
       setName(currentUser.name || '');
       setEmail(currentUser.email);
-      setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
+      if (!avatar) {
+        setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
+      }
       if (currentUser.birthday) {
         const date = new Date(currentUser.birthday);
         setBirthdayDay(date.getDate().toString());
@@ -49,12 +51,13 @@ export default function UserSettingsPage() {
         setBirthdayYear(date.getFullYear().toString());
       }
     }
-  }, [currentUser]);
+  }, [currentUser, avatar]);
 
   const handleThemeChange = (v: 'default' | 'wooden' | 'golden' | 'high-contrast') => { setTheme(v); preferences.theme = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
+    console.log('handleAvatarChange', file);
     setAvatar(file);
     if (file) {
       const reader = new FileReader();
@@ -64,6 +67,7 @@ export default function UserSettingsPage() {
   };
 
   const handleSave = async (e?: React.FormEvent) => {
+    console.log('handleSave called', { avatar, currentUser: currentUser?.id });
     e?.preventDefault();
     if (!currentUser) return;
     setError(null);
@@ -78,14 +82,18 @@ export default function UserSettingsPage() {
         formData.append('passwordConfirm', password);
       }
       if (avatar) formData.append('avatar', avatar);
+      console.log('formData entries:', [...formData.entries()]);
       if (birthdayDay && birthdayMonth && birthdayYear) {
         const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
         if (birthday !== currentUser.birthday) formData.append('birthday', birthday);
       } else if (currentUser.birthday) {
         formData.append('birthday', '');
       }
+      console.log('calling pb.collection.update');
       await pb.collection('users').update(currentUser.id, formData);
+      console.log('update done, calling authRefresh');
       await pb.collection('users').authRefresh();
+      setAvatar(null);
       toastManager.add({ title: t('userSettingsDialog.settingsSaved'), data: { type: 'success' } });
       setPassword('');
       setOldPassword('');

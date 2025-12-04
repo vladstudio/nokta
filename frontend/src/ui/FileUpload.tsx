@@ -14,7 +14,7 @@ export function FileUpload({ onChange, accept = 'image/*', preview, className = 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File | null) => {
-    if (file && accept && !file.type.match(accept.replace('*', '.*'))) return;
+    if (file && accept && file.type && !file.type.match(accept.replace('*', '.*'))) return;
     onChange(file);
   };
 
