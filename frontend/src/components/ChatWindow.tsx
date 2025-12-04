@@ -104,8 +104,8 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [showAddActions, setShowAddActions] = useState(false);
   const [isCreatingCall, setIsCreatingCall] = useState(false);
-  const [cropDialogFile, setCropDialogFile] = useState<File | null>(null);
-  const [videoCompressionDialogFile, setVideoCompressionDialogFile] = useState<File | null>(null);
+  const [cropDialogFiles, setCropDialogFiles] = useState<File[]>([]);
+  const [videoCompressionDialogFiles, setVideoCompressionDialogFiles] = useState<File[]>([]);
   const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
   const [quickVideoRecorderOpen, setQuickVideoRecorderOpen] = useState(false);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
@@ -143,16 +143,13 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   };
 
   const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setCropDialogFile(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length) setCropDialogFiles(files);
     e.target.value = '';
   };
 
-  const handleCropComplete = (processedFile: File) => {
-    const syntheticEvent = {
-      target: { files: [processedFile] }
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    handleFileChange(syntheticEvent);
+  const handleCropComplete = (processedFiles: File[]) => {
+    processedFiles.forEach(f => uploadFiles([f], 'image'));
   };
 
   const handleVideoSelect = () => {
@@ -168,37 +165,26 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   };
 
   const handleVideoInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
+    const files = Array.from(e.target.files || []);
+    const maxSize = 100 * 1024 * 1024;
+    const valid = files.filter(file => {
       if (!file.type.startsWith('video/')) {
-        toastManager.add({
-          title: t('videoUpload.invalidType'),
-          description: t('videoUpload.pleaseSelectVideo'),
-          data: { type: 'error' },
-        });
-        return;
+        toastManager.add({ title: t('videoUpload.invalidType'), description: t('videoUpload.pleaseSelectVideo'), data: { type: 'error' } });
+        return false;
       }
-
-      // Validate file size (100MB max before compression)
-      const maxSize = 100 * 1024 * 1024; // 100MB
       if (file.size > maxSize) {
-        toastManager.add({
-          title: t('videoUpload.fileTooLarge'),
-          description: t('videoUpload.maxSize100MB'),
-          data: { type: 'error' },
-        });
-        return;
+        toastManager.add({ title: t('videoUpload.fileTooLarge'), description: t('videoUpload.maxSize100MB'), data: { type: 'error' } });
+        return false;
       }
-
-      setVideoCompressionDialogFile(file);
-    }
+      return true;
+    });
+    if (valid.length) setVideoCompressionDialogFiles(valid);
     e.target.value = '';
   };
 
-  const handleVideoCompressionComplete = (compressedFile: File, _metadata: VideoMetadata) => {
-    uploadFiles([compressedFile], 'video');
-    setVideoCompressionDialogFile(null);
+  const handleVideoCompressionComplete = (compressedFiles: File[]) => {
+    compressedFiles.forEach(f => uploadFiles([f], 'video'));
+    setVideoCompressionDialogFiles([]);
   };
 
   const handleVoiceSelect = () => {
@@ -248,16 +234,19 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     dragCounterRef.current = 0;
     setIsDraggingFile(false);
 
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
+    const files = Array.from(e.dataTransfer.files);
+    if (!files.length) return;
     if (!isOnline) {
       toastManager.add({ title: t('common.noConnection'), description: t('videoUpload.cannotUploadOffline'), data: { type: 'error' } });
       return;
     }
 
-    if (file.type.startsWith('image/')) setCropDialogFile(file);
-    else if (file.type.startsWith('video/')) handleVideoInputChange({ target: { files: [file], value: '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
-    else handleFileChange({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>);
+    const allImages = files.every(f => f.type.startsWith('image/'));
+    const allVideos = files.every(f => f.type.startsWith('video/'));
+
+    if (allImages) setCropDialogFiles(files);
+    else if (allVideos) handleVideoInputChange({ target: { files: files, value: '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
+    else handleFileChange({ target: { files: files } } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
   // Load chat data
@@ -710,7 +699,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onQuickVideoSelect={handleQuickVideoSelect}
         onShowAddActions={() => setShowAddActions(true)}
         onCancelMessageSelection={() => setSelectedMessageId(null)}
-        onPasteImage={setCropDialogFile}
+        onPasteImage={(f) => setCropDialogFiles([f])}
         onCopy={handleCopyMessage}
         onEdit={handleEditMessage}
         onDelete={handleDeleteMessage}
@@ -733,6 +722,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         ref={imageInputRef}
         type="file"
         accept="image/png,image/jpeg,image/gif,image/webp"
+        multiple
         className="hidden"
         onChange={handleImageInputChange}
       />
@@ -742,6 +732,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         ref={videoInputRef}
         type="file"
         accept="video/*"
+        multiple
         className="hidden"
         onChange={handleVideoInputChange}
       />
@@ -770,21 +761,21 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
       />
 
       {/* Image Crop Dialog */}
-      {cropDialogFile && (
+      {cropDialogFiles.length > 0 && (
         <ImageCropDialog
-          open={!!cropDialogFile}
-          onOpenChange={(open) => !open && setCropDialogFile(null)}
-          file={cropDialogFile}
+          open={cropDialogFiles.length > 0}
+          onOpenChange={(open) => !open && setCropDialogFiles([])}
+          files={cropDialogFiles}
           onComplete={handleCropComplete}
         />
       )}
 
       {/* Video Compression Dialog */}
-      {videoCompressionDialogFile && (
+      {videoCompressionDialogFiles.length > 0 && (
         <VideoCompressionDialog
-          open={!!videoCompressionDialogFile}
-          onOpenChange={(open) => !open && setVideoCompressionDialogFile(null)}
-          file={videoCompressionDialogFile}
+          open={videoCompressionDialogFiles.length > 0}
+          onOpenChange={(open) => !open && setVideoCompressionDialogFiles([])}
+          files={videoCompressionDialogFiles}
           onComplete={handleVideoCompressionComplete}
         />
       )}

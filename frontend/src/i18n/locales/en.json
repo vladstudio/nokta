@@ -60,7 +60,7 @@
     "forwarded": "Forwarded"
   },
   "imageCrop": {
-    "title": "Crop & Compress Image",
+    "title": "Send Image",
     "quality": {
       "lq": "Low",
       "md": "Medium",
