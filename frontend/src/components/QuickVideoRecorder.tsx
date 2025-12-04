@@ -3,24 +3,15 @@ import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button, useToastManager } from '../ui';
 import { XIcon, PaperPlaneRightIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
-import { Output, BufferTarget, Mp4OutputFormat, MediaStreamAudioTrackSource, MediaStreamVideoTrackSource, QUALITY_VERY_LOW, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_VERY_HIGH } from 'mediabunny';
-import type { VideoQuality } from '../types/video';
+import { Output, BufferTarget, Mp4OutputFormat, MediaStreamAudioTrackSource, MediaStreamVideoTrackSource, QUALITY_LOW, QUALITY_MEDIUM } from 'mediabunny';
 
 interface QuickVideoRecorderProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSend: (blob: Blob, duration: number, quality: VideoQuality) => void;
+  onSend: (blob: Blob, duration: number) => void;
 }
 
 type RecordingState = 'idle' | 'recording' | 'stopped' | 'processing';
-
-const QUALITY_MAP = {
-  vlq: QUALITY_VERY_LOW,
-  lq: QUALITY_LOW,
-  md: QUALITY_MEDIUM,
-  hq: QUALITY_HIGH,
-  vhq: QUALITY_VERY_HIGH,
-};
 
 export default function QuickVideoRecorder({ open, onOpenChange, onSend }: QuickVideoRecorderProps) {
   const { t } = useTranslation();
@@ -29,7 +20,6 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
   const [duration, setDuration] = useState(0);
   const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('md');
 
   const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -89,7 +79,7 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
 
       const videoSource = new MediaStreamVideoTrackSource(videoTrack, {
         codec: 'avc',
-        bitrate: QUALITY_MAP[selectedQuality],
+        bitrate: QUALITY_LOW,
       });
 
       const audioSource = new MediaStreamAudioTrackSource(audioTrack, {
@@ -178,7 +168,7 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
 
   const handleSend = () => {
     if (videoBlob) {
-      onSend(videoBlob, duration, selectedQuality);
+      onSend(videoBlob, duration);
       handleCancel();
     }
   };
@@ -189,18 +179,10 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const qualityOptions: { value: VideoQuality; label: string }[] = [
-    { value: 'vlq', label: t('videoCompression.qualityVLQ') },
-    { value: 'lq', label: t('videoCompression.qualityLQ') },
-    { value: 'md', label: t('videoCompression.qualityMD') },
-    { value: 'hq', label: t('videoCompression.qualityHQ') },
-    { value: 'vhq', label: t('videoCompression.qualityVHQ') },
-  ];
-
   return (
     <Dialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(isOpen) => !isOpen && handleCancel()}
       title={t('messages.quickVideoMessage')}
       maxWidth="md"
       footer={
@@ -240,27 +222,6 @@ export default function QuickVideoRecorder({ open, onOpenChange, onSend }: Quick
             {formatDuration(duration)}
           </div>
         </div>
-
-        {/* Quality Selector (only shown when stopped) */}
-        {state === 'stopped' && (
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">
-              {t('videoCompression.quality')}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {qualityOptions.map(option => (
-                <Button
-                  key={option.value}
-                  variant="outline"
-                  isSelected={selectedQuality === option.value}
-                  onClick={() => setSelectedQuality(option.value)}
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Control Buttons */}
         <div className="flex justify-center gap-2">

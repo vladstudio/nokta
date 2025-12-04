@@ -166,14 +166,9 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
   const handleVideoInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const maxSize = 100 * 1024 * 1024;
     const valid = files.filter(file => {
       if (!file.type.startsWith('video/')) {
         toastManager.add({ title: t('videoUpload.invalidType'), description: t('videoUpload.pleaseSelectVideo'), data: { type: 'error' } });
-        return false;
-      }
-      if (file.size > maxSize) {
-        toastManager.add({ title: t('videoUpload.fileTooLarge'), description: t('videoUpload.maxSize100MB'), data: { type: 'error' } });
         return false;
       }
       return true;

@@ -72,9 +72,9 @@ export default function VideoCompressionDialog({
     }
   };
 
-  const getEstimatedSize = (q: VideoQuality, meta: { size: number } | null) => {
-    if (!meta) return '...';
-    const bytes = meta.size * QUALITY_MULTIPLIERS[q];
+  const getEstimatedBytes = (q: VideoQuality, meta: { size: number } | null) => meta ? meta.size * QUALITY_MULTIPLIERS[q] : 0;
+
+  const formatBytes = (bytes: number) => {
     if (bytes < 1024) return `~${Math.round(bytes)} B`;
     if (bytes < 1024 * 1024) return `~${Math.round(bytes / 1024)} KB`;
     if (bytes < 1024 * 1024 * 1024) return `~${Math.round(bytes / (1024 * 1024))} MB`;
@@ -83,16 +83,18 @@ export default function VideoCompressionDialog({
 
   const isProcessing = processingIndex >= 0;
   const allMetadatasLoaded = metadatas.every(m => m !== null);
+  const MAX_SIZE = 100 * 1024 * 1024;
+  const anyExceedsLimit = files.some((_, i) => getEstimatedBytes(qualities[i], metadatas[i]) > MAX_SIZE);
 
   return (
     <Dialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(isOpen) => { if (!isOpen) { setIndex(0); setProcessingIndex(-1); setProgress(0); } onOpenChange(isOpen); }}
       title={files.length > 1 ? `${t('videoCompression.title')} (${index + 1}/${files.length})` : t('videoCompression.title')}
       maxWidth="4xl"
       footer={
-        <Button className="flex-1 center" onClick={handleAdd} disabled={isProcessing || !allMetadatasLoaded}>
-          {isProcessing ? <>{t('videoCompression.compressing')} ({processingIndex + 1}/{files.length})... <span className="font-mono">{progress}%</span></> : t('common.add')}
+        <Button className="flex-1 center gap-2" onClick={handleAdd} disabled={isProcessing || !allMetadatasLoaded || anyExceedsLimit}>
+          {isProcessing ? <>{t('videoCompression.compressing')} <span className="whitespace-nowrap font-mono">{processingIndex + 1}/{files.length}: {progress}%</span></> : t('common.send')}
         </Button>
       }
     >
@@ -118,8 +120,8 @@ export default function VideoCompressionDialog({
           <div className="w-32">
             <Slider value={QUALITIES.indexOf(quality)} onValueChange={v => setQuality(QUALITIES[v])} min={0} max={4} step={1} showTicks disabled={isProcessing} />
           </div>
-          <div className="text-sm text-light whitespace-nowrap flex-1">
-            {t(`videoCompression.quality${quality.toUpperCase()}`)} ({getEstimatedSize(quality, metadata)})
+          <div className={`text-sm whitespace-nowrap flex-1 ${getEstimatedBytes(quality, metadata) > MAX_SIZE ? 'text-(--color-error-500)' : 'text-light'}`}>
+            {t(`videoCompression.quality${quality.toUpperCase()}`)} ({metadata ? formatBytes(getEstimatedBytes(quality, metadata)) : '...'})
           </div>
         </div>
 

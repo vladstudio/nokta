@@ -71,7 +71,7 @@ export default function ImageCropDialog({ open, onOpenChange, files, onComplete 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title={files.length > 1 ? `${t('imageCrop.title')} (${index + 1}/${files.length})` : t('imageCrop.title')} maxWidth="2xl"
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) { setIndex(0); setProcessing(false); } onOpenChange(isOpen); }} title={files.length > 1 ? `${t('imageCrop.title')} (${index + 1}/${files.length})` : t('imageCrop.title')} maxWidth="2xl"
       footer={<Button className="flex-1 center" onClick={handleAdd} disabled={processing}>{processing ? t('common.processing') : t('common.send')}</Button>}>
       <div className="grid gap-4">
         <div className="flex justify-center bg-black/10 p-1 rounded overflow-hidden relative">
