@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { chatReadStatus, messages, auth } from '../services/pocketbase';
-import { showMessageNotification } from '../utils/notifications';
+import { showMessageNotification, isChatMuted } from '../utils/notifications';
 import type { Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
 
 /**
@@ -118,9 +118,9 @@ export function useUnreadMessages(
             return newCounts;
           });
 
-          // Show notification
+          // Show notification (skip if muted)
+          if (isChatMuted(message.chat)) return;
           try {
-            // Fetch expanded message data to get sender info
             const expandedMsg = await messages.getOne(message.id);
             const chat = chatsRef.current.find(c => c.id === message.chat);
 

@@ -134,6 +134,8 @@
     "deleteChat": "Удалить чат",
     "clearChat": "Очистить чат",
     "confirmClear": "Очистить чат?",
+    "muteChat": "Заглушить чат",
+    "unmuteChat": "Включить уведомления",
     "renameChat": "Переименовать чат",
     "chatName": "Название чата",
     "chatNameRequired": "Требуется название",

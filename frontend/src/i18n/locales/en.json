@@ -134,6 +134,8 @@
     "deleteChat": "Delete Chat",
     "clearChat": "Clear Chat",
     "confirmClear": "Clear Chat?",
+    "muteChat": "Mute Chat",
+    "unmuteChat": "Unmute Chat",
     "renameChat": "Rename Chat",
     "chatName": "Chat Name",
     "chatNameRequired": "Name required",

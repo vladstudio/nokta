@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { SpeakerSimpleSlash } from '@phosphor-icons/react';
 import { Button, Badge, OnlineIndicator } from '../ui';
 
 interface SidebarItemProps {
@@ -7,6 +8,7 @@ interface SidebarItemProps {
   title: string;
   subtitle?: string;
   badge?: number;
+  muted?: boolean;
   isOnline?: boolean | null;
   isSelected: boolean;
   onClick: () => void;
@@ -14,15 +16,7 @@ interface SidebarItemProps {
 }
 
 export const SidebarItem = memo(function SidebarItem({
-  icon,
-  avatar,
-  title,
-  subtitle,
-  badge,
-  isOnline,
-  isSelected,
-  onClick,
-  action,
+  icon, avatar, title, subtitle, badge, muted, isOnline, isSelected, onClick, action,
 }: SidebarItemProps) {
   return (
     <div className="flex items-center gap-1">
@@ -47,11 +41,8 @@ export const SidebarItem = memo(function SidebarItem({
           </div>
           {subtitle && <div className="text-xs text-light truncate mt-0.5">{subtitle}</div>}
         </div>
-        {badge !== undefined && badge > 0 && (
-          <div className="shrink-0">
-            <Badge variant="unread">{badge > 99 ? '99+' : badge}</Badge>
-          </div>
-        )}
+        {muted && <SpeakerSimpleSlash size={14} className="shrink-0 text-light" />}
+        {badge !== undefined && badge > 0 && <Badge variant="unread">{badge > 99 ? '99+' : badge}</Badge>}
       </Button>
       {action && <div className="shrink-0">{action}</div>}
     </div>

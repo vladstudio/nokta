@@ -8,7 +8,7 @@ import { useUnreadMessages } from '../hooks/useUnreadMessages';
 import { useFavicon } from '../hooks/useFavicon';
 import { usePresence } from '../hooks/usePresence';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
-import { showCallNotification } from '../utils/notifications';
+import { showCallNotification, isChatMuted } from '../utils/notifications';
 import { isVideoCallsEnabled } from '../config/features';
 import { getChatDisplayName } from '../utils/chatUtils';
 import { ScrollArea, useToastManager, Button } from '../ui';
@@ -212,6 +212,7 @@ export default function Sidebar() {
                 title={getChatDisplayName(chat, auth.user?.id, { directMessage: t('chatList.directMessage'), groupChat: t('chatList.groupChat') })}
                 subtitle={lastMsg}
                 badge={unreadCounts.get(chat.id) || 0}
+                muted={isChatMuted(chat.id)}
                 isOnline={getOnlineStatus(chat)}
                 isSelected={chatId === chat.id && !showCallView}
                 onClick={() => { setShowCallView(false); setLocation(`/chat/${chat.id}`); }}

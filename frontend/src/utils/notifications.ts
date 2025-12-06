@@ -70,3 +70,13 @@ export function getNotificationPreference(): boolean {
   const stored = localStorage.getItem(NOTIFICATION_PREF_KEY);
   return stored === null ? true : JSON.parse(stored);
 }
+
+const MUTED_CHATS_KEY = 'muted_chats';
+export function getMutedChats(): Set<string> { return new Set(JSON.parse(localStorage.getItem(MUTED_CHATS_KEY) || '[]')); }
+export function isChatMuted(chatId: string): boolean { return getMutedChats().has(chatId); }
+export function toggleChatMuted(chatId: string): boolean {
+  const muted = getMutedChats();
+  muted.has(chatId) ? muted.delete(chatId) : muted.add(chatId);
+  localStorage.setItem(MUTED_CHATS_KEY, JSON.stringify([...muted]));
+  return muted.has(chatId);
+}

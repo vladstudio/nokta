@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrashIcon, SignOutIcon, PencilIcon, BroomIcon } from '@phosphor-icons/react';
+import { TrashIcon, SignOutIcon, PencilIcon, BroomIcon, SpeakerSimpleSlash } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
 import { Button, Dialog, ScrollArea } from '../../ui';
 import { getChatDisplayName } from '../../utils/chatUtils';
+import { isChatMuted, toggleChatMuted } from '../../utils/notifications';
 import ChatDialog from '../ChatDialog';
 import type { Chat, User } from '../../types';
 
@@ -22,6 +23,7 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [muted, setMuted] = useState(() => chat ? isChatMuted(chat.id) : false);
 
   if (!chat) {
     return (
@@ -65,12 +67,12 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
 
       {/* Actions */}
       <div className="flex flex-col gap-2 border-t pt-4 border-(--color-border-default)">
+        <Button variant="default" onClick={() => setMuted(toggleChatMuted(chat.id))} className="w-full flex items-center gap-2 justify-start">
+          <SpeakerSimpleSlash size={20} className={muted ? 'text-red-600' : 'text-accent'} />
+          {muted ? t('chats.unmuteChat') : t('chats.muteChat')}
+        </Button>
         {chat.participants.length > 1 && (
-          <Button
-            variant="default"
-            onClick={() => setLeaveDialogOpen(true)}
-            className="w-full flex items-center gap-2 justify-start"
-          >
+          <Button variant="default" onClick={() => setLeaveDialogOpen(true)} className="w-full flex items-center gap-2 justify-start">
             <SignOutIcon size={20} className="text-accent" />
             {t('chats.leaveChat')}
           </Button>
