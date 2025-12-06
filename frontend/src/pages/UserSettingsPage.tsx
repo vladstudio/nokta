@@ -27,7 +27,7 @@ export default function UserSettingsPage() {
   const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
-  const [theme, setTheme] = useState<'default' | 'wooden' | 'golden' | 'high-contrast'>(preferences.theme);
+  const [theme, setTheme] = useState<'default' | 'wooden' | 'golden' | 'high-contrast' | 'green'>(preferences.theme);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<string>('');
@@ -53,7 +53,7 @@ export default function UserSettingsPage() {
     }
   }, [currentUser, avatar]);
 
-  const handleThemeChange = (v: 'default' | 'wooden' | 'golden' | 'high-contrast') => { setTheme(v); preferences.theme = v; };
+  const handleThemeChange = (v: 'default' | 'wooden' | 'golden' | 'high-contrast' | 'green') => { setTheme(v); preferences.theme = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
@@ -114,6 +114,7 @@ export default function UserSettingsPage() {
     { value: 'wooden' as const, label: t('themes.wooden') },
     { value: 'golden' as const, label: t('themes.golden') },
     { value: 'high-contrast' as const, label: t('themes.high-contrast') },
+    { value: 'green' as const, label: t('themes.green') },
   ], [t]);
 
   const dayOptions = useMemo(() => [

@@ -241,7 +241,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
 
     if (allImages) setCropDialogFiles(files);
     else if (allVideos) handleVideoInputChange({ target: { files: files, value: '' } } as unknown as React.ChangeEvent<HTMLInputElement>);
-    else handleFileChange({ target: { files: files } } as unknown as React.ChangeEvent<HTMLInputElement>);
+    else uploadFiles(files, 'file');
   };
 
   // Load chat data

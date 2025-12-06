@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import clsx from 'clsx';
+import { FileIcon } from '@phosphor-icons/react';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
@@ -103,7 +104,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         className="flex items-center gap-2 hover:underline max-w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-lg shrink-0">📄</span>
+        <FileIcon size={20} className="shrink-0 text-light" />
         <span className="text-sm truncate">{message.file}</span>
       </a>
     );
