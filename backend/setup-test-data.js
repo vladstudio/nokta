@@ -1,28 +1,11 @@
-import 'dotenv/config';
 import PocketBase from 'pocketbase';
+import * as readline from 'readline';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
+const CONFIG = { USER_COUNT: 3, CHAT_COUNT: 3, MESSAGE_DAYS: 12, PROGRESS_STEP: 100 };
 
-const CONFIG = {
-  USER_COUNT: 3,
-  CHAT_COUNT: 3,
-  MESSAGE_DAYS: 12,
-  PROGRESS_STEP: 100
-};
-
-if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
-  console.error('✗ Missing environment variables\n');
-  console.error('Create backend/.env file with:');
-  console.error('  ADMIN_EMAIL=your@email.com');
-  console.error('  ADMIN_PASSWORD=yourpassword\n');
-  console.error('See backend/.env.example for reference');
-  process.exit(1);
-}
-
-const ADMIN = {
-  email: process.env.ADMIN_EMAIL,
-  password: process.env.ADMIN_PASSWORD
-};
+const prompt = (q) => new Promise(r => { const rl = readline.createInterface({ input: process.stdin, output: process.stdout }); rl.question(q, a => { rl.close(); r(a); }); });
+const ADMIN = { email: await prompt('Admin email: '), password: await prompt('Admin password: ') };
 
 
 // Sample names for random user generation

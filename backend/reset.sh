@@ -37,16 +37,11 @@ fi
 
 echo ""
 
-# Load .env if exists
-if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
-    echo "✓ Loaded .env"
-else
-    echo "⚠️  No .env file found, using .env.example defaults"
-    export $(grep -v '^#' .env.example | xargs)
-fi
+# Get admin credentials
+read -p "Admin email: " ADMIN_EMAIL
+read -sp "Admin password: " ADMIN_PASSWORD
+echo ""
 
-# Create superuser
 echo "👑 Creating superuser..."
 ./pocketbase superuser upsert "$ADMIN_EMAIL" "$ADMIN_PASSWORD" > /dev/null 2>&1
 echo "✓ Superuser created: $ADMIN_EMAIL"
