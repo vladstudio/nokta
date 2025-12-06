@@ -6,8 +6,9 @@ PB_VERSION="0.23.6"
 echo "Backing up..."
 $APP_DIR/backup.sh
 
-echo "Stopping backend..."
+echo "Stopping services..."
 sudo systemctl stop nokta-backend
+sudo systemctl stop nokta-fcm 2>/dev/null || true
 
 cp $APP_DIR/backend/.env /tmp/.env.backend.backup
 cp $APP_DIR/frontend/.env /tmp/.env.frontend.backup
@@ -33,6 +34,10 @@ mv /tmp/.env.frontend.backup $APP_DIR/frontend/.env
 mv /tmp/pb_data.backup $APP_DIR/backend/pb_data
 chmod 600 $APP_DIR/backend/.env
 
+echo "Installing backend dependencies..."
+cd $APP_DIR/backend
+~/.bun/bin/bun install
+
 echo "Building frontend..."
 cd $APP_DIR/frontend
 ~/.bun/bin/bun install
@@ -41,6 +46,7 @@ cd $APP_DIR/frontend
 chmod 755 $APP_DIR $APP_DIR/frontend $APP_DIR/frontend/dist
 
 sudo systemctl start nokta-backend
+sudo systemctl start nokta-fcm 2>/dev/null || true
 sudo systemctl reload caddy
 
 echo "Update complete!"

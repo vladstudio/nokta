@@ -4,6 +4,11 @@ import { readFileSync } from "fs"
 const SECRETS_PATH = process.env.SECRETS_PATH || "."
 const serviceAccount = JSON.parse(readFileSync(`${SECRETS_PATH}/firebase-service-account.json`, "utf8"))
 const PORT = 9090
+const API_KEY = process.env.FCM_API_KEY || ""
+
+if (!API_KEY) {
+  console.error("WARNING: FCM_API_KEY not set. Service will reject all requests.")
+}
 
 const jwtClient = new JWT({
   email: serviceAccount.client_email,
@@ -33,8 +38,13 @@ async function sendPush(req: PushRequest): Promise<{ success: number; failed: nu
 
 Bun.serve({
   port: PORT,
+  hostname: "127.0.0.1",
   async fetch(request) {
     if (request.method !== "POST") return new Response("Method not allowed", { status: 405 })
+    const authHeader = request.headers.get("Authorization")
+    if (!API_KEY || authHeader !== `Bearer ${API_KEY}`) {
+      return new Response("Unauthorized", { status: 401 })
+    }
     try {
       return Response.json(await sendPush(await request.json() as PushRequest))
     } catch (err) { console.error("Error:", err); return new Response(String(err), { status: 500 }) }

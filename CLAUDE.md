@@ -57,7 +57,8 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 
 **Custom Hooks** (`pb_hooks/`):
 - `auth_logging.pb.js` - logs authentication events
-- `chat_hooks.pb.js` - auto-creates chats and handles message logic
+- `chat_hooks.pb.js` - auto-creates chats, message logic, FCM push notifications
+- `invitations.pb.js` - secure signup endpoint, role/password validation
 
 **Migrations** (`pb_migrations/`) - schema definitions and access rules
 
@@ -133,8 +134,12 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 
 **Backend** (`.env` in `backend/`):
 ```
-# See .env.example for all options
+FCM_API_KEY=<random-secret-key>  # Required for push notifications
 ```
+
+Generate a secure key: `openssl rand -hex 32`
+
+Both PocketBase and FCM service read this variable for authenticated communication.
 
 ## Important Notes
 

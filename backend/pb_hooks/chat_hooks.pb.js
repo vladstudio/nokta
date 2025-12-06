@@ -110,10 +110,14 @@ onRecordAfterCreateSuccess((e) => {
 
     // Send to local FCM service
     try {
+      const fcmApiKey = $os.getenv("FCM_API_KEY") || ""
       $http.send({
         url: "http://127.0.0.1:9090",
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${fcmApiKey}`
+        },
         body: JSON.stringify({
           tokens: tokens,
           title: senderName,

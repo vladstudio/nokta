@@ -398,11 +398,19 @@ export const invitations = {
   },
 
   async getByCode(code: string) {
-    const records = await pb.collection('invitations').getFullList<Invitation>({
-      filter: pb.filter('code = {:code}', { code }),
-      expand: 'invited_by',
+    // Use secure validation endpoint that doesn't expose all invitation data
+    const result = await pb.send<{ valid: boolean; invitedBy?: string; expiresAt?: string }>('/api/invitations/validate', {
+      method: 'POST',
+      body: { code },
     });
-    return records[0] || null;
+    if (!result.valid) return null;
+    return {
+      code,
+      invited_by: '',
+      expires_at: result.expiresAt || '',
+      used: false,
+      inviterName: result.invitedBy,
+    } as Invitation & { inviterName?: string };
   },
 
   async markUsed(id: string) {
@@ -414,15 +422,14 @@ export const invitations = {
   },
 
   async signup(code: string, name: string, email: string, password: string) {
-    const invite = await this.getByCode(code);
-    if (!invite || invite.used || new Date(invite.expires_at) < new Date()) {
-      throw new Error('Invalid or expired invitation');
-    }
-    const { user } = await users.create(email, name, 'Member', password);
+    // Use secure backend endpoint that handles everything atomically
+    const result = await pb.send<{ id: string; email: string; name: string }>('/api/invitations/signup', {
+      method: 'POST',
+      body: { code, name, email, password },
+    });
+    // Log in with the newly created account
     await auth.login(email, password);
-    await this.markUsed(invite.id);
-    await chats.create([user.id, invite.invited_by]);
-    return user;
+    return result as unknown as User;
   },
 };
 

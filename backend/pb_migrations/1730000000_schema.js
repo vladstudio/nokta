@@ -193,7 +193,7 @@ migrate((app) => {
   messages.viewRule = 'chat.participants.id ?= @request.auth.id'
   messages.createRule = 'chat.participants.id ?= @request.auth.id'
   messages.updateRule = 'chat.participants.id ?= @request.auth.id'
-  messages.deleteRule = 'sender = @request.auth.id || chat.participants.id ?= @request.auth.id'
+  messages.deleteRule = 'sender = @request.auth.id'
 
   messages.indexes = [
     "CREATE INDEX idx_messages_chat ON messages (chat)",
@@ -371,10 +371,10 @@ migrate((app) => {
     onUpdate: false
   }))
 
-  invitations.listRule = ''
-  invitations.viewRule = ''
+  invitations.listRule = 'invited_by = @request.auth.id'
+  invitations.viewRule = 'invited_by = @request.auth.id'
   invitations.createRule = '@request.auth.id != ""'
-  invitations.updateRule = '@request.auth.id != ""'
+  invitations.updateRule = '@request.auth.id != "" && used:isset = true'
   invitations.deleteRule = 'invited_by = @request.auth.id'
 
   invitations.indexes = [
