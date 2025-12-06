@@ -7,14 +7,14 @@ React frontend + PocketBase backend.
 
 **Prerequisites:** Ubuntu 24.04 server, domain pointing to server IP, [Daily.co](https://daily.co) API key, SSH public key
 
-1. Edit 5 variables in [`cloud-init.yaml`](cloud-init.yaml):
+1. Edit variables in [`cloud-init.yaml`](cloud-init.yaml):
    ```yaml
    DOMAIN="your-domain.com"
    ADMIN_EMAIL="you@your-domain.com"
    ADMIN_PASSWORD="change-this-password"
    DAILY_API_KEY="your-daily-co-api-key"
-   SSH_KEY="ssh-rsa AAAAB3..." # usually you can get your key value with cat .ssh/id_rsa.pub
-   FIREBASE_SA_BASE64="" # Optional, for Android push notifications: see below
+   SSH_KEY="ssh-rsa AAAAB3..."
+   FIREBASE_SA_BASE64="" # Optional: Android push notifications (see below)
    ```
 
 2. Create server (Hetzner/DigitalOcean/Vultr), paste the entire `cloud-init.yaml` into **User Data / Cloud Init / Cloud Config**
@@ -68,11 +68,14 @@ sudo reboot
 ## Local Development
 
 ```bash
+# Setup (once)
+mkdir -p ~/.nokta && echo "DAILY_CO_API_KEY=your-key" > ~/.nokta/env
+
 # Backend
-cd backend && ./pocketbase serve     # :8090
+env $(cat ~/.nokta/env) ./backend/pocketbase serve  # :8090
 
 # Frontend
-cd frontend && bun install && bun dev # :3000
+cd frontend && bun install && bun dev  # :3000
 ```
 
 Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, password `1234567890`
@@ -107,21 +110,16 @@ cd android && ./gradlew assembleDebug
 
 ## Android Push Notifications (Optional)
 
-To enable background push notifications on the Android app:
-
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Add an Android app with package name `com.nokta.app`
-3. Download `google-services.json` → place in `native-app/android/app/`
-4. Go to Project Settings → Service accounts → Generate new private key
-5. Save as `backend/firebase-service-account.json`
-6. Encode for cloud-init (if deploying to server):
+1. Create Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Add Android app with package name `com.nokta.app`
+3. Download `google-services.json` → `native-app/android/app/`
+4. Project Settings → Service accounts → Generate new private key
+5. For **deployment**: base64 encode and set `FIREBASE_SA_BASE64` in cloud-init:
    ```bash
-   cat backend/firebase-service-account.json | base64 | tr -d '\n'
+   cat firebase-service-account.json | base64 | tr -d '\n'
    ```
-7. For local development, run the FCM service alongside PocketBase:
+6. For **local dev**: save as `~/.nokta/firebase-service-account.json` and run:
    ```bash
-   cd backend && bun install && bun run fcm  # :9090
+   env SECRETS_PATH=$HOME/.nokta bun run backend/fcm-service.ts
    ```
-
-For production deployment, the FCM service runs automatically via systemd.
 

@@ -44,6 +44,22 @@ function CallContent({ chat }: CallViewProps) {
 
   useDailyEvent('left-meeting', handleLeaveCall);
 
+  // Cleanup on browser close/refresh
+  useEffect(() => {
+    const cleanup = () => {
+      const currentUserId = pb.authStore.model?.id;
+      if (currentUserId) {
+        // Use sendBeacon for reliable delivery on page unload
+        navigator.sendBeacon(
+          `${pb.baseURL}/api/daily/leave`,
+          JSON.stringify({ chatId: chat.id, userId: currentUserId })
+        );
+      }
+    };
+    window.addEventListener('beforeunload', cleanup);
+    return () => window.removeEventListener('beforeunload', cleanup);
+  }, [chat.id]);
+
   return null;
 }
 

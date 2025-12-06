@@ -133,18 +133,14 @@ runcmd:
     chmod +x $APP_DIR/backend/pocketbase
     chown $APP_USER:$APP_USER $APP_DIR/backend/pocketbase
 
-    # --- Configure Environment ---
-    cat > $APP_DIR/backend/.env << EOF
-    ADMIN_EMAIL=$ADMIN_EMAIL
-    ADMIN_PASSWORD=$ADMIN_PASSWORD
-    EOF
-    chmod 600 $APP_DIR/backend/.env
-    chown $APP_USER:$APP_USER $APP_DIR/backend/.env
+    # --- Configure Secrets ---
+    SECRETS_DIR="/home/$APP_USER/.secrets"
+    mkdir -p $SECRETS_DIR
+    echo "DAILY_CO_API_KEY=$DAILY_API_KEY" > $SECRETS_DIR/env
+    chmod 700 $SECRETS_DIR && chmod 600 $SECRETS_DIR/*
+    chown -R $APP_USER:$APP_USER $SECRETS_DIR
 
-    cat > $APP_DIR/frontend/.env << EOF
-    VITE_POCKETBASE_URL=https://$DOMAIN
-    VITE_DAILY_CO_API_KEY=$DAILY_API_KEY
-    EOF
+    echo "VITE_POCKETBASE_URL=https://$DOMAIN" > $APP_DIR/frontend/.env
     chown $APP_USER:$APP_USER $APP_DIR/frontend/.env
 
     # --- Build Frontend ---
@@ -198,6 +194,7 @@ runcmd:
     Type=simple
     User=$APP_USER
     WorkingDirectory=$APP_DIR/backend
+    EnvironmentFile=/home/$APP_USER/.secrets/env
     ExecStart=$APP_DIR/backend/pocketbase serve --http=127.0.0.1:8090
     Restart=always
     RestartSec=5
@@ -214,14 +211,9 @@ runcmd:
 
     # --- Setup Firebase (if configured) ---
     if [ -n "$FIREBASE_SA_BASE64" ]; then
-      echo "$FIREBASE_SA_BASE64" | base64 -d > $APP_DIR/backend/firebase-service-account.json
-      chmod 600 $APP_DIR/backend/firebase-service-account.json
-      chown $APP_USER:$APP_USER $APP_DIR/backend/firebase-service-account.json
-
-      # Install FCM service dependencies
+      echo "$FIREBASE_SA_BASE64" | base64 -d > $SECRETS_DIR/firebase-service-account.json
+      chmod 600 $SECRETS_DIR/firebase-service-account.json
       sudo -u $APP_USER bash -c "cd $APP_DIR/backend && ~/.bun/bin/bun install"
-
-      # Create FCM service
       cat > /etc/systemd/system/nokta-fcm.service << EOF
     [Unit]
     Description=Nokta FCM Push Service
@@ -230,8 +222,8 @@ runcmd:
     [Service]
     Type=simple
     User=$APP_USER
-    WorkingDirectory=$APP_DIR/backend
-    ExecStart=/home/$APP_USER/.bun/bin/bun run fcm-service.ts
+    Environment=SECRETS_PATH=$SECRETS_DIR
+    ExecStart=/home/$APP_USER/.bun/bin/bun run $APP_DIR/backend/fcm-service.ts
     Restart=always
     RestartSec=5
 

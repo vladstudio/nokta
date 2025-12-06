@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useAtom } from 'jotai';
 import { useTranslation } from 'react-i18next';
@@ -78,17 +78,22 @@ export default function ChatPage() {
     })();
 
     return () => { stale = true; };
-  }, [chatId, currentUser, setActiveCallChat, setShowCallView]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
 
   // Subscribe to chat updates for active calls
+  const activeCallChatRef = useRef(activeCallChat);
+  activeCallChatRef.current = activeCallChat;
+
   useEffect(() => {
     if (!isVideoCallsEnabled || !currentUser) return;
 
     const unsubscribe = callsAPI.subscribeToActiveCalls(async (data) => {
-      if (!activeCallChat || data.record.id !== activeCallChat.id) return;
+      const currentActiveCall = activeCallChatRef.current;
+      if (!currentActiveCall || data.record.id !== currentActiveCall.id) return;
 
       if (data.action === 'delete' || data.action === 'update') {
-        const wasMultiple = (activeCallChat.call_participants?.length || 0) > 1;
+        const wasMultiple = (currentActiveCall.call_participants?.length || 0) > 1;
         const nowAlone = data.record.call_participants?.length === 1;
 
         // Auto-leave if others left and we're alone (prevents stale calls)
@@ -109,7 +114,8 @@ export default function ChatPage() {
     });
 
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [activeCallChat, currentUser, setActiveCallChat, setShowCallView]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
 
   // Offline reconciliation: verify call still exists when reconnecting
   useEffect(() => {
