@@ -88,7 +88,7 @@ export const users = {
     return { user, password: pwd };
   },
 
-  async update(userId: string, data: Partial<User>) {
+  async update(userId: string, data: Partial<User> | FormData) {
     return await pb.collection('users').update<User>(userId, data);
   },
 

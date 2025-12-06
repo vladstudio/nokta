@@ -113,6 +113,7 @@
     "language": "Язык",
     "theme": "Тема",
     "oldPassword": "Старый пароль",
+    "oldPasswordRequired": "Введите старый пароль для установки нового",
     "newPassword": "Новый пароль",
     "leaveBlankPassword": "Оставьте пустым, чтобы не менять",
     "settingsSaved": "Настройки сохранены"
@@ -145,6 +146,8 @@
     "failedToDelete": "Не удалось удалить",
     "leftChat": "Чат покинут",
     "failedToLeave": "Не удалось покинуть",
+    "chatCleared": "Чат очищен",
+    "failedToClear": "Не удалось очистить",
     "failedToCreate": "Не удалось создать"
   },
   "connectionBanner": {

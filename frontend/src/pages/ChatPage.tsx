@@ -14,7 +14,6 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { useToastManager } from '../ui';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import { isVideoCallsEnabled } from '../config/features';
-import { pb } from '../services/pocketbase';
 import type { Chat } from '../types';
 
 export default function ChatPage() {
@@ -59,54 +58,48 @@ export default function ChatPage() {
 
   // Load user's active call on mount
   useEffect(() => {
-    if (!isVideoCallsEnabled) return;
+    if (!isVideoCallsEnabled || !currentUser) return;
+    let stale = false;
 
-    const loadActiveCall = async () => {
+    (async () => {
       try {
-        const currentUserId = pb.authStore.model?.id;
-        if (!currentUserId) return;
-
         const activeCalls = await callsAPI.getActiveCalls();
-        const myActiveCall = activeCalls.find(chat =>
-          chat.call_participants?.includes(currentUserId)
-        );
-
+        if (stale) return;
+        const myActiveCall = activeCalls.find(c => c.call_participants?.includes(currentUser.id));
         if (myActiveCall) {
           setActiveCallChat(myActiveCall);
           if (!chatId) setShowCallView(true);
         }
       } catch (error) {
+        if (stale) return;
         console.error('Failed to load active call:', error);
         setActiveCallChat(null);
       }
-    };
+    })();
 
-    loadActiveCall();
-  }, [chatId, setActiveCallChat, setShowCallView]);
+    return () => { stale = true; };
+  }, [chatId, currentUser, setActiveCallChat, setShowCallView]);
 
   // Subscribe to chat updates for active calls
   useEffect(() => {
-    if (!isVideoCallsEnabled) return;
+    if (!isVideoCallsEnabled || !currentUser) return;
 
-    const unsubscribe = callsAPI.subscribeToActiveCalls((data) => {
+    const unsubscribe = callsAPI.subscribeToActiveCalls(async (data) => {
       if (!activeCallChat || data.record.id !== activeCallChat.id) return;
-
-      const currentUserId = pb.authStore.model?.id;
-      if (!currentUserId) return;
 
       if (data.action === 'delete' || data.action === 'update') {
         const wasMultiple = (activeCallChat.call_participants?.length || 0) > 1;
         const nowAlone = data.record.call_participants?.length === 1;
 
         // Auto-leave if others left and we're alone (prevents stale calls)
-        if (wasMultiple && nowAlone && data.record.call_participants?.includes(currentUserId)) {
-          callsAPI.leaveCall(data.record.id, currentUserId);
+        if (wasMultiple && nowAlone && data.record.call_participants?.includes(currentUser.id)) {
+          await callsAPI.leaveCall(data.record.id, currentUser.id);
           setActiveCallChat(null);
           setShowCallView(false);
           return;
         }
 
-        if (data.record.call_participants?.includes(currentUserId) && data.record.is_active_call) {
+        if (data.record.call_participants?.includes(currentUser.id) && data.record.is_active_call) {
           setActiveCallChat(data.record);
         } else {
           setActiveCallChat(null);
@@ -116,38 +109,30 @@ export default function ChatPage() {
     });
 
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, [activeCallChat, setActiveCallChat, setShowCallView]);
+  }, [activeCallChat, currentUser, setActiveCallChat, setShowCallView]);
 
   // Offline reconciliation: verify call still exists when reconnecting
   useEffect(() => {
-    if (!isVideoCallsEnabled || !activeCallChat || !isOnline) return;
+    if (!isVideoCallsEnabled || !activeCallChat || !isOnline || !currentUser) return;
 
-    const reconcileCall = async () => {
+    const handleOnline = async () => {
       try {
-        const currentUserId = pb.authStore.model?.id;
-        if (!currentUserId) return;
-
-        const chat = await pb.collection('chats').getOne<Chat>(activeCallChat.id);
-        if (chat.is_active_call && chat.call_participants?.includes(currentUserId)) {
+        const chat = await chats.getOne(activeCallChat.id);
+        if (chat.is_active_call && chat.call_participants?.includes(currentUser.id)) {
           setActiveCallChat(chat);
         } else {
           setActiveCallChat(null);
           setShowCallView(false);
         }
       } catch {
-        console.log('[Reconciliation] Call no longer exists, clearing state');
         setActiveCallChat(null);
         setShowCallView(false);
       }
     };
 
-    const handleOnline = () => {
-      reconcileCall();
-    };
-
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, [activeCallChat, setActiveCallChat, setShowCallView, isOnline]);
+  }, [activeCallChat, currentUser, setActiveCallChat, setShowCallView, isOnline]);
 
   const handleDeleteChat = async () => {
     if (!chat) return;
@@ -180,8 +165,10 @@ export default function ChatPage() {
     try {
       await messages.clearChat(chat.id);
       await messageCache.clearChat(chat.id);
+      toastManager.add({ title: t('chats.chatCleared'), data: { type: 'success' } });
     } catch (error) {
       console.error('Failed to clear chat:', error);
+      toastManager.add({ title: t('chats.failedToClear'), data: { type: 'error' } });
     }
   };
 
@@ -191,7 +178,7 @@ export default function ChatPage() {
       return <CallView show={showCallView} chat={activeCallChat} />;
     }
     if (!chatId) return null;
-    if (rightSidebarView && chatId) {
+    if (rightSidebarView) {
       return (
         <RightSidebar
           chatId={chatId}

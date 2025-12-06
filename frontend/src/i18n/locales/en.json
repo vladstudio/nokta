@@ -113,6 +113,7 @@
     "language": "Language",
     "theme": "Theme",
     "oldPassword": "Old Password",
+    "oldPasswordRequired": "Old password is required to set a new password",
     "newPassword": "New Password",
     "leaveBlankPassword": "Leave blank to keep current",
     "settingsSaved": "Settings saved"
@@ -145,6 +146,8 @@
     "failedToDelete": "Failed to delete",
     "leftChat": "Left chat",
     "failedToLeave": "Failed to leave",
+    "chatCleared": "Chat cleared",
+    "failedToClear": "Failed to clear",
     "failedToCreate": "Failed to create"
   },
   "connectionBanner": {

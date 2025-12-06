@@ -49,6 +49,7 @@ export const callsAPI = {
    * Leave a call
    * - Removes user from call_participants
    * - Sets is_active_call to false if no participants remain
+   * - Deletes Daily.co room if last participant leaves
    */
   async leaveCall(chatId: string, userId: string): Promise<Chat> {
     const chat = await pb.collection('chats').getOne<Chat>(chatId);
@@ -56,11 +57,25 @@ export const callsAPI = {
 
     // Remove user from participants
     const updatedParticipants = callParticipants.filter(id => id !== userId);
+    const isLastParticipant = updatedParticipants.length === 0;
 
-    // Update chat
+    // Delete room if last participant leaves
+    if (isLastParticipant && chat.daily_room_url) {
+      const roomName = chat.daily_room_url.split('/').pop();
+      if (roomName) {
+        try {
+          await dailyAPI.deleteRoom(roomName);
+        } catch (error) {
+          console.error('Failed to delete Daily.co room:', error);
+        }
+      }
+    }
+
+    // Update chat (clear room URL if last participant)
     const updatedChat = await pb.collection('chats').update<Chat>(chatId, {
       call_participants: updatedParticipants,
-      is_active_call: updatedParticipants.length > 0
+      is_active_call: !isLastParticipant,
+      ...(isLastParticipant && { daily_room_url: '' })
     });
 
     return updatedChat;

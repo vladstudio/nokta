@@ -1,59 +1,56 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
-import { auth, pb } from '../services/pocketbase';
+import { auth, users, pb } from '../services/pocketbase';
 import { preferences } from '../utils/preferences';
 import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { ArrowLeftIcon, ShieldCheckIcon, EnvelopeIcon } from '@phosphor-icons/react';
+import type { Theme } from '../hooks/useTheme';
+import type { User } from '../types';
 
-interface PocketBaseRecord {
-  id: string;
-  collectionId: string;
-  collectionName: string;
-  [key: string]: unknown;
-}
+const BIRTH_YEAR_RANGE = 100;
 
 export default function UserSettingsPage() {
   const { t } = useTranslation();
-    const [, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const isMobile = useIsMobile();
   const currentUser = auth.user;
 
   const [name, setName] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
-  const [theme, setTheme] = useState<'default' | 'wooden' | 'golden' | 'high-contrast' | 'green'>(preferences.theme);
+  const [theme, setTheme] = useState<Theme>(preferences.theme);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [birthdayDay, setBirthdayDay] = useState<string>('');
-  const [birthdayMonth, setBirthdayMonth] = useState<string>('');
-  const [birthdayYear, setBirthdayYear] = useState<string>('');
-  const [background, setBackground] = useState<string>(preferences.background);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | string>('idle');
+  const [birthdayDay, setBirthdayDay] = useState('');
+  const [birthdayMonth, setBirthdayMonth] = useState('');
+  const [birthdayYear, setBirthdayYear] = useState('');
+  const [background, setBackground] = useState(preferences.background);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || '');
       if (!avatar) {
-        setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
+        setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as User & { collectionId: string; collectionName: string }, currentUser.avatar) : null);
       }
       if (currentUser.birthday) {
-        const date = new Date(currentUser.birthday);
-        setBirthdayDay(date.getDate().toString());
-        setBirthdayMonth((date.getMonth() + 1).toString());
-        setBirthdayYear(date.getFullYear().toString());
+        const [y, m, d] = currentUser.birthday.split('T')[0].split('-');
+        setBirthdayDay(String(parseInt(d)));
+        setBirthdayMonth(String(parseInt(m)));
+        setBirthdayYear(y);
       }
     }
   }, [currentUser?.id]);
 
-  const handleThemeChange = (v: 'default' | 'wooden' | 'golden' | 'high-contrast' | 'green') => { setTheme(v); preferences.theme = v; };
+  const handleThemeChange = (v: Theme) => { setTheme(v); preferences.theme = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
-    console.log('handleAvatarChange', file);
     setAvatar(file);
     if (file) {
       const reader = new FileReader();
@@ -63,10 +60,14 @@ export default function UserSettingsPage() {
   };
 
   const handleSave = async (e?: React.FormEvent) => {
-    console.log('handleSave called', { avatar, currentUser: currentUser?.id });
     e?.preventDefault();
     if (!currentUser) return;
+    if (password && !oldPassword) {
+      setError(t('userSettingsDialog.oldPasswordRequired'));
+      return;
+    }
     setStatus('saving');
+    setError('');
     try {
       const formData = new FormData();
       if (name !== currentUser.name) formData.append('name', name);
@@ -76,23 +77,21 @@ export default function UserSettingsPage() {
         formData.append('passwordConfirm', password);
       }
       if (avatar) formData.append('avatar', avatar);
-      console.log('formData entries:', [...formData.entries()]);
       if (birthdayDay && birthdayMonth && birthdayYear) {
         const birthday = `${birthdayYear}-${birthdayMonth.padStart(2, '0')}-${birthdayDay.padStart(2, '0')}`;
-        if (birthday !== currentUser.birthday) formData.append('birthday', birthday);
+        if (birthday !== currentUser.birthday?.split('T')[0]) formData.append('birthday', birthday);
       } else if (currentUser.birthday) {
         formData.append('birthday', '');
       }
-      console.log('calling pb.collection.update');
-      await pb.collection('users').update(currentUser.id, formData);
-      console.log('update done, calling authRefresh');
-      await pb.collection('users').authRefresh();
+      await users.update(currentUser.id, formData);
+      await auth.refresh();
       setAvatar(null);
       setStatus('saved');
       setPassword('');
       setOldPassword('');
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
+      setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
+      setStatus('idle');
     }
   };
 
@@ -137,7 +136,7 @@ export default function UserSettingsPage() {
     const currentYear = new Date().getFullYear();
     return [
       { value: '', label: t('userSettingsDialog.year') },
-      ...Array.from({ length: 100 }, (_, i) => ({
+      ...Array.from({ length: BIRTH_YEAR_RANGE }, (_, i) => ({
         value: (currentYear - i).toString(),
         label: (currentYear - i).toString()
       }))
@@ -205,7 +204,7 @@ export default function UserSettingsPage() {
           ) : (
             <Card border shadow="sm" padding="lg">
               <form onSubmit={handleSave} className="grid gap-4">
-                {status !== 'idle' && status !== 'saving' && <Alert variant="error">{status}</Alert>}
+                {error && <Alert variant="error">{error}</Alert>}
                 <div>
                   <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
                   <div className="flex items-center gap-4">
