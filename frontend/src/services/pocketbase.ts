@@ -227,6 +227,11 @@ export const messages = {
     await pb.collection('messages').delete(messageId);
   },
 
+  async clearChat(chatId: string) {
+    const batch = await pb.collection('messages').getFullList({ filter: pb.filter('chat = {:chatId}', { chatId }) });
+    await Promise.all(batch.map((m) => pb.collection('messages').delete(m.id)));
+  },
+
   async createWithFile(chatId: string, type: 'image' | 'file' | 'video' | 'voice', file: File, caption?: string) {
     const formData = new FormData();
     formData.append('chat', chatId);
@@ -284,6 +289,15 @@ export const messages = {
     idx > -1 ? reactions[emoji].splice(idx, 1) : reactions[emoji].push(userId);
     if (!reactions[emoji].length) delete reactions[emoji];
     return await pb.collection('messages').update<Message>(messageId, { reactions });
+  },
+
+  async toggleFav(messageId: string) {
+    if (!auth.user?.id) throw new Error('User must be authenticated');
+    const msg = await pb.collection('messages').getOne<Message>(messageId);
+    const favs = [...(msg.favs || [])];
+    const idx = favs.indexOf(auth.user.id);
+    idx > -1 ? favs.splice(idx, 1) : favs.push(auth.user.id);
+    return await pb.collection('messages').update<Message>(messageId, { favs });
   },
 
   async search(chatId: string, query: string, page = 1, perPage = 50) {

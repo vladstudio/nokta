@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Popover } from '../ui';
-import { ArrowBendUpLeftIcon, ArrowBendUpRightIcon, CopyIcon, DotsThreeIcon, PencilIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
+import { ArrowBendUpLeftIcon, ArrowBendUpRightIcon, CopyIcon, DotsThreeIcon, PencilIcon, StarIcon, TrashSimpleIcon, XIcon } from "@phosphor-icons/react";
 
 const STORAGE_KEY = 'quick_emojis';
 
@@ -13,7 +13,9 @@ interface MessageActionsProps {
   onReply?: () => void;
   onForward?: () => void;
   onReact?: (emoji: string) => void;
+  onFav?: () => void;
   userReactions?: string[];
+  isFaved?: boolean;
 }
 
 const DEFAULT_QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉'];
@@ -63,7 +65,7 @@ const MORE_EMOJIS = [
   '😎', '🤙', '🆒', '🔥', '🚀', '💎', '⚡', '🎸',
 ];
 
-export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReply, onForward, onReact, userReactions }: MessageActionsProps) {
+export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onReply, onForward, onReact, onFav, userReactions, isFaved }: MessageActionsProps) {
   const { t } = useTranslation();
   const [quickEmojis, setQuickEmojis] = useState(getStoredQuickEmojis);
 
@@ -94,6 +96,7 @@ export default function MessageActions({ onCancel, onEdit, onDelete, onCopy, onR
           </Popover>
         </>
       )}
+      {onFav && <Button variant="ghost" size="icon" isSelected={isFaved} onClick={onFav}><StarIcon size={20} weight={isFaved ? 'fill' : 'regular'} className="text-accent" /></Button>}
       {onCopy && <Button variant="ghost" size="icon" onClick={onCopy}><CopyIcon size={20} className="text-accent" /></Button>}
       {onEdit && <Button variant="ghost" size="icon" onClick={onEdit}><PencilIcon size={20} className="text-accent" /></Button>}
       {onDelete && <Button variant="ghost" size="icon" onClick={onDelete}><TrashSimpleIcon size={20} className="text-accent" /></Button>}

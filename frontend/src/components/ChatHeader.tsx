@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PhoneIcon, ArrowLeftIcon, MagnifyingGlassIcon, InfoIcon } from '@phosphor-icons/react';
+import { PhoneIcon, ArrowLeftIcon, MagnifyingGlassIcon, InfoIcon, StarIcon } from '@phosphor-icons/react';
 import { UserAvatar } from './Avatar';
 import { Button } from '../ui';
 import { isVideoCallsEnabled } from '../config/features';
@@ -24,6 +24,8 @@ interface ChatHeaderProps {
   onBack: () => void;
   onToggleRightSidebar: (view: RightSidebarView | null) => void;
   onStartCall: () => void;
+  showFavsOnly?: boolean;
+  onToggleFavsOnly?: () => void;
 }
 
 export default function ChatHeader({
@@ -37,6 +39,8 @@ export default function ChatHeader({
   onBack,
   onToggleRightSidebar,
   onStartCall,
+  showFavsOnly,
+  onToggleFavsOnly,
 }: ChatHeaderProps) {
   const { t } = useTranslation();
 
@@ -79,6 +83,17 @@ export default function ChatHeader({
               </div>
             )}
           </div>
+        )}
+        {onToggleFavsOnly && (
+          <Button
+            onClick={onToggleFavsOnly}
+            variant="ghost"
+            size="icon"
+            className={showFavsOnly ? 'bg-(--color-bg-active)' : ''}
+            title={t('chatWindow.favsOnly')}
+          >
+            <StarIcon size={20} weight={showFavsOnly ? 'fill' : 'regular'} className="text-accent" />
+          </Button>
         )}
         <Button
           onClick={() => onToggleRightSidebar(rightSidebarView === 'info' ? null : 'info')}

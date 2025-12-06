@@ -15,11 +15,12 @@ interface RightSidebarProps {
   onClose: () => void;
   onDeleteChat: () => void;
   onLeaveChat: () => void;
+  onClearChat: () => void;
   onChatUpdated: () => void;
   isMobile: boolean;
 }
 
-export default function RightSidebar({ chatId, chat, currentUser, view, onClose, onDeleteChat, onLeaveChat, onChatUpdated, isMobile }: RightSidebarProps) {
+export default function RightSidebar({ chatId, chat, currentUser, view, onClose, onDeleteChat, onLeaveChat, onClearChat, onChatUpdated, isMobile }: RightSidebarProps) {
   const { t } = useTranslation();
 
   const titles = {
@@ -46,7 +47,7 @@ export default function RightSidebar({ chatId, chat, currentUser, view, onClose,
       </div>
 
       {view === 'search' && <Search chatId={chatId} onClose={onClose} isMobile={isMobile} />}
-      {view === 'info' && <Info chat={chat} currentUser={currentUser} onDeleteChat={onDeleteChat} onLeaveChat={onLeaveChat} onChatUpdated={onChatUpdated} />}
+      {view === 'info' && <Info chat={chat} currentUser={currentUser} onDeleteChat={onDeleteChat} onLeaveChat={onLeaveChat} onClearChat={onClearChat} onChatUpdated={onChatUpdated} />}
     </div>
   );
 }

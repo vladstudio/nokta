@@ -38,6 +38,7 @@ interface ChatInputAreaProps {
   onForward: () => void;
   onCancelReply: () => void;
   onReact: (emoji: string) => void;
+  onFav: () => void;
 }
 
 export default function ChatInputArea({
@@ -65,6 +66,7 @@ export default function ChatInputArea({
   onForward,
   onCancelReply,
   onReact,
+  onFav,
 }: ChatInputAreaProps) {
   const { t } = useTranslation();
 
@@ -96,6 +98,8 @@ export default function ChatInputArea({
             onReply={selectedMessage && !selectedMessage.isPending ? onReply : undefined}
             onForward={selectedMessage && !selectedMessage.isPending ? onForward : undefined}
             onReact={!canEditOrDelete && selectedMessageId ? onReact : undefined}
+            onFav={selectedMessage && !selectedMessage.isPending ? onFav : undefined}
+            isFaved={selectedMessage?.favs?.includes(currentUserId)}
             userReactions={
               selectedMessage?.reactions
                 ? Object.keys(selectedMessage.reactions).filter((emoji) =>

@@ -39,6 +39,7 @@ export interface Message {
   content: string;
   file?: string;
   reactions?: Record<string, string[]>;
+  favs?: string[];
   reply_to?: string;
   forwarded_from?: string;
   created?: string;

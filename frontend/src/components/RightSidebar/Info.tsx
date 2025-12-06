@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrashIcon, SignOutIcon, PencilIcon } from '@phosphor-icons/react';
+import { TrashIcon, SignOutIcon, PencilIcon, BroomIcon } from '@phosphor-icons/react';
 import { UserAvatar } from '../Avatar';
 import { Button, Dialog, ScrollArea } from '../../ui';
 import { getChatDisplayName } from '../../utils/chatUtils';
@@ -12,13 +12,15 @@ interface InfoProps {
   currentUser: User | null;
   onDeleteChat: () => void;
   onLeaveChat: () => void;
+  onClearChat: () => void;
   onChatUpdated: () => void;
 }
 
-export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onChatUpdated }: InfoProps) {
+export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onClearChat, onChatUpdated }: InfoProps) {
   const { t } = useTranslation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   if (!chat) {
@@ -75,6 +77,14 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
         )}
         <Button
           variant="default"
+          onClick={() => setClearDialogOpen(true)}
+          className="w-full flex items-center gap-2 justify-start"
+        >
+          <BroomIcon size={20} className="text-accent" />
+          {t('chats.clearChat')}
+        </Button>
+        <Button
+          variant="default"
           onClick={() => setDeleteDialogOpen(true)}
           className="w-full flex items-center gap-2 justify-start text-red-600"
         >
@@ -82,6 +92,25 @@ export default function Info({ chat, currentUser, onDeleteChat, onLeaveChat, onC
           {t('chats.deleteChat')}
         </Button>
       </div>
+
+      {/* Clear Dialog */}
+      <Dialog
+        open={clearDialogOpen}
+        onOpenChange={setClearDialogOpen}
+        title={t('chats.confirmClear')}
+        footer={
+          <>
+            <Button variant="outline" className="flex-1 center" onClick={() => setClearDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button variant="primary" className="flex-1 center" onClick={() => { setClearDialogOpen(false); onClearChat(); }}>
+              {t('common.confirm')}
+            </Button>
+          </>
+        }
+      >
+        <div />
+      </Dialog>
 
       {/* Delete Dialog */}
       <Dialog

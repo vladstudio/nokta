@@ -2,6 +2,7 @@
   "common": {
     "loading": "Загрузка...",
     "cancel": "Отмена",
+    "confirm": "Подтвердить",
     "save": "Сохранить",
     "delete": "Удалить",
     "send": "Отправить",
@@ -40,7 +41,8 @@
     "messageDeleted": "Сообщение удалено",
     "imageCopied": "Изображение скопировано",
     "defaultChatName": "Чат",
-    "jumpToPresent": "К последним"
+    "jumpToPresent": "К последним",
+    "favsOnly": "Только избранные"
   },
   "messageInput": {
     "placeholder": "Введите сообщение..."
@@ -129,6 +131,8 @@
     "background": "Фон",
     "leaveChat": "Покинуть чат",
     "deleteChat": "Удалить чат",
+    "clearChat": "Очистить чат",
+    "confirmClear": "Очистить чат?",
     "renameChat": "Переименовать чат",
     "chatName": "Название чата",
     "chatNameRequired": "Требуется название",

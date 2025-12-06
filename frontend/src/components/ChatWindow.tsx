@@ -111,6 +111,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [quickVideoRecorderOpen, setQuickVideoRecorderOpen] = useState(false);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [viewerMessageId, setViewerMessageId] = useState<string | null>(null);
+  const [showFavsOnly, setShowFavsOnly] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -436,6 +437,16 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     }
   };
 
+  const handleFav = async () => {
+    if (!selectedMessageId) return;
+    try {
+      await messagesAPI.toggleFav(selectedMessageId);
+      setSelectedMessageId(null);
+    } catch (err) {
+      console.error('Failed to toggle fav:', err);
+    }
+  };
+
   const handleEditMessage = () => {
     setEditDialogOpen(true);
   };
@@ -575,33 +586,36 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   });
 
   // Combine real and pending messages for display
-  const allMessages: DisplayMessage[] = useMemo(() => [
-    ...messages,
-    ...pendingMessages.map((p) => ({
-      id: p.tempId,
-      chat: p.chatId,
-      sender: currentUser?.id || '',
-      type: 'text' as const,
-      content: p.content,
-      created: p.createdAt.toISOString(),
-      updated: p.createdAt.toISOString(),
-      isPending: p.status === 'sending' || p.status === 'pending',
-      isFailed: p.status === 'failed',
-      tempId: p.tempId,
-    })),
-    ...uploadingFiles.map(u => ({
-      id: u.tempId,
-      chat: u.chatId,
-      sender: currentUser?.id || '',
-      type: u.type,
-      content: u.file.name,
-      created: new Date().toISOString(),
-      isPending: u.status === 'uploading',
-      isFailed: u.status === 'failed',
-      tempId: u.tempId,
-      uploadProgress: u.progress,
-    })),
-  ], [messages, pendingMessages, uploadingFiles, currentUser?.id]);
+  const allMessages: DisplayMessage[] = useMemo(() => {
+    const combined = [
+      ...messages,
+      ...pendingMessages.map((p) => ({
+        id: p.tempId,
+        chat: p.chatId,
+        sender: currentUser?.id || '',
+        type: 'text' as const,
+        content: p.content,
+        created: p.createdAt.toISOString(),
+        updated: p.createdAt.toISOString(),
+        isPending: p.status === 'sending' || p.status === 'pending',
+        isFailed: p.status === 'failed',
+        tempId: p.tempId,
+      })),
+      ...uploadingFiles.map(u => ({
+        id: u.tempId,
+        chat: u.chatId,
+        sender: currentUser?.id || '',
+        type: u.type,
+        content: u.file.name,
+        created: new Date().toISOString(),
+        isPending: u.status === 'uploading',
+        isFailed: u.status === 'failed',
+        tempId: u.tempId,
+        uploadProgress: u.progress,
+      })),
+    ];
+    return showFavsOnly ? combined.filter(m => m.favs?.includes(currentUser?.id || '')) : combined;
+  }, [messages, pendingMessages, uploadingFiles, currentUser?.id, showFavsOnly]);
 
   // Get selected message for action buttons
   const selectedMessage = useMemo(
@@ -664,6 +678,8 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onBack={handleBack}
         onToggleRightSidebar={onToggleRightSidebar!}
         onStartCall={handleStartCall}
+        showFavsOnly={showFavsOnly}
+        onToggleFavsOnly={() => setShowFavsOnly(v => !v)}
       />
 
       <MessageList
@@ -710,6 +726,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onForward={handleForward}
         onCancelReply={() => setReplyingTo(null)}
         onReact={(emoji) => handleReaction(selectedMessageId!, emoji)}
+        onFav={handleFav}
       />
 
       {/* Hidden file input */}

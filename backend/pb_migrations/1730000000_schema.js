@@ -183,11 +183,17 @@ migrate((app) => {
     required: false
   }))
 
+  messages.fields.addAt(8, new Field({
+    name: "favs",
+    type: "json",
+    required: false
+  }))
+
   messages.listRule = 'chat.participants.id ?= @request.auth.id'
   messages.viewRule = 'chat.participants.id ?= @request.auth.id'
   messages.createRule = 'chat.participants.id ?= @request.auth.id'
   messages.updateRule = 'chat.participants.id ?= @request.auth.id'
-  messages.deleteRule = 'sender = @request.auth.id'
+  messages.deleteRule = 'sender = @request.auth.id || chat.participants.id ?= @request.auth.id'
 
   messages.indexes = [
     "CREATE INDEX idx_messages_chat ON messages (chat)",
@@ -198,7 +204,7 @@ migrate((app) => {
 
   // Add self-referencing fields after collection is saved
   const savedMessages = app.findCollectionByNameOrId("messages")
-  savedMessages.fields.addAt(8, new Field({
+  savedMessages.fields.addAt(9, new Field({
     name: "reply_to",
     type: "relation",
     required: false,
@@ -206,7 +212,7 @@ migrate((app) => {
     cascadeDelete: false,
     maxSelect: 1
   }))
-  savedMessages.fields.addAt(9, new Field({
+  savedMessages.fields.addAt(10, new Field({
     name: "forwarded_from",
     type: "relation",
     required: false,

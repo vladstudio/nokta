@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import clsx from 'clsx';
-import { FileIcon } from '@phosphor-icons/react';
+import { FileIcon, StarIcon } from '@phosphor-icons/react';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
@@ -177,6 +177,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
               {new Date(message.created).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
+          {message.favs?.includes(currentUserId) && <StarIcon size={12} weight="fill" className="text-accent" />}
           {replyMessage && (
             <button
               onClick={(e) => { e.stopPropagation(); setLocation(`/chat/${message.chat}?msg=${replyMessage.id}`); }}

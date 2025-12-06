@@ -6,7 +6,7 @@ import ChatWindow from '../components/ChatWindow';
 import CallView from '../components/CallView';
 import RightSidebar, { type RightSidebarView } from '../components/RightSidebar';
 import { callsAPI } from '../services/calls';
-import { chats, auth } from '../services/pocketbase';
+import { chats, auth, messages } from '../services/pocketbase';
 import { messageQueue } from '../utils/messageQueue';
 import { messageCache } from '../utils/messageCache';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
@@ -175,6 +175,16 @@ export default function ChatPage() {
     }
   };
 
+  const handleClearChat = async () => {
+    if (!chat) return;
+    try {
+      await messages.clearChat(chat.id);
+      await messageCache.clearChat(chat.id);
+    } catch (error) {
+      console.error('Failed to clear chat:', error);
+    }
+  };
+
   // Mobile: show only one component at a time
   if (isMobile) {
     if (showCallView && activeCallChat) {
@@ -191,6 +201,7 @@ export default function ChatPage() {
           onClose={() => setRightSidebarView(null)}
           onDeleteChat={handleDeleteChat}
           onLeaveChat={handleLeaveChat}
+          onClearChat={handleClearChat}
           onChatUpdated={refetchChat}
           isMobile={isMobile}
         />
@@ -236,6 +247,7 @@ export default function ChatPage() {
             onClose={() => setRightSidebarView(null)}
             onDeleteChat={handleDeleteChat}
             onLeaveChat={handleLeaveChat}
+            onClearChat={handleClearChat}
             onChatUpdated={refetchChat}
             isMobile={false}
           />

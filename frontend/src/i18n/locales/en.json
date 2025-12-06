@@ -2,6 +2,7 @@
   "common": {
     "loading": "Loading...",
     "cancel": "Cancel",
+    "confirm": "Confirm",
     "save": "Save",
     "delete": "Delete",
     "send": "Send",
@@ -40,7 +41,8 @@
     "messageDeleted": "Message deleted",
     "imageCopied": "Image copied",
     "defaultChatName": "Chat",
-    "jumpToPresent": "Jump to present"
+    "jumpToPresent": "Jump to present",
+    "favsOnly": "Favorites only"
   },
   "messageInput": {
     "placeholder": "Type a message..."
@@ -129,6 +131,8 @@
     "background": "Background",
     "leaveChat": "Leave Chat",
     "deleteChat": "Delete Chat",
+    "clearChat": "Clear Chat",
+    "confirmClear": "Clear Chat?",
     "renameChat": "Rename Chat",
     "chatName": "Chat Name",
     "chatNameRequired": "Name required",
