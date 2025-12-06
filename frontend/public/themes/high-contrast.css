@@ -40,6 +40,9 @@
   --color-error-50: oklch(0.96 0.01 20 / 1);
   --color-error-500: oklch(0.52 0.14 25 / 1);
   --color-error-600: oklch(0.44 0.14 25 / 1);
+
+  /* Viewer overlay */
+  --color-viewer-bg: #222222EE;
 }
 
 /* Dark mode - Auto-switches based on OS preference */

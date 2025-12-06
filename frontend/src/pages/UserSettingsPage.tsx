@@ -253,6 +253,9 @@ export default function UserSettingsPage() {
               </Button>
             </form>
           </Card>
+          <div className="text-xs mx-auto">
+            <a href="https://nokta.chat/" target="_blank" className="link text-light">nokta.chat</a>
+          </div>
 
         </div>
       </ScrollArea>

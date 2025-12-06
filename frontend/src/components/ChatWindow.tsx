@@ -23,6 +23,7 @@ import ImageCropDialog from './ImageCropDialog';
 import VideoCompressionDialog from './VideoCompressionDialog';
 import VoiceRecorder from './VoiceRecorder';
 import QuickVideoRecorder from './QuickVideoRecorder';
+import MediaViewer from './MediaViewer';
 import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
@@ -109,6 +110,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const [voiceRecorderOpen, setVoiceRecorderOpen] = useState(false);
   const [quickVideoRecorderOpen, setQuickVideoRecorderOpen] = useState(false);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [viewerMessageId, setViewerMessageId] = useState<string | null>(null);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -557,6 +559,11 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     setLocation('/chat');
   };
 
+  const handleMediaNavigate = (messageId: string) => {
+    setViewerMessageId(messageId);
+    document.getElementById(`msg-${messageId}`)?.scrollIntoView({ block: 'center' });
+  };
+
   // Sync external chat with local state
   useEffect(() => {
     if (externalChat) setChat(externalChat);
@@ -671,6 +678,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onRetryUpload={handleRetryUpload}
         onCancelUpload={handleCancelUpload}
         onReaction={handleReaction}
+        onMediaClick={setViewerMessageId}
         onJumpToPresent={() => setLocation(`/chat/${chatId}`)}
         messagesEndRef={messagesEndRef}
       />
@@ -788,6 +796,16 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         onOpenChange={setQuickVideoRecorderOpen}
         onSend={handleQuickVideoSend}
       />
+
+      {/* Media Viewer */}
+      {viewerMessageId && (
+        <MediaViewer
+          messages={messages}
+          currentMessageId={viewerMessageId}
+          onClose={() => setViewerMessageId(null)}
+          onNavigate={handleMediaNavigate}
+        />
+      )}
     </div>
   );
 }

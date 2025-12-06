@@ -22,6 +22,7 @@ interface MessageListProps {
   onRetryUpload: (tempId: string) => void;
   onCancelUpload: (tempId: string) => void;
   onReaction: (messageId: string, emoji: string) => void;
+  onMediaClick: (messageId: string) => void;
   onJumpToPresent: () => void;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   ref?: React.Ref<HTMLDivElement>;
@@ -38,6 +39,7 @@ function MessageList({
   onRetryUpload,
   onCancelUpload,
   onReaction,
+  onMediaClick,
   onJumpToPresent,
   messagesEndRef,
   ref,
@@ -69,6 +71,7 @@ function MessageList({
               onRetry={message.type === 'text' ? onRetryMessage : onRetryUpload}
               onCancelUpload={onCancelUpload}
               onReactionClick={(emoji) => onReaction(message.id, emoji)}
+              onMediaClick={onMediaClick}
             />
           ))
         )}

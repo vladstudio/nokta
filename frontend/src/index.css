@@ -182,6 +182,9 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 .active-call {
   background-color: var(--color-success-50);
 }
+.media-viewer {
+  @apply fixed inset-0 z-50 flex flex-col bg-(--color-viewer-bg) backdrop-blur-sm transition-all duration-100
+}
 
 /* ===================================
    MOBILE RESPONSIVE
@@ -239,3 +242,14 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 .bg-preview-6 { background-image: url(/patterns/6-dark.png); background-size: 50%; background-repeat: repeat; }
 .bg-preview-7 { background-image: url(/patterns/7-dark.png); background-size: 50%; background-repeat: repeat; }
 .bg-preview-8 { background-image: url(/patterns/8-dark.png); background-size: 50%; background-repeat: repeat; }
+
+/* ===================================
+   ANIMATIONS
+   =================================== */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}

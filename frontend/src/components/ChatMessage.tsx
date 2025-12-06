@@ -6,8 +6,7 @@ import { FileIcon } from '@phosphor-icons/react';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
-import { Button, useToastManager } from '../ui';
-import VideoPlayer from './VideoPlayer';
+import { Button } from '../ui';
 
 type MessageWithStatus = Message & {
   isPending?: boolean;
@@ -25,12 +24,12 @@ interface ChatMessageProps {
   onRetry?: (tempId: string) => void;
   onCancelUpload?: (tempId: string) => void;
   onReactionClick?: (emoji: string) => void;
+  onMediaClick?: (messageId: string) => void;
 }
 
-export default function ChatMessage({ message, isOwn, currentUserId, isSelected, onSelect, onRetry, onCancelUpload, onReactionClick }: ChatMessageProps) {
+export default function ChatMessage({ message, isOwn, currentUserId, isSelected, onSelect, onRetry, onCancelUpload, onReactionClick, onMediaClick }: ChatMessageProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
-  const toastManager = useToastManager();
   const senderName = message.expand?.sender?.name || message.expand?.sender?.email || t('common.unknown');
   const [reactionUsers, setReactionUsers] = useState<Record<string, User>>({});
 
@@ -89,7 +88,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         className="max-w-xs max-h-80 rounded cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
-          window.open(messagesAPI.getFileURL(message), '_blank');
+          onMediaClick?.(message.id);
         }}
       />
     );
@@ -114,21 +113,11 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     if (!message.file) return null;
 
     const videoUrl = messagesAPI.getFileURL(message);
-    const duration = message.content; // Duration in "MM:SS" format for quick videos
+    const duration = message.content;
 
     return (
-      <div className="flex flex-col gap-2">
-        <VideoPlayer
-          videoUrl={videoUrl}
-          className="max-h-80"
-          onError={() => {
-            console.error('Video playback failed');
-            toastManager.add({
-              title: t('messages.videoError'),
-              data: { type: 'error' },
-            });
-          }}
-        />
+      <div className="flex flex-col gap-2 cursor-pointer" onClick={(e) => { e.stopPropagation(); onMediaClick?.(message.id); }}>
+        <video src={videoUrl} className="max-w-xs max-h-80 rounded pointer-events-none" preload="metadata" />
         {duration && duration.match(/^\d+:\d{2}$/) && (
           <span className="text-xs text-light">{duration}</span>
         )}
