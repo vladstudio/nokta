@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/background">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="56dp"
+        android:paddingHorizontal="8dp" android:gravity="center_vertical"
+        android:background="@color/background" android:elevation="2dp">
+        <TextView android:id="@+id/btnCancel" android:layout_width="wrap_content"
+            android:layout_height="36dp" android:gravity="center" android:paddingHorizontal="16dp"
+            android:text="Cancel" android:textColor="@color/textSecondary" android:textSize="14sp" />
+        <TextView android:id="@+id/title" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="Share to" android:textSize="18sp"
+            android:textStyle="bold" android:gravity="center" android:textColor="@color/text" />
+        <TextView android:id="@+id/btnSend" android:layout_width="wrap_content"
+            android:layout_height="36dp" android:gravity="center" android:paddingHorizontal="20dp"
+            android:text="Send" android:textColor="#ffffff" android:textSize="14sp"
+            android:textStyle="bold" android:background="@drawable/btn_primary" android:enabled="false" />
+    </LinearLayout>
+    <ProgressBar android:id="@+id/progress" android:layout_width="match_parent"
+        android:layout_height="3dp" style="@android:style/Widget.ProgressBar.Horizontal"
+        android:visibility="gone" android:indeterminate="true" android:indeterminateTint="@color/accent" />
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/chatList"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:background="@color/backgroundSecondary" android:padding="8dp" android:clipToPadding="false" />
+    <TextView android:id="@+id/emptyState" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1" android:gravity="center"
+        android:text="No chats available" android:textColor="@color/textSecondary"
+        android:textSize="15sp" android:visibility="gone" android:background="@color/backgroundSecondary" />
+</LinearLayout>

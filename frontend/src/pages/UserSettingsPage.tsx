@@ -155,7 +155,7 @@ export default function UserSettingsPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <header className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
+      <header className="flex flex-wrap items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
         <div className="flex items-center gap-2">
           {isMobile && (
             <button onClick={() => setLocation('/chat')} className="p-1 -ml-2">

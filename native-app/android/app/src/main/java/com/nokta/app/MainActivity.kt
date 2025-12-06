@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
     inner class NoktalBridge {
         @JavascriptInterface
         fun registerPushToken(authToken: String, userId: String) {
+            prefs.edit().putString("authToken", authToken).putString("userId", userId).apply()
             registerFcmToken(authToken, userId)
         }
     }
