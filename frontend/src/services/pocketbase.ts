@@ -56,6 +56,12 @@ export const auth = {
   onChange(callback: () => void) {
     return pb.authStore.onChange(callback);
   },
+
+  async refresh() {
+    if (!pb.authStore.isValid) return;
+    try { await pb.collection('users').authRefresh(); }
+    catch { pb.authStore.clear(); }
+  },
 };
 
 export const users = {

@@ -26,6 +26,7 @@ function App() {
   useTheme();
 
   useEffect(() => {
+    auth.refresh();
     const unsubscribe = auth.onChange(() => {
       setIsAuthenticated(auth.isValid);
     });

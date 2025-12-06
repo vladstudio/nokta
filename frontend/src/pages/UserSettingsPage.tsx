@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 import { auth, pb } from '../services/pocketbase';
 import { preferences } from '../utils/preferences';
-import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, useToastManager, ScrollArea } from '../ui';
+import { Alert, Button, Card, FormLabel, Input, FileUpload, RadioGroup, Select, ScrollArea } from '../ui';
 import { UserAvatar } from '../components/Avatar';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -18,13 +18,11 @@ interface PocketBaseRecord {
 
 export default function UserSettingsPage() {
   const { t } = useTranslation();
-  const toastManager = useToastManager();
-  const [, setLocation] = useLocation();
+    const [, setLocation] = useLocation();
   const isMobile = useIsMobile();
   const currentUser = auth.user;
 
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [theme, setTheme] = useState<'default' | 'wooden' | 'golden' | 'high-contrast' | 'green'>(preferences.theme);
@@ -34,13 +32,11 @@ export default function UserSettingsPage() {
   const [birthdayMonth, setBirthdayMonth] = useState<string>('');
   const [birthdayYear, setBirthdayYear] = useState<string>('');
   const [background, setBackground] = useState<string>(preferences.background);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | string>('idle');
 
   useEffect(() => {
     if (currentUser) {
       setName(currentUser.name || '');
-      setEmail(currentUser.email);
       if (!avatar) {
         setAvatarPreview(currentUser.avatar ? pb.files.getURL(currentUser as unknown as PocketBaseRecord, currentUser.avatar) : null);
       }
@@ -51,7 +47,7 @@ export default function UserSettingsPage() {
         setBirthdayYear(date.getFullYear().toString());
       }
     }
-  }, [currentUser, avatar]);
+  }, [currentUser?.id]);
 
   const handleThemeChange = (v: 'default' | 'wooden' | 'golden' | 'high-contrast' | 'green') => { setTheme(v); preferences.theme = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
@@ -70,12 +66,10 @@ export default function UserSettingsPage() {
     console.log('handleSave called', { avatar, currentUser: currentUser?.id });
     e?.preventDefault();
     if (!currentUser) return;
-    setError(null);
-    setSaving(true);
+    setStatus('saving');
     try {
       const formData = new FormData();
       if (name !== currentUser.name) formData.append('name', name);
-      if (email !== currentUser.email) formData.append('email', email);
       if (password) {
         formData.append('oldPassword', oldPassword);
         formData.append('password', password);
@@ -94,13 +88,11 @@ export default function UserSettingsPage() {
       console.log('update done, calling authRefresh');
       await pb.collection('users').authRefresh();
       setAvatar(null);
-      toastManager.add({ title: t('userSettingsDialog.settingsSaved'), data: { type: 'success' } });
+      setStatus('saved');
       setPassword('');
       setOldPassword('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
-    } finally {
-      setSaving(false);
+      setStatus(err instanceof Error ? err.message : t('errors.failedToUpdateSettings'));
     }
   };
 
@@ -206,53 +198,59 @@ export default function UserSettingsPage() {
               </div>
             </div>
           </Card>
-          <Card border shadow="sm" padding="lg">
-            <form onSubmit={handleSave} className="grid gap-4">
-              {error && <Alert variant="error">{error}</Alert>}
-              <div>
-                <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
-                <div className="flex items-center gap-4">
-                  <div className="shrink-0">
-                    {avatarPreview ? (
-                      <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
-                    ) : (
-                      <UserAvatar user={currentUser} size={80} />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
+          {status === 'saved' ? (
+            <Card border shadow="sm" padding="lg" className="text-center">
+              <p>{t('userSettingsDialog.settingsSaved')}</p>
+            </Card>
+          ) : (
+            <Card border shadow="sm" padding="lg">
+              <form onSubmit={handleSave} className="grid gap-4">
+                {status !== 'idle' && status !== 'saving' && <Alert variant="error">{status}</Alert>}
+                <div>
+                  <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
+                  <div className="flex items-center gap-4">
+                    <div className="shrink-0">
+                      {avatarPreview ? (
+                        <img src={avatarPreview} alt={currentUser.name || currentUser.email} className="w-20 h-20 rounded-full object-cover" />
+                      ) : (
+                        <UserAvatar user={currentUser} size={80} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div>
-                <FormLabel htmlFor="name">{t('common.name')}</FormLabel>
-                <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('common.name')} />
-              </div>
-              <div>
-                <FormLabel htmlFor="email">{t('common.email')}</FormLabel>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('common.email')} />
-              </div>
-              <div>
-                <FormLabel htmlFor="oldPassword">{t('userSettingsDialog.oldPassword')}</FormLabel>
-                <Input id="oldPassword" type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder={t('userSettingsDialog.oldPassword')} />
-              </div>
-              <div>
-                <FormLabel htmlFor="password">{t('userSettingsDialog.newPassword')}</FormLabel>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
-              </div>
-              <div>
-                <FormLabel>{t('userSettingsDialog.birthday')}</FormLabel>
-                <div className="flex gap-2">
-                  <Select value={birthdayDay} onChange={(v) => setBirthdayDay(v || '')} options={dayOptions} className="flex-1" />
-                  <Select value={birthdayMonth} onChange={(v) => setBirthdayMonth(v || '')} options={monthOptions} className="flex-1" />
-                  <Select value={birthdayYear} onChange={(v) => setBirthdayYear(v || '')} options={yearOptions} className="flex-1" />
+                <div>
+                  <FormLabel htmlFor="name">{t('common.name')}</FormLabel>
+                  <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('common.name')} />
                 </div>
-              </div>
-              <Button type="submit" variant="primary" disabled={saving} className="w-full center">
-                {saving ? t('common.loading') : t('common.save')}
-              </Button>
-            </form>
-          </Card>
+                <div>
+                  <FormLabel htmlFor="email">{t('common.email')}</FormLabel>
+                  <Input id="email" type="email" value={currentUser.email} readOnly className="opacity-60" />
+                </div>
+                <div>
+                  <FormLabel htmlFor="oldPassword">{t('userSettingsDialog.oldPassword')}</FormLabel>
+                  <Input id="oldPassword" type="password" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} placeholder={t('userSettingsDialog.oldPassword')} />
+                </div>
+                <div>
+                  <FormLabel htmlFor="password">{t('userSettingsDialog.newPassword')}</FormLabel>
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('userSettingsDialog.leaveBlankPassword')} />
+                </div>
+                <div>
+                  <FormLabel>{t('userSettingsDialog.birthday')}</FormLabel>
+                  <div className="flex gap-2">
+                    <Select value={birthdayDay} onChange={(v) => setBirthdayDay(v || '')} options={dayOptions} className="flex-1" />
+                    <Select value={birthdayMonth} onChange={(v) => setBirthdayMonth(v || '')} options={monthOptions} className="flex-1" />
+                    <Select value={birthdayYear} onChange={(v) => setBirthdayYear(v || '')} options={yearOptions} className="flex-1" />
+                  </div>
+                </div>
+                <Button type="submit" variant="primary" disabled={status === 'saving'} className="w-full center">
+                  {status === 'saving' ? t('common.loading') : t('common.save')}
+                </Button>
+              </form>
+            </Card>
+          )}
           <div className="text-xs mx-auto">
             <a href="https://nokta.chat/" target="_blank" className="link text-light">nokta.chat</a>
           </div>
