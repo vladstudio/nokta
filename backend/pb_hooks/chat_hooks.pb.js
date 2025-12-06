@@ -8,43 +8,31 @@ onRecordAfterCreateSuccess((e) => {
   const participants = e.record.get("participants") || []
 
   if (!chatId) {
-    console.error("[chat_hooks] Missing chat id")
     e.next()
     return
   }
 
   try {
     const readStatusCollection = e.app.findCollectionByNameOrId("chat_read_status")
-    let createdCount = 0
 
     participants.forEach((userId) => {
       try {
-        // Check if read status already exists
         $app.findFirstRecordByFilter(
           "chat_read_status",
           `user = {:userId} && chat = {:chatId}`,
           { userId, chatId }
         )
-        // If we get here, record exists - skip creation
-      } catch (err) {
-        // Record doesn't exist, create it
+      } catch {
         try {
           const readStatus = new Record(readStatusCollection)
           readStatus.set("user", userId)
           readStatus.set("chat", chatId)
           readStatus.set("last_read_at", new Date().toISOString())
           e.app.save(readStatus)
-          createdCount++
-        } catch (saveErr) {
-          console.warn(`[chat_hooks] Failed to create read status for user ${userId}, chat ${chatId}:`, saveErr.message)
-        }
+        } catch {}
       }
     })
-
-    console.log(`[chat_hooks] Created ${createdCount} read status records for chat ${chatId}`)
-  } catch (err) {
-    console.error(`[chat_hooks] Failed to create read status for chat ${chatId}:`, err.message)
-  }
+  } catch {}
 
   e.next()
 }, "chats")
@@ -63,9 +51,7 @@ onRecordAfterCreateSuccess((e) => {
     chat.set("last_message_content", content)
     chat.set("last_message_sender", sender)
     e.app.save(chat)
-  } catch (err) {
-    console.error(`[chat_hooks] Failed to update last message for chat ${chatId}:`, err.message)
-  }
+  } catch {}
 
   e.next()
 }, "messages")
@@ -114,9 +100,7 @@ onRecordAfterCreateSuccess((e) => {
           { userId }
         )
         userTokens.forEach(t => tokens.push(t.get("token")))
-      } catch (err) {
-        // No tokens for this user
-      }
+      } catch {}
     })
 
     if (tokens.length === 0) {
@@ -126,7 +110,7 @@ onRecordAfterCreateSuccess((e) => {
 
     // Send to local FCM service
     try {
-      const response = $http.send({
+      $http.send({
         url: "http://127.0.0.1:9090",
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,13 +126,8 @@ onRecordAfterCreateSuccess((e) => {
         }),
         timeout: 15
       })
-      console.log(`[chat_hooks] FCM service response:`, response.raw)
-    } catch (err) {
-      console.error(`[chat_hooks] FCM service error:`, err.message)
-    }
-  } catch (err) {
-    console.error(`[chat_hooks] Failed to send FCM notification:`, err.message)
-  }
+    } catch {}
+  } catch {}
 
   e.next()
 }, "messages")
