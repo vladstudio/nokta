@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base-ui-components/react": "^1.0.0-beta.7",
+    "@base-ui-components/react": "^1.0.0-rc.0",
     "@daily-co/daily-react": "^0.24.0",
     "@phosphor-icons/react": "^2.1.10",
     "boring-avatars": "^2.0.4",
@@ -17,12 +17,12 @@
     "clsx": "^2.1.1",
     "i18next": "^25.7.1",
     "jotai": "^2.15.2",
-    "mediabunny": "^1.25.3",
-    "pocketbase": "^0.26.4",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "mediabunny": "^1.25.7",
+    "pocketbase": "^0.26.5",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "react-hotkeys-hook": "^5.2.1",
-    "react-i18next": "^16.3.5",
+    "react-i18next": "^16.4.0",
     "react-image-crop": "^11.0.10",
     "wouter": "^3.8.1"
   },
