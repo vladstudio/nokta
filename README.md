@@ -1,8 +1,9 @@
 # Nokta
 
-Real-time chat app with video/audio calls. React frontend + PocketBase backend.
+Very opinionated real-time chat app with video calls.  
+React frontend + PocketBase backend.
 
-## Deploy (5 minutes)
+## Deploy
 
 **Prerequisites:** Ubuntu 24.04 server, domain pointing to server IP, [Daily.co](https://daily.co) API key, SSH public key
 
@@ -76,6 +77,34 @@ cd frontend && bun install && bun dev # :3000
 
 Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, password `1234567890`
 
+## Build Native Apps
+
+**Prerequisites:** Node.js, Android Studio (for Android)
+
+```bash
+cd native-app && npm install
+```
+
+**macOS app:**
+```bash
+npm run build:mac          # Universal (ARM + Intel)
+npm run build:mac-arm      # ARM only
+npm run build:mac-intel    # Intel only
+# Output: native-app/dist/*.dmg
+```
+
+**Windows app (cross-compile):**
+```bash
+npm run build:win
+# Output: native-app/dist/*.exe
+```
+
+**Android app:**
+```bash
+cd android && ./gradlew assembleDebug
+# Output: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
 ## Android Push Notifications (Optional)
 
 To enable background push notifications on the Android app:
@@ -95,3 +124,4 @@ To enable background push notifications on the Android app:
    ```
 
 For production deployment, the FCM service runs automatically via systemd.
+
