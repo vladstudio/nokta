@@ -105,7 +105,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         onClick={(e) => e.stopPropagation()}
       >
         <FileIcon size={20} className="shrink-0 text-light" />
-        <span className="text-sm truncate">{message.file}</span>
+        <span className="text-sm truncate">{message.content || message.file}</span>
       </a>
     );
   };
