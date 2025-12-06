@@ -167,10 +167,10 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
         isSelected && 'bg-(--color-bg-active)!'
       )}
     >
-      <div className={clsx('flex flex-col gap-1 min-w-0 max-w-full', isOwn ? 'items-end' : 'items-start')}>
+      <div className={clsx('flex flex-col gap-0.5 min-w-0 max-w-full', isOwn ? 'items-end' : 'items-start')}>
         <div className="flex items-baseline gap-2 px-1">
           <span className="text-xs font-medium text-light">
-            {isOwn ? t('common.you') : senderName}
+            {!isOwn && senderName}
           </span>
           {message.created && !message.isPending && (
             <span className="text-xs text-light">
