@@ -260,6 +260,11 @@
     "invalidOrExpired": "Invalid or expired invitation",
     "passwordMin": "Password must be at least 10 characters"
   },
+  "fileUpload": {
+    "preview": "Preview",
+    "clickOrDragToChange": "Click or drag to change",
+    "clickOrDragToUpload": "Click or drag to upload"
+  },
   "admin": {
     "title": "Admin Panel - Users",
     "addUser": "Add User",

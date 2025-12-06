@@ -209,6 +209,10 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
    BACKGROUND PATTERNS
    =================================== */
 /* Full-size background patterns for ProtectedRoute */
+.bg-pattern {
+  background-color: var(--color-bg-secondary);
+  background-blend-mode: color-burn;
+}
 .bg-pattern-1-light { background-image: url(/patterns/1-light.png); background-size: 400px 400px; background-repeat: repeat; }
 .bg-pattern-1-dark { background-image: url(/patterns/1-dark.png); background-size: 400px 400px; background-repeat: repeat; }
 .bg-pattern-2-light { background-image: url(/patterns/2-light.png); background-size: 400px 400px; background-repeat: repeat; }

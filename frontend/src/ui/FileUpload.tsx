@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { CloudArrowUpIcon } from '@phosphor-icons/react';
+import { useTranslation } from 'react-i18next';
 
 interface FileUploadProps {
   value?: File | null;
@@ -10,6 +11,7 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ onChange, accept = 'image/*', preview, className = '' }: FileUploadProps) {
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -47,13 +49,13 @@ export function FileUpload({ onChange, accept = 'image/*', preview, className = 
       />
       {preview ? (
         <div className="flex flex-col items-center gap-2">
-          <img src={preview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
-          <span className="text-sm text-light">Click or drag to change</span>
+          <img src={preview} alt={t('fileUpload.preview')} className="w-24 h-24 rounded-full object-cover" />
+          <span className="text-sm text-light">{t('fileUpload.clickOrDragToChange')}</span>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 text-light">
           <CloudArrowUpIcon className="w-12 h-12" />
-          <span className="text-sm">Click or drag to upload</span>
+          <span className="text-sm">{t('fileUpload.clickOrDragToUpload')}</span>
         </div>
       )}
     </div>

@@ -49,7 +49,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const showSidebar = !['/admin'].includes(location) && !(isMobile && params?.chatId) && !(isMobile && showCallView) && !(isMobile && location === '/settings') && !(isMobile && location === '/new');
 
   return (
-    <div className={clsx("fixed inset-0 flex overflow-hidden", getBgClass())}>
+    <div className={clsx("fixed inset-0 flex overflow-hidden bg-pattern", getBgClass())}>
       {showSidebar && <Sidebar />}
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}

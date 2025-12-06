@@ -181,7 +181,32 @@ export default function UserSettingsPage() {
       <ScrollArea>
         <div className="mx-auto w-full max-w-md p-6 grid gap-4">
           <Card border shadow="sm" padding="lg">
-            <form onSubmit={handleSave} className="space-y-4">
+            <div className="grid gap-8">
+              <div>
+                <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
+                <LanguageSwitcher />
+              </div>
+              <div>
+                <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
+                <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
+              </div>
+              <div>
+                <FormLabel>{t('chats.background')}</FormLabel>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button type="button" variant="outline" isSelected={background === ''} onClick={() => handleBackgroundChange('')} className="aspect-square center p-1!">
+                    <span className="text-xs text-light">None</span>
+                  </Button>
+                  {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
+                    <Button key={bg} type="button" variant="outline" isSelected={background === bg} onClick={() => handleBackgroundChange(bg)} className="aspect-square center p-1!">
+                      <div className={`w-full h-full bg-preview-${bg}`} />
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+          <Card border shadow="sm" padding="lg">
+            <form onSubmit={handleSave} className="grid gap-4">
               {error && <Alert variant="error">{error}</Alert>}
               <div>
                 <FormLabel>{t('userSettingsDialog.avatar')}</FormLabel>
@@ -227,29 +252,7 @@ export default function UserSettingsPage() {
               </Button>
             </form>
           </Card>
-          <Card border shadow="sm" padding="lg">
-            <div>
-              <FormLabel>{t('userSettingsDialog.language')}</FormLabel>
-              <LanguageSwitcher />
-            </div>
-            <div>
-              <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
-              <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
-            </div>
-            <div>
-              <FormLabel>{t('chats.background')}</FormLabel>
-              <div className="grid grid-cols-3 gap-2">
-                <Button type="button" variant="outline" isSelected={background === ''} onClick={() => handleBackgroundChange('')} className="aspect-square center p-1!">
-                  <span className="text-xs text-light">None</span>
-                </Button>
-                {['1', '2', '3', '4', '5', '6', '7', '8'].map((bg) => (
-                  <Button key={bg} type="button" variant="outline" isSelected={background === bg} onClick={() => handleBackgroundChange(bg)} className="aspect-square center p-1!">
-                    <div className={`w-full h-full bg-preview-${bg}`} />
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </Card>
+
         </div>
       </ScrollArea>
     </div>
