@@ -30,11 +30,15 @@ React frontend + PocketBase backend.
 ```bash
 ssh nokta@SERVER_IP                  # SSH access
 cloud-init status                    # Check cloud-init status
-~/nokta-main/backup.sh                    # Manual backup
-~/nokta-main/update.sh                    # Update to latest
+~/nokta-main/update.sh               # Update to latest
 sudo systemctl restart nokta-backend # Restart backend
-sudo reboot                          # Reboot entire server
 ```
+
+### Backups
+
+Use PocketBase's built-in backup: **Admin panel → Settings → Backups**
+
+Secrets (`~/.nokta/`) should be backed up manually if needed.
 
 
 
@@ -58,11 +62,11 @@ cd ~/nokta-main/backend && ./pocketbase superuser update EMAIL NEW_PASSWORD
 ```
 
 **Restore from backup:**
+Download backup ZIP from Admin panel → Settings → Backups, then:
 ```bash
 sudo systemctl stop nokta-backend
-tar -xzf ~/nokta-backups/pb_data_TIMESTAMP.tar.gz -C ~/nokta-main/backend
+unzip pb_backup.zip -d ~/nokta-main/backend/pb_data
 sudo systemctl start nokta-backend
-sudo reboot
 ```
 
 ## Local Development

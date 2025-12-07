@@ -278,6 +278,12 @@ runcmd:
         -H "Authorization: $TOKEN" \
         -H "Content-Type: application/json" \
         -d '{"rateLimits":{"enabled":true,"rules":[{"label":"/api/collections/users/auth-with-password","audience":"","duration":900,"maxRequests":5},{"label":"/api/collections/_superusers/auth-with-password","audience":"","duration":900,"maxRequests":3}]}}' || true
+
+      # Set application name
+      curl -s -X PATCH http://127.0.0.1:8090/api/settings \
+        -H "Authorization: $TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"meta":{"appName":"Nokta"}}' || true
     fi
 
     # --- Log Rotation ---
@@ -291,11 +297,8 @@ runcmd:
     }
     EOF
 
-    # --- Maintenance Scripts (scripts are in repo, just set permissions) ---
-    chmod +x $APP_DIR/backup.sh $APP_DIR/update.sh
-
-    # --- Daily Backups ---
-    sudo -u $APP_USER bash -c "(crontab -l 2>/dev/null || true; echo \"0 3 * * * $APP_DIR/backup.sh >> $APP_DIR/backup.log 2>&1\") | crontab -"
+    # --- Maintenance Scripts ---
+    chmod +x $APP_DIR/update.sh
 
     # Make install log readable
     chmod 644 /var/log/nokta-install.log
