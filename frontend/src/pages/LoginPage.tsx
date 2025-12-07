@@ -22,8 +22,8 @@ export default function LoginPage() {
       await auth.login(email, password);
       setLocation('/');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t('errors.authenticationFailed');
-      setError(errorMessage);
+      const msg = err instanceof Error && err.message === 'banned' ? t('errors.accountBanned') : t('errors.authenticationFailed');
+      setError(msg);
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ export interface User {
   last_seen?: string;
   birthday?: string;
   role?: 'Member' | 'Admin';
+  banned?: boolean;
   created: string;
   updated: string;
 }

@@ -99,11 +99,11 @@ migrate((app) => {
     minSelect: 0
   }))
 
-  chats.listRule = 'participants.id ?= @request.auth.id'
-  chats.viewRule = 'participants.id ?= @request.auth.id'
-  chats.createRule = '@request.auth.id != ""'
-  chats.updateRule = 'participants.id ?= @request.auth.id'
-  chats.deleteRule = 'participants.id ?= @request.auth.id'
+  chats.listRule = 'participants.id ?= @request.auth.id && @request.auth.banned != true'
+  chats.viewRule = 'participants.id ?= @request.auth.id && @request.auth.banned != true'
+  chats.createRule = '@request.auth.id != "" && @request.auth.banned != true'
+  chats.updateRule = 'participants.id ?= @request.auth.id && @request.auth.banned != true'
+  chats.deleteRule = 'participants.id ?= @request.auth.id && @request.auth.banned != true'
 
   chats.indexes = [
     "CREATE INDEX idx_chats_participants ON chats (participants)"
@@ -190,11 +190,11 @@ migrate((app) => {
     required: false
   }))
 
-  messages.listRule = 'chat.participants.id ?= @request.auth.id'
-  messages.viewRule = 'chat.participants.id ?= @request.auth.id'
-  messages.createRule = 'chat.participants.id ?= @request.auth.id'
-  messages.updateRule = 'chat.participants.id ?= @request.auth.id'
-  messages.deleteRule = 'sender = @request.auth.id'
+  messages.listRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  messages.viewRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  messages.createRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  messages.updateRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  messages.deleteRule = 'sender = @request.auth.id && @request.auth.banned != true'
 
   messages.indexes = [
     "CREATE INDEX idx_messages_chat ON messages (chat)",
@@ -263,11 +263,11 @@ migrate((app) => {
     onUpdate: false
   }))
 
-  typingEvents.listRule = 'chat.participants.id ?= @request.auth.id'
-  typingEvents.viewRule = 'chat.participants.id ?= @request.auth.id'
-  typingEvents.createRule = 'chat.participants.id ?= @request.auth.id'
+  typingEvents.listRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  typingEvents.viewRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
+  typingEvents.createRule = 'chat.participants.id ?= @request.auth.id && @request.auth.banned != true'
   typingEvents.updateRule = null
-  typingEvents.deleteRule = '@request.auth.id != ""'
+  typingEvents.deleteRule = '@request.auth.id != "" && @request.auth.banned != true'
 
   app.save(typingEvents)
 
@@ -317,11 +317,11 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  chatReadStatus.listRule = 'user = @request.auth.id'
-  chatReadStatus.viewRule = 'user = @request.auth.id'
-  chatReadStatus.createRule = '@request.auth.id != "" && user = @request.auth.id'
-  chatReadStatus.updateRule = 'user = @request.auth.id'
-  chatReadStatus.deleteRule = 'user = @request.auth.id'
+  chatReadStatus.listRule = 'user = @request.auth.id && @request.auth.banned != true'
+  chatReadStatus.viewRule = 'user = @request.auth.id && @request.auth.banned != true'
+  chatReadStatus.createRule = '@request.auth.id != "" && user = @request.auth.id && @request.auth.banned != true'
+  chatReadStatus.updateRule = 'user = @request.auth.id && @request.auth.banned != true'
+  chatReadStatus.deleteRule = 'user = @request.auth.id && @request.auth.banned != true'
 
   chatReadStatus.indexes = [
     "CREATE UNIQUE INDEX idx_unique_user_chat_read_status ON chat_read_status (user, chat)",
@@ -372,11 +372,11 @@ migrate((app) => {
     onUpdate: false
   }))
 
-  invitations.listRule = 'invited_by = @request.auth.id'
-  invitations.viewRule = 'invited_by = @request.auth.id'
-  invitations.createRule = '@request.auth.id != ""'
-  invitations.updateRule = '@request.auth.id != "" && used:isset = true'
-  invitations.deleteRule = 'invited_by = @request.auth.id'
+  invitations.listRule = 'invited_by = @request.auth.id && @request.auth.banned != true'
+  invitations.viewRule = 'invited_by = @request.auth.id && @request.auth.banned != true'
+  invitations.createRule = '@request.auth.id != "" && @request.auth.banned != true'
+  invitations.updateRule = '@request.auth.id != "" && used:isset = true && @request.auth.banned != true'
+  invitations.deleteRule = 'invited_by = @request.auth.id && @request.auth.banned != true'
 
   invitations.indexes = [
     "CREATE UNIQUE INDEX idx_invitations_code ON invitations (code)"
@@ -432,11 +432,17 @@ migrate((app) => {
 
   users.fields.getByName("role").default = "Member"
 
-  users.listRule = '@request.auth.id != ""'
-  users.viewRule = '@request.auth.id != ""'
+  users.fields.addAt(5, new Field({
+    name: "banned",
+    type: "bool",
+    required: false
+  }))
+
+  users.listRule = '@request.auth.id != "" && @request.auth.banned != true'
+  users.viewRule = '@request.auth.id != "" && @request.auth.banned != true'
   users.createRule = ''
-  users.updateRule = '@request.auth.role = "Admin" || @request.auth.id = id'
-  users.deleteRule = '@request.auth.role = "Admin"'
+  users.updateRule = '(@request.auth.role = "Admin" || @request.auth.id = id) && @request.auth.banned != true'
+  users.deleteRule = '@request.auth.role = "Admin" && @request.auth.banned != true'
 
   app.save(users)
 
@@ -485,11 +491,11 @@ migrate((app) => {
     onUpdate: true
   }))
 
-  deviceTokens.listRule = 'user = @request.auth.id'
-  deviceTokens.viewRule = 'user = @request.auth.id'
-  deviceTokens.createRule = '@request.auth.id != "" && user = @request.auth.id'
-  deviceTokens.updateRule = 'user = @request.auth.id'
-  deviceTokens.deleteRule = 'user = @request.auth.id'
+  deviceTokens.listRule = 'user = @request.auth.id && @request.auth.banned != true'
+  deviceTokens.viewRule = 'user = @request.auth.id && @request.auth.banned != true'
+  deviceTokens.createRule = '@request.auth.id != "" && user = @request.auth.id && @request.auth.banned != true'
+  deviceTokens.updateRule = 'user = @request.auth.id && @request.auth.banned != true'
+  deviceTokens.deleteRule = 'user = @request.auth.id && @request.auth.banned != true'
 
   deviceTokens.indexes = [
     "CREATE UNIQUE INDEX idx_device_tokens_token ON device_tokens (token)",
@@ -524,12 +530,14 @@ migrate((app) => {
   const lastSeenField = users.fields.getByName("last_seen")
   const birthdayField = users.fields.getByName("birthday")
   const roleField = users.fields.getByName("role")
+  const bannedField = users.fields.getByName("banned")
 
   if (nameField) users.fields.removeById(nameField.id)
   if (avatarField) users.fields.removeById(avatarField.id)
   if (lastSeenField) users.fields.removeById(lastSeenField.id)
   if (birthdayField) users.fields.removeById(birthdayField.id)
   if (roleField) users.fields.removeById(roleField.id)
+  if (bannedField) users.fields.removeById(bannedField.id)
 
   users.listRule = null
   users.viewRule = null

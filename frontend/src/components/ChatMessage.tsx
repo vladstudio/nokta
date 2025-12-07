@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import clsx from 'clsx';
-import { FileIcon, StarIcon } from '@phosphor-icons/react';
+import { FileIcon, StarIcon, ProhibitIcon } from '@phosphor-icons/react';
 import type { Message, User } from '../types';
 import { messages as messagesAPI, users as usersAPI } from '../services/pocketbase';
 import { UserAvatar } from './Avatar';
@@ -169,8 +169,9 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
     >
       <div className={clsx('flex flex-col gap-0.5 min-w-0 max-w-full', isOwn ? 'items-end' : 'items-start')}>
         <div className="flex items-baseline gap-2 px-1">
-          <span className="text-xs font-medium text-light">
+          <span className="text-xs font-medium text-light flex items-center gap-1">
             {!isOwn && senderName}
+            {message.expand?.sender?.banned && <ProhibitIcon size={12} className="text-red-600" />}
           </span>
           {message.created && !message.isPending && (
             <span className="text-xs text-light">

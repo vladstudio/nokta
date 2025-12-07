@@ -37,6 +37,10 @@ declare global {
 export const auth = {
   async login(email: string, password: string) {
     const authData = await pb.collection('users').authWithPassword(email, password);
+    if ((authData.record as unknown as User).banned) {
+      pb.authStore.clear();
+      throw new Error('banned');
+    }
     // Register push token on native apps
     if (window.NoktaAndroid) {
       window.NoktaAndroid.registerPushToken(pb.authStore.token, authData.record.id);
@@ -71,6 +75,15 @@ export const auth = {
     try { await pb.collection('users').authRefresh(); }
     catch { pb.authStore.clear(); }
   },
+
+  subscribeToCurrentUser(onBanned: () => void) {
+    const userId = pb.authStore.record?.id;
+    if (!userId) return () => {};
+    pb.collection('users').subscribe(userId, (e) => {
+      if (e.record.banned) onBanned();
+    });
+    return () => pb.collection('users').unsubscribe(userId);
+  },
 };
 
 export const users = {
@@ -101,8 +114,8 @@ export const users = {
     return await pb.collection('users').update<User>(userId, data);
   },
 
-  async delete(userId: string) {
-    await pb.collection('users').delete(userId);
+  async setBanned(userId: string, banned: boolean) {
+    return await pb.collection('users').update<User>(userId, { banned });
   },
 };
 

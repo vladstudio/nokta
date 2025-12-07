@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { users, stats } from '../services/pocketbase';
 import { Button, ScrollArea, Dialog, Input, RadioGroup, useToastManager, Card } from '../ui';
 import type { User } from '../types';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, TrashIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, PlusIcon, PencilIcon, ProhibitIcon, CheckCircleIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export default function AdminPage() {
   const [userEmail, setUserEmail] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userRole, setUserRole] = useState<'Member' | 'Admin'>('Member');
-  const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
+  const [confirmBan, setConfirmBan] = useState<User | null>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [userErrors, setUserErrors] = useState<string[]>([]);
   const [systemStats, setSystemStats] = useState<{ dataSizeMB: number; freeSpaceMB: number } | null>(null);
@@ -66,18 +66,19 @@ export default function AdminPage() {
     }
   }, [userName, userEmail, userPassword, userRole, editingUser, loadUsers, toast, t]);
 
-  const handleDeleteUser = useCallback(async () => {
-    if (!confirmDelete) return;
+  const handleToggleBan = useCallback(async (user?: User) => {
+    const target = user || confirmBan;
+    if (!target) return;
     try {
-      await users.delete(confirmDelete.id);
+      await users.setBanned(target.id, !target.banned);
       loadUsers();
-      toast.add({ title: t('admin.userDeleted'), data: { type: 'success' } });
+      toast.add({ title: t(target.banned ? 'admin.userUnbanned' : 'admin.userBanned'), data: { type: 'success' } });
     } catch {
-      toast.add({ title: t('admin.failedToDeleteUser'), data: { type: 'error' } });
+      toast.add({ title: t('admin.failedToBanUser'), data: { type: 'error' } });
     } finally {
-      setConfirmDelete(null);
+      setConfirmBan(null);
     }
-  }, [confirmDelete, loadUsers, toast, t]);
+  }, [confirmBan, loadUsers, toast, t]);
 
   const openUserDialog = useCallback((user?: User) => {
     setEditingUser(user || null);
@@ -110,18 +111,24 @@ export default function AdminPage() {
             <PlusIcon size={20} className="text-accent" /> {t('admin.addUser')}
           </Button>
           {userList.map((user) => (
-            <Card key={user.id} shadow="sm" border padding="sm">
+            <Card key={user.id} shadow="sm" border padding="sm" className={user.banned ? 'opacity-60' : ''}>
               <div className="flex items-center gap-2">
                 <div className="flex-1">
-                  <div className="font-medium">{user.name || user.email}</div>
+                  <div className="font-medium">{user.name || user.email}{user.banned && <span className="text-red-600 ml-2">({t('admin.banned')})</span>}</div>
                   <div className="text-xs text-light">{user.email} • {user.role}</div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => openUserDialog(user)}>
                   <PencilIcon size={20} className="text-accent" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => setConfirmDelete(user)}>
-                  <TrashIcon size={20} className="text-red-600" />
-                </Button>
+                {user.banned ? (
+                  <Button variant="ghost" size="icon" onClick={() => handleToggleBan(user)}>
+                    <CheckCircleIcon size={20} className="text-green-600" />
+                  </Button>
+                ) : (
+                  <Button variant="ghost" size="icon" onClick={() => setConfirmBan(user)}>
+                    <ProhibitIcon size={20} className="text-red-600" />
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
@@ -169,17 +176,17 @@ export default function AdminPage() {
         </Dialog>
 
         <Dialog
-          open={!!confirmDelete}
-          onOpenChange={() => setConfirmDelete(null)}
-          title={t('admin.confirmDelete')}
+          open={!!confirmBan}
+          onOpenChange={() => setConfirmBan(null)}
+          title={t('admin.confirmBan')}
           footer={
             <>
-              <Button variant="outline" className="flex-1 center" onClick={() => setConfirmDelete(null)}>{t('common.cancel')}</Button>
-              <Button variant="primary" className="flex-1 center" onClick={handleDeleteUser}>{t('common.delete')}</Button>
+              <Button variant="outline" className="flex-1 center" onClick={() => setConfirmBan(null)}>{t('common.cancel')}</Button>
+              <Button variant="primary" className="flex-1 center" onClick={() => handleToggleBan()}>{t('admin.ban')}</Button>
             </>
           }
         >
-          <p>{t('admin.confirmDeleteUser')}</p>
+          <p>{t('admin.confirmBanUser')}</p>
         </Dialog>
       </div>
     </ScrollArea>

@@ -27,10 +27,9 @@ function App() {
 
   useEffect(() => {
     auth.refresh();
-    const unsubscribe = auth.onChange(() => {
-      setIsAuthenticated(auth.isValid);
-    });
-    return unsubscribe;
+    const unsubscribe = auth.onChange(() => setIsAuthenticated(auth.isValid));
+    const unsubscribeBan = auth.subscribeToCurrentUser(() => auth.logout());
+    return () => { unsubscribe(); unsubscribeBan(); };
   }, []);
 
 
