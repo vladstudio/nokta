@@ -43,7 +43,8 @@
     "imageCopied": "Image copied",
     "defaultChatName": "Chat",
     "jumpToPresent": "Jump to present",
-    "favsOnly": "Favorites only"
+    "favsOnly": "Favorites only",
+    "noStarredMessages": "No starred messages yet. Select a message and tap Star."
   },
   "messageInput": {
     "placeholder": "Type a message..."

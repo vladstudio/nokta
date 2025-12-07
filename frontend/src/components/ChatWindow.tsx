@@ -689,6 +689,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
         selectedMessageId={selectedMessageId}
         hasMoreAfter={hasMoreAfter}
         currentUserId={currentUser?.id || ''}
+        showFavsOnly={showFavsOnly}
         onSelectMessage={setSelectedMessageId}
         onRetryMessage={handleRetryMessage}
         onRetryUpload={handleRetryUpload}

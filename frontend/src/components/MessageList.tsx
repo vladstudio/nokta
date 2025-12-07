@@ -17,6 +17,7 @@ interface MessageListProps {
   selectedMessageId: string | null;
   hasMoreAfter: boolean;
   currentUserId: string;
+  showFavsOnly?: boolean;
   onSelectMessage: (messageId: string | null) => void;
   onRetryMessage: (tempId: string) => void;
   onRetryUpload: (tempId: string) => void;
@@ -34,6 +35,7 @@ function MessageList({
   selectedMessageId,
   hasMoreAfter,
   currentUserId,
+  showFavsOnly,
   onSelectMessage,
   onRetryMessage,
   onRetryUpload,
@@ -55,9 +57,9 @@ function MessageList({
           </div>
         )}
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light">
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-xs font-medium text-light text-center px-4">
             <img src="/icon-muted.svg" alt="Icon" className="w-32 h-32" />
-            {t('chatWindow.noMessages')}
+            {showFavsOnly ? t('chatWindow.noStarredMessages') : t('chatWindow.noMessages')}
           </div>
         ) : (
           messages.map((message) => (

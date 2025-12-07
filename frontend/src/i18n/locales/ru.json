@@ -43,7 +43,8 @@
     "imageCopied": "Изображение скопировано",
     "defaultChatName": "Чат",
     "jumpToPresent": "К последним",
-    "favsOnly": "Только избранные"
+    "favsOnly": "Только избранные",
+    "noStarredMessages": "Нет избранных сообщений. Выберите сообщение и нажмите Звезду."
   },
   "messageInput": {
     "placeholder": "Введите сообщение..."
