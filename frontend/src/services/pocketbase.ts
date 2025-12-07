@@ -18,11 +18,18 @@ function generateSecurePassword(length = 24): string {
 // Disable auto-cancellation - app makes legitimate concurrent requests
 pb.autoCancellation(false);
 
-// Android bridge for native app push notifications
+// Native app bridges for push notifications
 declare global {
   interface Window {
     NoktaAndroid?: {
       registerPushToken(authToken: string, userId: string): void;
+    };
+    webkit?: {
+      messageHandlers?: {
+        NoktaiOS?: {
+          postMessage(data: { authToken: string; userId: string }): void;
+        };
+      };
     };
   }
 }
@@ -30,9 +37,11 @@ declare global {
 export const auth = {
   async login(email: string, password: string) {
     const authData = await pb.collection('users').authWithPassword(email, password);
-    // Register push token on Android native app
+    // Register push token on native apps
     if (window.NoktaAndroid) {
       window.NoktaAndroid.registerPushToken(pb.authStore.token, authData.record.id);
+    } else if (window.webkit?.messageHandlers?.NoktaiOS) {
+      window.webkit.messageHandlers.NoktaiOS.postMessage({ authToken: pb.authStore.token, userId: authData.record.id });
     }
     return authData.record as unknown as User;
   },
