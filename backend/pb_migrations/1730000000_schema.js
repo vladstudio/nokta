@@ -160,7 +160,8 @@ migrate((app) => {
     required: false,
     maxSelect: 1,
     maxSize: 104857600,
-    thumbs: ["100x100", "300x300", "600x600"]
+    thumbs: ["100x100", "300x300", "600x600"],
+    mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "image/bmp", "image/tiff", "image/heic", "image/heif", "video/mp4", "video/webm", "video/quicktime", "video/mpeg", "video/avi", "audio/mpeg", "audio/wav", "audio/ogg", "audio/webm", "audio/mp4", "audio/aac", "audio/flac", "application/zip", "application/x-rar-compressed", "application/x-7z-compressed", "application/gzip", "application/x-tar", "application/pdf", "text/plain", "text/csv", "text/rtf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.oasis.opendocument.text", "application/vnd.oasis.opendocument.spreadsheet", "application/vnd.oasis.opendocument.presentation"]
   }))
 
   messages.fields.addAt(5, new Field({
@@ -405,7 +406,8 @@ migrate((app) => {
     type: "file",
     required: false,
     maxSelect: 1,
-    maxSize: 5242880
+    maxSize: 5242880,
+    mimeTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"]
   }))
 
   users.fields.addAt(2, new Field({
