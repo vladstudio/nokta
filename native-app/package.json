@@ -7,9 +7,6 @@
   "scripts": {
     "dev": "electron .",
     "build": "electron-builder",
-    "build:mac": "electron-builder --mac --arm64 --x64",
-    "build:mac-arm": "electron-builder --mac --arm64",
-    "build:mac-intel": "electron-builder --mac --x64",
     "build:win": "electron-builder --win",
     "build:linux": "electron-builder --linux"
   },

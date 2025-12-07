@@ -82,7 +82,7 @@ Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, pass
 
 ## Build Native Apps
 
-**Prerequisites:** Node.js, Android Studio (Android), Xcode 15+ (iOS)
+**Prerequisites:** Node.js, Android Studio (Android), Xcode 15+ (iOS/macOS)
 
 ### Android
 ```bash
@@ -106,6 +106,15 @@ cd native-app/ios && open Nokta.xcodeproj
 ```
 1. Set team in **Signing & Capabilities** (requires [Apple Developer Program](https://developer.apple.com/programs/) for push notifications)
 2. Build (⌘B) or Archive for distribution
+
+### macOS
+```bash
+cd native-app/macos && open Nokta.xcodeproj
+```
+1. Set team in **Signing & Capabilities** (optional, for distribution)
+2. Build (⌘B) or Archive for distribution
+
+Native Swift app (~1 MB) with menu bar tray, notifications, and Start on Login.
 
 ## Android Push Notifications (Optional)
 

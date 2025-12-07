@@ -118,13 +118,12 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
  * Force role to 'Member' on user creation to prevent privilege escalation
  * Only superusers or admin users can create Admin users
  */
-onRecordCreate((e) => {
+onRecordCreateRequest((e) => {
   const requestRole = e.record.get("role")
-  const authRecord = e.requestInfo?.auth
 
   // Check if authenticated as superuser or admin user
-  const isSuperuser = authRecord?.collectionName() === "_superusers"
-  const isAdminUser = authRecord?.get("role") === "Admin"
+  const isSuperuser = e.hasSuperuserAuth()
+  const isAdminUser = e.auth?.get("role") === "Admin"
 
   // If not superuser or admin, force role to Member
   if (!isSuperuser && !isAdminUser) {

@@ -23,10 +23,13 @@ cd android && ./gradlew assembleRelease
 cp app/build/outputs/apk/release/app-release.apk "../$OUTDIR/Nokta-$VERSION-android.apk"
 cd ..
 
-echo "Building macOS..."
-bun run build:mac-arm
-bun run build:mac-intel
-cp dist/*.dmg dist/*.zip "$OUTDIR/"
+echo "Building macOS (native Swift app)..."
+cd macos
+rm -rf build
+xcodebuild -project Nokta.xcodeproj -scheme Nokta -configuration Release -derivedDataPath build/DerivedData build
+cp -R build/DerivedData/Build/Products/Release/Nokta.app "../$OUTDIR/"
+hdiutil create -volname Nokta -srcfolder "../$OUTDIR/Nokta.app" -ov -format UDZO "../$OUTDIR/Nokta-$VERSION-macos.dmg"
+cd ..
 
 echo "Building Windows..."
 bun run build:win
