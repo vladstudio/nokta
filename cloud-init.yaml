@@ -136,7 +136,7 @@ runcmd:
     chown $APP_USER:$APP_USER $APP_DIR/backend/pocketbase
 
     # --- Configure Secrets ---
-    SECRETS_DIR="/home/$APP_USER/.secrets"
+    SECRETS_DIR="/home/$APP_USER/.nokta"
     mkdir -p $SECRETS_DIR
     cat > $SECRETS_DIR/env << ENVEOF
     DAILY_CO_API_KEY=$DAILY_API_KEY
@@ -199,7 +199,7 @@ runcmd:
     Type=simple
     User=$APP_USER
     WorkingDirectory=$APP_DIR/backend
-    EnvironmentFile=/home/$APP_USER/.secrets/env
+    EnvironmentFile=/home/$APP_USER/.nokta/env
     ExecStart=$APP_DIR/backend/pocketbase serve --http=127.0.0.1:8090
     Restart=always
     RestartSec=5

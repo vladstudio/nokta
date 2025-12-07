@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 BACKUP_DIR="$HOME/nokta-backups"
-SECRETS_DIR="$HOME/.secrets"
+SECRETS_DIR="$HOME/.nokta"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
@@ -10,7 +10,7 @@ tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta/backend pb_data
 
 # Backup secrets directory if exists
 if [ -d "$SECRETS_DIR" ]; then
-  tar -czf $BACKUP_DIR/secrets_$TIMESTAMP.tar.gz -C $HOME .secrets
+  tar -czf $BACKUP_DIR/secrets_$TIMESTAMP.tar.gz -C $HOME .nokta
 fi
 
 # Clean up old backups (keep 7 days)

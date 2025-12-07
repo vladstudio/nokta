@@ -85,27 +85,18 @@ Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, pass
 **Prerequisites:** Node.js, Android Studio (for Android)
 
 ```bash
-cd native-app && npm install
-```
+# Setup Android signing (once)
+mkdir -p ~/.nokta
+/Applications/Android\ Studio.app/Contents/jbr/Contents/Home/bin/keytool -genkey -v -keystore ~/.nokta/nokta-release.keystore -alias nokta -keyalg RSA -keysize 2048 -validity 10000
+cat > ~/.nokta/nokta-keystore.properties << EOF
+storeFile=nokta-release.keystore
+storePassword=YOUR_PASSWORD
+keyAlias=nokta
+keyPassword=YOUR_PASSWORD
+EOF
 
-**macOS app:**
-```bash
-npm run build:mac          # Universal (ARM + Intel)
-npm run build:mac-arm      # ARM only
-npm run build:mac-intel    # Intel only
-# Output: native-app/dist/*.dmg
-```
-
-**Windows app (cross-compile):**
-```bash
-npm run build:win
-# Output: native-app/dist/*.exe
-```
-
-**Android app:**
-```bash
-cd android && ./gradlew assembleDebug
-# Output: android/app/build/outputs/apk/debug/app-debug.apk
+# Build all platforms
+./build-apps.sh
 ```
 
 ## Android Push Notifications (Optional)
