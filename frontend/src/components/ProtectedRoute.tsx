@@ -23,6 +23,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const showCallView = useAtomValue(showCallViewAtom);
   const [isChecking, setIsChecking] = useState(true);
   const [background, setBackground] = useState(preferences.background);
+  const [fontSize, setFontSize] = useState(preferences.fontSize);
 
   useEffect(() => {
     if (!auth.isValid) { setLocation('/login'); } else { setIsChecking(false); }
@@ -31,10 +32,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [setLocation]);
 
   useEffect(() => {
-    const update = () => setBackground(preferences.background);
+    const update = () => { setBackground(preferences.background); setFontSize(preferences.fontSize); };
     window.addEventListener('preferences-change', update);
     return () => window.removeEventListener('preferences-change', update);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = fontSize === 'large' ? '125%' : '';
+  }, [fontSize]);
 
   const getBgClass = () => background ? `bg-pattern-${background}-${colorScheme}` : '';
 

@@ -23,6 +23,7 @@ export default function UserSettingsPage() {
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [theme, setTheme] = useState<Theme>(preferences.theme);
+  const [fontSize, setFontSize] = useState(preferences.fontSize);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [birthdayDay, setBirthdayDay] = useState('');
@@ -48,6 +49,7 @@ export default function UserSettingsPage() {
   }, [currentUser?.id]);
 
   const handleThemeChange = (v: Theme) => { setTheme(v); preferences.theme = v; };
+  const handleFontSizeChange = (v: 'default' | 'large') => { setFontSize(v); preferences.fontSize = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
@@ -106,6 +108,11 @@ export default function UserSettingsPage() {
     { value: 'golden' as const, label: t('themes.golden') },
     { value: 'high-contrast' as const, label: t('themes.high-contrast') },
     { value: 'green' as const, label: t('themes.green') },
+  ], [t]);
+
+  const fontSizeOptions = useMemo(() => [
+    { value: 'default' as const, label: t('userSettingsDialog.fontSizeDefault') },
+    { value: 'large' as const, label: t('userSettingsDialog.fontSizeLarge') },
   ], [t]);
 
   const dayOptions = useMemo(() => [
@@ -181,6 +188,10 @@ export default function UserSettingsPage() {
               <div>
                 <FormLabel>{t('userSettingsDialog.theme')}</FormLabel>
                 <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
+              </div>
+              <div>
+                <FormLabel>{t('userSettingsDialog.fontSize')}</FormLabel>
+                <RadioGroup value={fontSize} onChange={handleFontSizeChange} options={fontSizeOptions} />
               </div>
               <div>
                 <FormLabel>{t('chats.background')}</FormLabel>
