@@ -6,7 +6,7 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # Backup PocketBase data
-tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta/backend pb_data
+tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta-main/backend pb_data
 
 # Backup secrets directory if exists
 if [ -d "$SECRETS_DIR" ]; then

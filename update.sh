@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-APP_DIR="$HOME/nokta"
+APP_DIR="$HOME/nokta-main"
 PB_VERSION="0.23.6"
 
 echo "Backing up..."
@@ -10,14 +10,12 @@ echo "Stopping services..."
 sudo systemctl stop nokta-backend
 sudo systemctl stop nokta-fcm 2>/dev/null || true
 
-cp $APP_DIR/backend/.env /tmp/.env.backend.backup
 cp $APP_DIR/frontend/.env /tmp/.env.frontend.backup
 mv $APP_DIR/backend/pb_data /tmp/pb_data.backup
 
 echo "Downloading update..."
 rm -rf $APP_DIR
 curl -L https://github.com/vladstudio/nokta/archive/refs/heads/main.tar.gz | tar -xz -C $HOME
-mv $HOME/nokta-main $APP_DIR
 
 ARCH=$(uname -m)
 case "$ARCH" in
@@ -29,10 +27,8 @@ unzip -o /tmp/pb.zip -d $APP_DIR/backend/
 rm /tmp/pb.zip
 chmod +x $APP_DIR/backend/pocketbase
 
-mv /tmp/.env.backend.backup $APP_DIR/backend/.env
 mv /tmp/.env.frontend.backup $APP_DIR/frontend/.env
 mv /tmp/pb_data.backup $APP_DIR/backend/pb_data
-chmod 600 $APP_DIR/backend/.env
 
 echo "Installing backend dependencies..."
 cd $APP_DIR/backend

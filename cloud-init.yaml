@@ -32,7 +32,7 @@ runcmd:
     # ==============================================================
 
     APP_USER="nokta"
-    APP_DIR="/home/$APP_USER/nokta"
+    APP_DIR="/home/$APP_USER/nokta-main"
     PB_VERSION="0.23.6"
 
     echo "=== Nokta Installation Started ==="
@@ -119,7 +119,6 @@ runcmd:
 
     # --- Download Nokta ---
     curl -L https://github.com/vladstudio/nokta/archive/refs/heads/main.tar.gz | tar -xz -C /home/$APP_USER
-    mv /home/$APP_USER/nokta-main $APP_DIR
     chown -R $APP_USER:$APP_USER $APP_DIR
 
     # --- Download PocketBase ---
