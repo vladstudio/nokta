@@ -1,10 +1,10 @@
 import SwiftUI
 import UserNotifications
+import ServiceManagement
 
 @main
 struct NoktaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @AppStorage("serverUrl") private var serverUrl = ""
 
     var body: some Scene {
         WindowGroup {
@@ -18,7 +18,7 @@ struct NoktaApp: App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate, NSMenuDelegate {
     var statusItem: NSStatusItem?
     var normalIcon: NSImage?
     var unreadIcon: NSImage?
@@ -59,24 +59,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             unreadIcon?.isTemplate = true
 
             button.image = normalIcon
-            button.action = #selector(statusItemClicked)
-            button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+
+        updateMenu()
     }
 
-    @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
-        let event = NSApp.currentEvent!
-        if event.type == .rightMouseUp {
-            showContextMenu()
-        } else {
-            NSApp.windows.first?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-        }
-    }
-
-    private func showContextMenu() {
+    private func updateMenu() {
         let menu = NSMenu()
+        menu.delegate = self
+
         menu.addItem(NSMenuItem(title: "Open Nokta", action: #selector(openWindow), keyEquivalent: ""))
 
         let loginItem = NSMenuItem(title: "Start on Login", action: #selector(toggleLoginItem), keyEquivalent: "")
@@ -85,12 +76,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Change Server", action: #selector(changeServer), keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q"))
 
         statusItem?.menu = menu
-        statusItem?.button?.performClick(nil)
-        statusItem?.menu = nil
     }
 
     @objc private func openWindow() {
@@ -128,12 +116,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         statusItem?.button?.image = hasUnread ? unreadIcon : normalIcon
     }
 
+    func menuWillOpen(_ menu: NSMenu) {
+        if let loginItem = menu.item(withTitle: "Start on Login") {
+            loginItem.state = isLoginItemEnabled() ? .on : .off
+        }
+    }
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         [.banner, .badge, .sound]
     }
 }
-
-import ServiceManagement
 
 extension Notification.Name {
     static let setUnreadStatus = Notification.Name("setUnreadStatus")

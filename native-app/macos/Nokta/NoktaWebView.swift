@@ -22,7 +22,6 @@ struct NoktaWebView: NSViewRepresentable {
         if let url = URL(string: serverUrl) {
             webView.load(URLRequest(url: url))
         }
-        context.coordinator.webView = webView
         return webView
     }
 
@@ -31,8 +30,6 @@ struct NoktaWebView: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     class Coordinator: NSObject, WKScriptMessageHandler, WKUIDelegate, WKNavigationDelegate {
-        weak var webView: WKWebView?
-
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "NoktaMac", let body = message.body as? [String: Any] else { return }
 
