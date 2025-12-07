@@ -262,7 +262,7 @@ export default function UserSettingsPage() {
             </Card>
           )}
           <div className="text-xs mx-auto flex gap-2">
-            <a href="https://nokta.chat/" target="_blank" className="link text-light">nokta.chat</a>
+            <a href="https://nokta.chat/" target="_blank" className="link text-light">Nokta.chat</a>
             <span className="text-light">·</span>
             <button onClick={() => window.location.reload()} className="link text-light">{t('common.reload')}</button>
           </div>

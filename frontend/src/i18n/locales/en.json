@@ -160,7 +160,8 @@
     "failedToCreate": "Failed to create"
   },
   "connectionBanner": {
-    "offline": "You are offline. Messages will be sent when connection is restored."
+    "offline": "You are offline. Messages will be sent when connection is restored.",
+    "update": "Update available. Tap to reload."
   },
   "loginPage": {
     "signIn": "Sign in"

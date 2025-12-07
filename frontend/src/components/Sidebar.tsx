@@ -24,7 +24,7 @@ export default function Sidebar() {
   const [location, setLocation] = useLocation();
   const [, chatParams] = useRoute('/chat/:chatId');
   const chatId = chatParams?.chatId;
-  const { isOnline } = useConnectionStatus();
+  const { isOnline, needsReload } = useConnectionStatus();
 
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [activeCalls, setActiveCalls] = useState<Chat[]>([]);
@@ -172,6 +172,11 @@ export default function Sidebar() {
             <div className="text-xs text-center text-(--color-error-500) py-2">
               {t('connectionBanner.offline')}
             </div>
+          )}
+          {needsReload && (
+            <button onClick={() => window.location.reload()} className="text-xs text-center text-accent py-2 w-full hover:underline">
+              {t('connectionBanner.update')}
+            </button>
           )}
           {/* Active calls */}
           {isVideoCallsEnabled && activeCalls.map(call => {

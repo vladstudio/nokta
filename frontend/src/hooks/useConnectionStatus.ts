@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import { pb } from '../services/pocketbase';
+import { useState, useEffect, useRef } from 'react';
+import { pb, nokta } from '../services/pocketbase';
 
 export function useConnectionStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isPbConnected, setIsPbConnected] = useState(true);
+  const [needsReload, setNeedsReload] = useState(false);
+  const initialVersion = useRef<string | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -12,10 +14,12 @@ export function useConnectionStatus() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Check PocketBase connection by pinging health endpoint
+    // Check PocketBase connection and version
     const checkPbConnection = async () => {
       try {
-        await pb.health.check();
+        const { version } = await nokta.getInfo();
+        if (!initialVersion.current) initialVersion.current = version;
+        else if (version !== initialVersion.current) setNeedsReload(true);
         setIsPbConnected(true);
       } catch {
         setIsPbConnected(false);
@@ -33,5 +37,5 @@ export function useConnectionStatus() {
     };
   }, []);
 
-  return { isOnline: isOnline && isPbConnected };
+  return { isOnline: isOnline && isPbConnected, needsReload };
 }
