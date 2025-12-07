@@ -24,16 +24,16 @@ cp app/build/outputs/apk/release/app-release.apk "../$OUTDIR/Nokta-$VERSION-andr
 cd ..
 
 echo "Building macOS..."
-npm run build:mac-arm
-npm run build:mac-intel
+bun run build:mac-arm
+bun run build:mac-intel
 cp dist/*.dmg dist/*.zip "$OUTDIR/"
 
 echo "Building Windows..."
-npm run build:win
+bun run build:win
 cp dist/*.exe "$OUTDIR/"
 
 echo "Building Linux..."
-npm run build:linux
+bun run build:linux
 cp dist/*.AppImage dist/*.deb "$OUTDIR/"
 
 echo "Done! Apps in $OUTDIR/"

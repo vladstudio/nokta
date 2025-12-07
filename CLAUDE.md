@@ -4,20 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Talk is a real-time chat application for direct messaging and group chats. Frontend is a React SPA, backend is PocketBase (standalone executable).
+Nokta is a real-time chat application with video calls, available on web, desktop (Electron), iOS (WebView), and Android (WebView).
 
 **Tech Stack:**
 - Frontend: React 19 + TypeScript + Vite + Tailwind CSS 4 + Jotai + wouter
 - Backend: PocketBase with custom hooks and migrations
+- Video Calls: Daily.co
 - Package Manager: bun
 - Real-time: PocketBase SSE (Server-Sent Events) subscriptions
+- i18n: i18next
 
 ## Development Commands
 
 ### Frontend
 ```bash
 cd frontend
-bun install           # Install dependencies
+bun install          # Install dependencies
 bun run dev          # Start dev server on port 3000
 bun run build        # Production build
 bun run preview      # Preview production build
@@ -27,21 +29,17 @@ bun run preview      # Preview production build
 ```bash
 cd backend
 ./pocketbase serve   # Start server on port 8090
-
-# Reset database and setup test data
-./reset-and-setup.sh              # Automated reset
-# Then manually create admin at http://127.0.0.1:8090/_/
-# Credentials: vlad@vlad.studio / 1234567890
-
-npm install          # Install setup script dependencies
-npm run setup        # Create test users and data
+bun install          # Install setup script dependencies
 ```
-
-Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 
 ### Production Build
 ```bash
-./build.sh          # Creates deploy/ with frontend build + backend files
+./build.sh           # Creates deploy/ with frontend build + backend files
+```
+
+### Native Apps
+```bash
+./build-apps.sh      # Build desktop (Electron), iOS, Android apps
 ```
 
 ## Architecture
@@ -49,14 +47,18 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 ### Backend: PocketBase
 
 **Collections:**
-- `users` (auth) - name, email, avatar, language, theme, background, role
-- `chats` - participants (DMs or group chats)
-- `messages` - chat + sender + content + type (text/image/video/audio)
+- `users` (auth) - name, email, avatar, birthday, role
+- `chats` - participants, daily_room_url, is_active_call, call_participants, created_by
+- `messages` - chat, sender, content, type (text/image/file/video/voice), reactions, favs, reply_to, forwarded_from
 - `chat_read_status` - tracks last read message per user per chat
 - `presence` - real-time user online status
+- `typing_events` - real-time typing indicators
+- `device_tokens` - push notification tokens (Android/iOS/web)
+- `invitations` - invitation codes with expiration
 
 **Custom Hooks** (`pb_hooks/`):
-- `auth_logging.pb.js` - logs authentication events
+- `nokta.pb.js` - API info endpoint
+- `daily.pb.js` - video call room management (create/delete/leave)
 - `chat_hooks.pb.js` - auto-creates chats, message logic, FCM push notifications
 - `invitations.pb.js` - secure signup endpoint, role/password validation
 
@@ -66,9 +68,12 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 
 **Routing** (wouter):
 - `/login` - authentication
+- `/signup/:code` - invitation-based signup
+- `/invites` - manage invitations
 - `/admin` - admin panel (user management)
 - `/settings` - user settings (profile, preferences, logout)
 - `/chat/:chatId?` - main chat interface
+- `/new` - create new chat
 
 **State Management:**
 - Jotai for global state (call store)
@@ -76,7 +81,7 @@ Test users: `a@test.com` / `1234567890` and `b@test.com` / `1234567890`
 - PocketBase real-time subscriptions for live data
 
 **Service Layer** (`src/services/pocketbase.ts`):
-Organized by collection: `auth`, `users`, `chats`, `messages`, `chatReadStatus`, `presence`.
+Organized by collection: `auth`, `users`, `chats`, `messages`, `chatReadStatus`, `presence`, `invitations`, `stats`, `nokta`.
 Each service exports CRUD methods and real-time subscription helpers.
 
 **Custom Hooks** (`src/hooks/`):
@@ -85,13 +90,21 @@ Each service exports CRUD methods and real-time subscription helpers.
 - `useTypingIndicator` - typing status broadcast/display
 - `usePresence` - user online/offline status
 - `useFileUpload` - image/video upload with compression
+- `useVideoCompression` - advanced video compression with quality presets
 - `useConnectionStatus` - network connectivity monitoring
 - `useTheme` - theme management (light/dark/system)
+- `useSearchMessages` - message search within chat
+- `useIsMobile` - mobile device detection
 
 **Component Structure:**
-- `pages/` - route-level components (ChatPage, AdminPage, UserSettingsPage, LoginPage)
-- `components/` - reusable UI components (Sidebar, ChatWindow, ChatDialog, etc.)
+- `pages/` - route-level components
+- `components/` - reusable UI components (Sidebar, ChatWindow, ChatDialog, CallView, etc.)
 - `ui/` - base UI primitives (@base-ui-components/react + custom)
+
+**Utilities** (`src/utils/`):
+- `messageQueue.ts` - pending message queue for offline support
+- `messageCache.ts` - IndexedDB-based message caching
+- `notifications.ts` - browser notifications with mute settings
 
 ## Key Patterns
 
@@ -106,24 +119,26 @@ pb.collection('messages').subscribe('*', (e) => {
 ### Service Organization
 All PocketBase API calls go through `src/services/pocketbase.ts`. Never call `pb.collection()` directly in components.
 
-### Message Loading
-Uses cursor-based pagination with `useMessageList` hook. Loads older messages on scroll, subscribes to new messages via SSE.
+### Message Features
+- Reactions (emoji), favorites, replies, forwarding
+- Types: text, image, file, video, voice
+- Search with full-text query
+- File uploads up to 100MB with thumbnails
 
-### File Uploads
-Images/videos are compressed client-side before upload. See `useFileUpload` and `useVideoCompression` hooks.
-
-### Chat Creation Logic
-Users can create chats with any combination of participants. Backend hook auto-creates read status for all participants.
-See `pb_hooks/chat_hooks.pb.js`
+### Video Calls
+Daily.co integration for video calls. Backend manages room creation/cleanup via `daily.pb.js` hook.
 
 ### Authentication Flow
+- Invitation-based signup with code validation
 - Login via `auth.login()` from service layer
 - Auth state stored in PocketBase SDK authStore
 - `ProtectedRoute` and `AdminRoute` wrappers enforce access
-- Auth changes trigger app-wide re-renders via `auth.onChange()`
+- Password minimum: 10 characters
 
-### Presence System
-Users broadcast online status every 30s via `presence` collection. Offline if no update in 60s. See `usePresence` hook.
+### Native App Bridge
+Push token registration:
+- Android: `window.NoktaAndroid.registerPushToken()`
+- iOS: `window.webkit.messageHandlers.NoktaiOS.postMessage()`
 
 ## Environment Variables
 
@@ -134,12 +149,18 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 
 **Backend** (`.env` in `backend/`):
 ```
-FCM_API_KEY=<random-secret-key>  # Required for push notifications
+DAILY_CO_API_KEY=<daily-co-api-key>   # Required for video calls
+FCM_API_KEY=<random-secret-key>       # Required for push notifications
+SECRETS_PATH=<path-to-firebase-json>  # Firebase service account file
 ```
 
-Generate a secure key: `openssl rand -hex 32`
+## Native Apps
 
-Both PocketBase and FCM service read this variable for authenticated communication.
+**Desktop (Electron):** Mac (ARM64/Intel), Windows, Linux via electron-builder
+**Android:** Gradle-based with Firebase, package: `com.nokta.app`
+**iOS:** Xcode project with push notification entitlements, iOS 15+
+
+See `native-app/` for all native app code.
 
 ## Important Notes
 
@@ -147,6 +168,5 @@ Both PocketBase and FCM service read this variable for authenticated communicati
 - PocketBase must be running before frontend can work
 - When modifying schema, create migrations via PocketBase admin UI
 - Real-time subscriptions auto-reconnect on disconnect
-- All dates/times are handled by PocketBase (created/updated fields)
 - File uploads go to PocketBase storage, URLs are relative
 - User roles: "Admin" (full access) or "Member" (limited)
