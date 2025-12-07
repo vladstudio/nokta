@@ -28,7 +28,8 @@
     "email": "Email",
     "password": "Пароль",
     "name": "Имя",
-    "copied": "Скопировано"
+    "copied": "Скопировано",
+    "reload": "Обновить"
   },
   "sidebar": {
     "logOut": "Выйти"

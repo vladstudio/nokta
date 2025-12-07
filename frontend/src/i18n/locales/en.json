@@ -28,7 +28,8 @@
     "email": "Email",
     "password": "Password",
     "name": "Name",
-    "copied": "Copied"
+    "copied": "Copied",
+    "reload": "Reload"
   },
   "sidebar": {
     "logOut": "Log Out"
