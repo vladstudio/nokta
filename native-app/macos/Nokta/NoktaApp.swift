@@ -7,11 +7,10 @@ struct NoktaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Nokta") {
             ContentView()
                 .frame(minWidth: 400, minHeight: 300)
         }
-        .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
