@@ -82,22 +82,30 @@ Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, pass
 
 ## Build Native Apps
 
-**Prerequisites:** Node.js, Android Studio (for Android)
+**Prerequisites:** Node.js, Android Studio (Android), Xcode 15+ (iOS)
 
+### Android
 ```bash
-# Setup Android signing (once)
+# Setup signing (once)
 mkdir -p ~/.nokta
-/Applications/Android\ Studio.app/Contents/jbr/Contents/Home/bin/keytool -genkey -v -keystore ~/.nokta/nokta-release.keystore -alias nokta -keyalg RSA -keysize 2048 -validity 10000
-cat > ~/.nokta/nokta-keystore.properties << EOF
+keytool -genkey -v -keystore ~/.nokta/nokta-release.keystore -alias nokta -keyalg RSA -keysize 2048 -validity 10000
+cat > ~/.nokta/nokta-keystore.properties << 'EOF'
 storeFile=nokta-release.keystore
 storePassword=YOUR_PASSWORD
 keyAlias=nokta
 keyPassword=YOUR_PASSWORD
 EOF
 
-# Build all platforms
-./build-apps.sh
+# Build
+cd native-app/android && ./gradlew assembleRelease
 ```
+
+### iOS
+```bash
+cd native-app/ios && open Nokta.xcodeproj
+```
+1. Set team in **Signing & Capabilities** (requires [Apple Developer Program](https://developer.apple.com/programs/) for push notifications)
+2. Build (⌘B) or Archive for distribution
 
 ## Android Push Notifications (Optional)
 

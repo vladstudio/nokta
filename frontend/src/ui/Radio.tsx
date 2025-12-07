@@ -4,6 +4,7 @@ import { RadioGroup as BaseRadioGroup } from '@base-ui-components/react/radio-gr
 interface RadioOption<T = string> {
   value: T;
   label: string;
+  disabled?: boolean;
 }
 
 interface RadioGroupProps<T = string> {
@@ -24,8 +25,8 @@ export function RadioGroup<T extends string = string>({ value, onChange, options
     <BaseRadioGroup value={value} onValueChange={handleValueChange}>
       <div className="grid">
         {options.map((option) => (
-          <label key={option.value} className="p-2 rounded-sm flex items-center gap-2 cursor-pointer  hover:bg-(--color-bg-hover)">
-            <Radio.Root value={option.value} disabled={disabled} className="w-4 h-4 rounded-full border-2 border-(--color-border-default) flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed data-checked:border-(--color-primary-600)">
+          <label key={option.value} className={`p-2 rounded-sm flex items-center gap-2 ${disabled || option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-(--color-bg-hover)'}`}>
+            <Radio.Root value={option.value} disabled={disabled || option.disabled} className="w-4 h-4 rounded-full border-2 border-(--color-border-default) flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed data-checked:border-(--color-primary-600)">
               <Radio.Indicator className="w-2 h-2 rounded-full bg-(--color-primary-600)" />
             </Radio.Root>
             <span className="text-(--color-text-primary)">{option.label}</span>

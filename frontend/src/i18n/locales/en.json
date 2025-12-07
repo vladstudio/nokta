@@ -129,7 +129,10 @@
   "chats": {
     "createChat": "Create Chat",
     "editChat": "Edit Chat",
+    "chatWithOthers": "Chat with other users",
+    "chatWithSelf": "Chat with yourself (notes)",
     "groupName": "Chat Name (Optional)",
+    "groupNameRequired": "Chat Name",
     "groupNamePlaceholder": "Enter name...",
     "participants": "Participants",
     "background": "Background",

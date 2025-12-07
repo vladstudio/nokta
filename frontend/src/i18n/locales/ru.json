@@ -129,7 +129,10 @@
   "chats": {
     "createChat": "Создать чат",
     "editChat": "Редактировать чат",
+    "chatWithOthers": "Чат с другими",
+    "chatWithSelf": "Чат с собой (заметки)",
     "groupName": "Название чата (необязательно)",
+    "groupNameRequired": "Название чата",
     "groupNamePlaceholder": "Введите название...",
     "participants": "Участники",
     "background": "Фон",
