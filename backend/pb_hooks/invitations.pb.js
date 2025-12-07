@@ -1,5 +1,19 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+const CODE_LENGTH = 32
+
+function isValidCodeFormat(code) {
+  return code && typeof code === "string" && code.length === CODE_LENGTH
+}
+
+function findValidInvitation(code) {
+  return $app.findFirstRecordByFilter(
+    "invitations",
+    `code = {:code} && used != true && expires_at > {:now}`,
+    { code, now: new Date().toISOString() }
+  )
+}
+
 /**
  * Public endpoint to validate an invitation code
  * Returns minimal info needed for signup (inviter name) without exposing all invitation data
@@ -8,22 +22,17 @@ routerAdd("POST", "/api/invitations/validate", (e) => {
   const body = $apis.requestInfo(e).body
   const code = body.code
 
-  if (!code || typeof code !== "string" || code.length !== 32) {
+  if (!isValidCodeFormat(code)) {
     return e.json(400, { valid: false, error: "Invalid code format" })
   }
 
   try {
-    const invitation = $app.findFirstRecordByFilter(
-      "invitations",
-      `code = {:code} && used != true && expires_at > {:now}`,
-      { code, now: new Date().toISOString() }
-    )
+    const invitation = findValidInvitation(code)
 
     if (!invitation) {
       return e.json(200, { valid: false })
     }
 
-    // Get inviter info
     const inviterId = invitation.get("invited_by")
     const inviter = $app.findRecordById("users", inviterId)
     const inviterName = inviter.get("name") || inviter.get("email") || "Someone"
@@ -46,8 +55,7 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
   const body = $apis.requestInfo(e).body
   const { code, name, email, password } = body
 
-  // Validate inputs
-  if (!code || typeof code !== "string" || code.length !== 32) {
+  if (!isValidCodeFormat(code)) {
     throw new BadRequestError("Invalid invitation code")
   }
   if (!email || typeof email !== "string") {
@@ -60,14 +68,9 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
     throw new BadRequestError("Password must be at least 10 characters")
   }
 
-  // Find and validate invitation
   let invitation
   try {
-    invitation = $app.findFirstRecordByFilter(
-      "invitations",
-      `code = {:code} && used != true && expires_at > {:now}`,
-      { code, now: new Date().toISOString() }
-    )
+    invitation = findValidInvitation(code)
   } catch {
     throw new BadRequestError("Invalid or expired invitation")
   }
@@ -105,7 +108,9 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
     chat.set("participants", [user.id, inviterId])
     chat.set("created_by", user.id)
     $app.save(chat)
-  } catch {}
+  } catch (err) {
+    console.log("Failed to create initial chat between", user.id, "and", inviterId, ":", err)
+  }
 
   return e.json(200, {
     id: user.id,

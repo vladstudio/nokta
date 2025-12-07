@@ -30,8 +30,16 @@ async function sendPush(req: PushRequest): Promise<{ success: number; failed: nu
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken.token}` },
         body: JSON.stringify({ message: { token, notification: { title: req.title, body: req.body }, data: req.data, android: { priority: "high", notification: { channel_id: "messages" } } } }),
       })
-      response.ok ? success++ : (console.error(`FCM error for ${token.slice(0, 10)}:`, await response.text()), failed++)
-    } catch (err) { console.error(`FCM error for ${token.slice(0, 10)}:`, err); failed++ }
+      if (response.ok) {
+        success++
+      } else {
+        console.error(`FCM error for ${token.slice(0, 10)}:`, await response.text())
+        failed++
+      }
+    } catch (err) {
+      console.error(`FCM error for ${token.slice(0, 10)}:`, err)
+      failed++
+    }
   }
   return { success, failed }
 }
@@ -47,7 +55,10 @@ Bun.serve({
     }
     try {
       return Response.json(await sendPush(await request.json() as PushRequest))
-    } catch (err) { console.error("Error:", err); return new Response(String(err), { status: 500 }) }
+    } catch (err) {
+      console.error("Error:", err)
+      return new Response(String(err), { status: 500 })
+    }
   },
 })
 console.log(`FCM service running on port ${PORT}`)

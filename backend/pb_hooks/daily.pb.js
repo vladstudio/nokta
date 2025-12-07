@@ -1,17 +1,38 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("POST", "/api/daily/rooms", (e) => {
+const DAILY_API_URL = "https://api.daily.co/v1/rooms"
+
+const ROOM_PROPERTIES = {
+  enable_screenshare: true,
+  enable_chat: false,
+  enable_knocking: false,
+  enable_prejoin_ui: false,
+  max_participants: 50
+}
+
+function getDailyApiKey() {
   const key = $os.getenv("DAILY_CO_API_KEY")
+  if (!key) throw new BadRequestError("DAILY_CO_API_KEY not configured")
+  return key
+}
+
+function extractRoomName(roomUrl) {
+  if (!roomUrl || typeof roomUrl !== "string") return null
+  const parts = roomUrl.split("/")
+  return parts.length > 0 ? parts.pop() : null
+}
+
+routerAdd("POST", "/api/daily/rooms", (e) => {
+  const key = getDailyApiKey()
   const info = e.requestInfo()
   const name = info.body.name
-  if (!key) throw new BadRequestError("DAILY_CO_API_KEY not configured")
   if (!name) throw new BadRequestError("Room name required")
 
   const res = $http.send({
-    url: "https://api.daily.co/v1/rooms",
+    url: DAILY_API_URL,
     method: "POST",
-    headers: { "content-type": "application/json", "authorization": "Bearer " + key },
-    body: JSON.stringify({ name: name, privacy: "public", properties: { enable_screenshare: true, enable_chat: false, enable_knocking: false, enable_prejoin_ui: false, max_participants: 50 } }),
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+    body: JSON.stringify({ name: name, privacy: "public", properties: ROOM_PROPERTIES }),
     timeout: 30
   })
   if (res.statusCode >= 400) throw new BadRequestError("Daily.co: " + res.raw)
@@ -19,17 +40,20 @@ routerAdd("POST", "/api/daily/rooms", (e) => {
 })
 
 routerAdd("DELETE", "/api/daily/rooms/{name}", (e) => {
-  const key = $os.getenv("DAILY_CO_API_KEY")
+  const key = getDailyApiKey()
   const name = e.request.pathValue("name")
-  if (!key) throw new BadRequestError("DAILY_CO_API_KEY not configured")
-  $http.send({ url: "https://api.daily.co/v1/rooms/" + name, method: "DELETE", headers: { "authorization": "Bearer " + key }, timeout: 30 })
+  $http.send({
+    url: DAILY_API_URL + "/" + name,
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + key },
+    timeout: 30
+  })
   return e.json(200, { deleted: true })
 })
 
 // Handle leave call on browser close (via sendBeacon)
 routerAdd("POST", "/api/daily/leave", (e) => {
-  const key = $os.getenv("DAILY_CO_API_KEY")
-  if (!key) throw new BadRequestError("DAILY_CO_API_KEY not configured")
+  const key = getDailyApiKey()
 
   const info = e.requestInfo()
   const chatId = info.body.chatId
@@ -44,11 +68,16 @@ routerAdd("POST", "/api/daily/leave", (e) => {
   const isLast = updated.length === 0
 
   // Delete Daily room if last participant
-  if (isLast && chat.get("daily_room_url")) {
-    const roomName = chat.get("daily_room_url").split("/").pop()
+  if (isLast) {
+    const roomName = extractRoomName(chat.get("daily_room_url"))
     if (roomName) {
       try {
-        $http.send({ url: "https://api.daily.co/v1/rooms/" + roomName, method: "DELETE", headers: { "authorization": "Bearer " + key }, timeout: 30 })
+        $http.send({
+          url: DAILY_API_URL + "/" + roomName,
+          method: "DELETE",
+          headers: { "Authorization": "Bearer " + key },
+          timeout: 30
+        })
       } catch (err) {
         console.log("Failed to delete Daily room:", err)
       }

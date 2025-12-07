@@ -1,5 +1,14 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+const FCM_SERVICE_URL = "http://127.0.0.1:9090"
+
+const MESSAGE_TYPE_BODY = {
+  image: "Sent an image",
+  video: "Sent a video",
+  voice: "Sent a voice message",
+  file: "Sent a file"
+}
+
 /**
  * Auto-create read status for chat participants when a chat is created
  */
@@ -22,17 +31,23 @@ onRecordAfterCreateSuccess((e) => {
           `user = {:userId} && chat = {:chatId}`,
           { userId, chatId }
         )
+        // Read status already exists, skip
       } catch {
+        // Read status doesn't exist, create it
         try {
           const readStatus = new Record(readStatusCollection)
           readStatus.set("user", userId)
           readStatus.set("chat", chatId)
           readStatus.set("last_read_at", new Date().toISOString())
           e.app.save(readStatus)
-        } catch {}
+        } catch (err) {
+          console.log("Failed to create read status for user", userId, "in chat", chatId, ":", err)
+        }
       }
     })
-  } catch {}
+  } catch (err) {
+    console.log("Failed to initialize read status for chat", chatId, ":", err)
+  }
 
   e.next()
 }, "chats")
@@ -51,7 +66,9 @@ onRecordAfterCreateSuccess((e) => {
     chat.set("last_message_content", content)
     chat.set("last_message_sender", sender)
     e.app.save(chat)
-  } catch {}
+  } catch (err) {
+    console.log("Failed to update last message for chat", chatId, ":", err)
+  }
 
   e.next()
 }, "messages")
@@ -67,52 +84,43 @@ onRecordAfterCreateSuccess((e) => {
   const messageType = e.record.get("type")
 
   try {
-    // Get chat participants
     const chat = e.app.findRecordById("chats", chatId)
     const participants = chat.get("participants") || []
 
-    // Get sender info for notification title
     const senderRecord = e.app.findRecordById("users", senderId)
     const senderName = senderRecord.get("name") || senderRecord.get("email") || "Someone"
 
-    // Build notification body based on message type
-    let body = content || ""
-    if (messageType === "image") body = "Sent an image"
-    else if (messageType === "video") body = "Sent a video"
-    else if (messageType === "voice") body = "Sent a voice message"
-    else if (messageType === "file") body = "Sent a file"
+    const body = MESSAGE_TYPE_BODY[messageType] || content || ""
 
-    // Get FCM tokens for all participants except sender
     const recipientIds = participants.filter(id => id !== senderId)
     if (recipientIds.length === 0) {
       e.next()
       return
     }
 
-    // Find device tokens for recipients
+    // Batch query for all recipient device tokens
     const tokens = []
-    recipientIds.forEach(userId => {
-      try {
-        const userTokens = e.app.findRecordsByFilter(
-          "device_tokens",
-          `user = {:userId}`,
-          null, 0, 0,
-          { userId }
-        )
-        userTokens.forEach(t => tokens.push(t.get("token")))
-      } catch {}
-    })
+    try {
+      const allTokens = e.app.findRecordsByFilter(
+        "device_tokens",
+        recipientIds.map((_, i) => `user = {:user${i}}`).join(" || "),
+        null, 0, 0,
+        Object.fromEntries(recipientIds.map((id, i) => [`user${i}`, id]))
+      )
+      allTokens.forEach(t => tokens.push(t.get("token")))
+    } catch (err) {
+      console.log("Failed to fetch device tokens:", err)
+    }
 
     if (tokens.length === 0) {
       e.next()
       return
     }
 
-    // Send to local FCM service
     try {
       const fcmApiKey = $os.getenv("FCM_API_KEY") || ""
       $http.send({
-        url: "http://127.0.0.1:9090",
+        url: FCM_SERVICE_URL,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,8 +138,12 @@ onRecordAfterCreateSuccess((e) => {
         }),
         timeout: 15
       })
-    } catch {}
-  } catch {}
+    } catch (err) {
+      console.log("Failed to send FCM notification:", err)
+    }
+  } catch (err) {
+    console.log("Failed to process message notification for chat", chatId, ":", err)
+  }
 
   e.next()
 }, "messages")
