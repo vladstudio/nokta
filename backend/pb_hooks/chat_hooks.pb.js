@@ -1,14 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-const FCM_SERVICE_URL = "http://127.0.0.1:9090"
-
-const MESSAGE_TYPE_BODY = {
-  image: "Sent an image",
-  video: "Sent a video",
-  voice: "Sent a voice message",
-  file: "Sent a file"
-}
-
 /**
  * Auto-create read status for chat participants when a chat is created
  */
@@ -83,6 +74,13 @@ onRecordAfterCreateSuccess((e) => {
   const content = e.record.get("content")
   const messageType = e.record.get("type")
 
+  const MESSAGE_TYPE_BODY = {
+    image: "Sent an image",
+    video: "Sent a video",
+    voice: "Sent a voice message",
+    file: "Sent a file"
+  }
+
   try {
     const chat = e.app.findRecordById("chats", chatId)
     const participants = chat.get("participants") || []
@@ -120,7 +118,7 @@ onRecordAfterCreateSuccess((e) => {
     try {
       const fcmApiKey = $os.getenv("FCM_API_KEY") || ""
       $http.send({
-        url: FCM_SERVICE_URL,
+        url: "http://127.0.0.1:9090",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
