@@ -3,9 +3,6 @@ set -e
 APP_DIR="$HOME/nokta-main"
 PB_VERSION=$(cat ~/.nokta/pb_version 2>/dev/null || echo "0.23.6")
 
-echo "Backing up..."
-$APP_DIR/backup.sh
-
 echo "Stopping services..."
 sudo systemctl stop nokta-backend
 sudo systemctl stop nokta-fcm 2>/dev/null || true
