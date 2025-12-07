@@ -21,17 +21,16 @@ runcmd:
     DOMAIN="nokta.example.com"
     ADMIN_EMAIL="you@example.com"
     ADMIN_PASSWORD="change-this-password"
-    DAILY_API_KEY="your-daily-co-api-key"
+    DAILY_API_KEY=""  # Optional: for video calls, get from daily.co
     SSH_KEY="ssh-rsa AAAAB3... your-public-key"
     # Optional: Firebase for Android push notifications
     # Get JSON from: Firebase Console → Project Settings → Service accounts → Generate new private key
     # Encode with: cat firebase-service-account.json | base64 | tr -d '\n'
     FIREBASE_SA_BASE64=""
-    # Required if using Firebase. Generate with: openssl rand -hex 32
-    FCM_API_KEY=""
     # ==============================================================
 
     APP_USER="nokta"
+    FCM_API_KEY=""  # Auto-generated if Firebase is configured
     APP_DIR="/home/$APP_USER/nokta-main"
     PB_VERSION="0.23.6"
 
@@ -137,6 +136,15 @@ runcmd:
     # --- Configure Secrets ---
     SECRETS_DIR="/home/$APP_USER/.nokta"
     mkdir -p $SECRETS_DIR
+
+    # Auto-generate FCM_API_KEY if Firebase is configured
+    if [ -n "$FIREBASE_SA_BASE64" ] && [ -z "$FCM_API_KEY" ]; then
+      FCM_API_KEY=$(openssl rand -hex 32)
+    fi
+
+    # Store PB_VERSION for updates
+    echo "$PB_VERSION" > $SECRETS_DIR/pb_version
+
     cat > $SECRETS_DIR/env << ENVEOF
     DAILY_CO_API_KEY=$DAILY_API_KEY
     FCM_API_KEY=$FCM_API_KEY

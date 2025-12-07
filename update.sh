@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 APP_DIR="$HOME/nokta-main"
-PB_VERSION="0.23.6"
+PB_VERSION=$(cat ~/.nokta/pb_version 2>/dev/null || echo "0.23.6")
 
 echo "Backing up..."
 $APP_DIR/backup.sh
