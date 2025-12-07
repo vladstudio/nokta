@@ -31,7 +31,7 @@ export default function Sidebar() {
   const [joiningCalls, setJoiningCalls] = useState<Set<string>>(new Set());
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [showCallView, setShowCallView] = useAtom(showCallViewAtom);
-  
+
   // Derived selection state from URL
   const isSettingsSelected = location === '/settings';
   const isNewChatSelected = location === '/new';
@@ -159,7 +159,7 @@ export default function Sidebar() {
       <div className="w-full p-2 flex items-center gap-2">
         <Button variant="ghost" onClick={() => setLocation('/settings')} isSelected={isSettingsSelected} className="flex-1 flex items-center gap-2 min-w-0 px-2! text-left!">
           <img src="/favicon.svg" alt={t('app.logoAlt')} className="w-5 h-5 shrink-0" />
-          <span className="text-xs text-light truncate">{auth.user?.name || auth.user?.email}</span>
+          <span className="text-sm text-light truncate">{auth.user?.name || auth.user?.email}</span>
         </Button>
         <Button variant="ghost" onClick={() => setLocation('/new')} isSelected={isNewChatSelected} className="p-2!">
           <PlusIcon size={20} className="text-accent" />
