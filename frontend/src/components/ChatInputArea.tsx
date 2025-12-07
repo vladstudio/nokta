@@ -4,14 +4,7 @@ import MessageInput from './MessageInput';
 import MessageActions from './MessageActions';
 import AddActions from './AddActions';
 import { Button } from '../ui';
-import type { Message } from '../types';
-
-interface DisplayMessage extends Message {
-  isPending?: boolean;
-  isFailed?: boolean;
-  tempId?: string;
-  uploadProgress?: number;
-}
+import type { Message, DisplayMessage } from '../types';
 
 interface ChatInputAreaProps {
   showAddActions: boolean;

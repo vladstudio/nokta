@@ -9,11 +9,13 @@ import type { Chat, Message, ChatReadStatus, PocketBaseEvent } from '../types';
  *
  * @param chats - List of chats
  * @param currentChatId - ID of currently open chat (to prevent notifications)
+ * @param navigate - Navigation function from wouter
  * @returns Object with unread counts and mark-as-read function
  */
 export function useUnreadMessages(
   chats: Chat[],
-  currentChatId?: string
+  currentChatId?: string,
+  navigate?: (path: string) => void
 ) {
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
   const userId = auth.user?.id;
@@ -139,17 +141,11 @@ export function useUnreadMessages(
               );
 
               // Handle notification click
-              if (notification) {
+              if (notification && navigate) {
                 notification.onclick = () => {
-                  window.focus(); // Focus the window
+                  window.focus();
                   notification.close();
-
-                  // Dispatch custom event to navigate
-                  window.dispatchEvent(new CustomEvent('notification-click', {
-                    detail: {
-                      chatId: message.chat,
-                    },
-                  }));
+                  navigate(`/chat/${message.chat}`);
                 };
               }
             }

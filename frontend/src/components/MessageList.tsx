@@ -2,14 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollArea, Button } from '../ui';
 import LoadingSpinner from './LoadingSpinner';
 import ChatMessage from './ChatMessage';
-import type { Message } from '../types';
-
-interface DisplayMessage extends Message {
-  isPending?: boolean;
-  isFailed?: boolean;
-  tempId?: string;
-  uploadProgress?: number;
-}
+import type { DisplayMessage } from '../types';
 
 interface MessageListProps {
   messages: DisplayMessage[];

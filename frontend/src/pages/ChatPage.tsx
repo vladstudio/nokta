@@ -30,17 +30,6 @@ export default function ChatPage() {
   const [rightSidebarView, setRightSidebarView] = useState<RightSidebarView | null>(null);
   const [chat, setChat] = useState<Chat | null>(null);
 
-  useEffect(() => {
-    const handleNotificationClick = (event: Event) => {
-      const { chatId: targetChatId } = (event as CustomEvent).detail;
-      if (targetChatId) {
-        setLocation(`/chat/${targetChatId}`);
-      }
-    };
-    window.addEventListener('notification-click', handleNotificationClick);
-    return () => window.removeEventListener('notification-click', handleNotificationClick);
-  }, [setLocation]);
-
   // Load chat data
   useEffect(() => {
     if (!chatId) {

@@ -70,7 +70,7 @@ export default function Sidebar() {
     return () => { unsubscribe.then(fn => fn?.()); };
   }, [loadChats]);
 
-  const { unreadCounts } = useUnreadMessages(chatList, chatId);
+  const { unreadCounts } = useUnreadMessages(chatList, chatId, setLocation);
   const hasUnread = useMemo(() => Array.from(unreadCounts.values()).some(count => count > 0), [unreadCounts]);
   useFavicon(hasUnread);
 

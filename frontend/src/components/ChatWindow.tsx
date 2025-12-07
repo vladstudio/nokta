@@ -27,7 +27,7 @@ import MediaViewer from './MediaViewer';
 import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
-import type { Message, Chat } from '../types';
+import type { Message, Chat, DisplayMessage } from '../types';
 import type { VideoMetadata, VideoQuality } from '../types/video';
 import type { RightSidebarView } from './RightSidebar';
 
@@ -40,19 +40,12 @@ interface ChatWindowProps {
   onLeaveChat: () => void;
 }
 
-interface DisplayMessage extends Message {
-  isPending?: boolean;
-  isFailed?: boolean;
-  tempId?: string;
-  uploadProgress?: number;
-}
-
 // Constants
 const SCROLL_AT_BOTTOM_THRESHOLD = 150; // pixels from bottom
 const MAX_ANCHOR_SCROLL_RETRIES = 60; // ~1 second at 60fps
 const LOAD_OLDER_COOLDOWN = 1000; // ms between load older requests
 
-export default function ChatWindow({ chatId, chat: externalChat, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
+export default function ChatWindow({ chatId, chat, rightSidebarView, onToggleRightSidebar }: ChatWindowProps) {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const searchString = useSearch();
@@ -60,7 +53,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
   const currentUser = auth.user;
   const { isOnline } = useConnectionStatus();
   const isMobile = useIsMobile();
-  const [chat, setChat] = useState<Chat | null>(externalChat);
   const [activeCallChat, setActiveCallChat] = useAtom(activeCallChatAtom);
   const [, setShowCallView] = useAtom(showCallViewAtom);
 
@@ -137,13 +129,15 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     return c && c.scrollHeight - c.scrollTop - c.clientHeight < SCROLL_AT_BOTTOM_THRESHOLD;
   };
 
-  const handleImageSelect = () => {
+  const requireOnline = (action: () => void) => {
     if (!isOnline) {
-      toastManager.add({ title: 'No connection', description: 'Cannot upload files while offline', data: { type: 'error' } });
+      toastManager.add({ title: t('errors.noConnection'), description: t('errors.cannotUploadOffline'), data: { type: 'error' } });
       return;
     }
-    imageInputRef.current?.click();
+    action();
   };
+
+  const handleImageSelect = () => requireOnline(() => imageInputRef.current?.click());
 
   const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -155,17 +149,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     processedFiles.forEach(f => uploadFiles([f], 'image'));
   };
 
-  const handleVideoSelect = () => {
-    if (!isOnline) {
-      toastManager.add({
-        title: t('common.noConnection'),
-        description: t('videoUpload.cannotUploadOffline'),
-        data: { type: 'error' }
-      });
-      return;
-    }
-    videoInputRef.current?.click();
-  };
+  const handleVideoSelect = () => requireOnline(() => videoInputRef.current?.click());
 
   const handleVideoInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -185,13 +169,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     setVideoCompressionDialogFiles([]);
   };
 
-  const handleVoiceSelect = () => {
-    if (!isOnline) {
-      toastManager.add({ title: t('common.noConnection'), description: t('messages.cannotRecordOffline'), data: { type: 'error' } });
-      return;
-    }
-    setVoiceRecorderOpen(true);
-  };
+  const handleVoiceSelect = () => requireOnline(() => setVoiceRecorderOpen(true));
 
   const handleVoiceSend = (blob: Blob, duration: number) => {
     const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
@@ -199,13 +177,7 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     uploadFiles([file], 'voice', durationStr);
   };
 
-  const handleQuickVideoSelect = () => {
-    if (!isOnline) {
-      toastManager.add({ title: t('common.noConnection'), description: t('messages.cannotRecordOffline'), data: { type: 'error' } });
-      return;
-    }
-    setQuickVideoRecorderOpen(true);
-  };
+  const handleQuickVideoSelect = () => requireOnline(() => setQuickVideoRecorderOpen(true));
 
   const handleQuickVideoSend = (blob: Blob, duration: number, _quality: VideoQuality) => {
     const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
@@ -247,43 +219,13 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     else uploadFiles(files, 'file');
   };
 
-  // Load chat data
+  // Mark chat as read when opened or window regains focus
   useEffect(() => {
-    if (!chatId) return;
-    chats.getOne(chatId).then(setChat).catch(() => setChat(null));
-  }, [chatId]);
-
-  // Subscribe to chat updates
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-    chats.subscribe((data) => {
-      if (data.record.id === chatId) {
-        chats.getOne(chatId).then(setChat);
-      }
-    }).then(unsub => { unsubscribe = unsub; });
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [chatId]);
-
-  // Mark chat as read when opened
-  useEffect(() => {
-    if (currentUser?.id && chatId) {
-      chatReadStatus.markAsRead(currentUser.id, chatId);
-    }
-  }, [chatId, currentUser?.id]);
-
-  // Mark as read when window regains focus
-  useEffect(() => {
-    const handleFocus = () => {
-      if (currentUser?.id && chatId) {
-        chatReadStatus.markAsRead(currentUser.id, chatId);
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    if (!currentUser?.id || !chatId) return;
+    const markRead = () => chatReadStatus.markAsRead(currentUser.id, chatId);
+    markRead();
+    window.addEventListener('focus', markRead);
+    return () => window.removeEventListener('focus', markRead);
   }, [chatId, currentUser?.id]);
 
   // Reset selected message and scroll state when chat or anchor changes
@@ -574,11 +516,6 @@ export default function ChatWindow({ chatId, chat: externalChat, rightSidebarVie
     setViewerMessageId(messageId);
     document.getElementById(`msg-${messageId}`)?.scrollIntoView({ block: 'center' });
   };
-
-  // Sync external chat with local state
-  useEffect(() => {
-    if (externalChat) setChat(externalChat);
-  }, [externalChat]);
 
   useHotkeys('esc', () => {
     setSelectedMessageId(null);

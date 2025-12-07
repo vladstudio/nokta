@@ -52,6 +52,13 @@ export interface Message {
   };
 }
 
+export interface DisplayMessage extends Message {
+  isPending?: boolean;
+  isFailed?: boolean;
+  tempId?: string;
+  uploadProgress?: number;
+}
+
 export interface ChatReadStatus {
   id: string;
   user: string;

@@ -24,6 +24,11 @@ export interface UseFileUploadReturn {
   handleRetryUpload: (tempId: string) => void;
 }
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+const filterValidFiles = (files: File[], onError: (title: string, desc: string) => void) =>
+  files.filter(f => f.size <= MAX_FILE_SIZE || (onError('File too large', `${f.name} exceeds 100MB limit`), false));
+
 export function useFileUpload(
   chatId: string,
   isOnline: boolean,
@@ -95,17 +100,8 @@ export function useFileUpload(
       return;
     }
 
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB (to support videos)
-    const validFiles = files.filter(f => {
-      if (f.size > MAX_SIZE) {
-        onError('File too large', `${f.name} exceeds 100MB limit`);
-        return false;
-      }
-      return true;
-    });
-
+    const validFiles = filterValidFiles(files, onError);
     if (validFiles.length === 0) return;
-
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     const uploads: UploadingFile[] = validFiles.map(file => ({
@@ -151,15 +147,7 @@ export function useFileUpload(
       return;
     }
 
-    const MAX_SIZE = 100 * 1024 * 1024; // 100MB (to support videos)
-    const validFiles = files.filter(f => {
-      if (f.size > MAX_SIZE) {
-        onError('File too large', `${f.name} exceeds 100MB limit`);
-        return false;
-      }
-      return true;
-    });
-
+    const validFiles = filterValidFiles(files, onError);
     if (validFiles.length === 0) return;
 
     const uploads: UploadingFile[] = validFiles.map(file => ({
