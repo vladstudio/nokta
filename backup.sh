@@ -10,7 +10,7 @@ tar -czf $BACKUP_DIR/pb_data_$TIMESTAMP.tar.gz -C $HOME/nokta-main/backend pb_da
 
 # Backup secrets directory if exists
 if [ -d "$SECRETS_DIR" ]; then
-  tar -czf $BACKUP_DIR/secrets_$TIMESTAMP.tar.gz -C $HOME .nokta
+  sudo tar -czf $BACKUP_DIR/secrets_$TIMESTAMP.tar.gz -C $HOME .nokta
 fi
 
 # Clean up old backups (keep 7 days)
