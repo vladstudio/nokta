@@ -1,26 +1,27 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-function parseDataSize(output) {
-  const parts = toString(output).split("\t")
-  return parts.length > 0 ? parseInt(parts[0], 10) || 0 : 0
-}
-
-function parseFreeSpace(output) {
-  const lines = toString(output).split("\n")
-  if (lines.length < 2) return 0
-  const columns = lines[1].split(/\s+/)
-  const availableColumnIndex = 3
-  return columns.length > availableColumnIndex ? parseInt(columns[availableColumnIndex], 10) || 0 : 0
-}
-
 routerAdd("GET", "/api/stats", (e) => {
   if (!e.auth || e.auth.get("role") !== "Admin") {
     return e.json(403, { error: "Forbidden" })
   }
 
   const dataDir = $app.dataDir()
-  const dataSizeMB = parseDataSize($os.cmd("du", "-sm", dataDir).output())
-  const freeSpaceMB = parseFreeSpace($os.cmd("df", "-m", dataDir).output())
+
+  // Parse data size from du output
+  const duOutput = toString($os.cmd("du", "-sm", dataDir).output())
+  const duParts = duOutput.split("\t")
+  const dataSizeMB = duParts.length > 0 ? parseInt(duParts[0], 10) || 0 : 0
+
+  // Parse free space from df output
+  const dfOutput = toString($os.cmd("df", "-m", dataDir).output())
+  const dfLines = dfOutput.split("\n")
+  let freeSpaceMB = 0
+  if (dfLines.length >= 2) {
+    const columns = dfLines[1].split(/\s+/)
+    if (columns.length > 3) {
+      freeSpaceMB = parseInt(columns[3], 10) || 0
+    }
+  }
 
   return e.json(200, { dataSizeMB, freeSpaceMB })
 }, $apis.requireAuth())

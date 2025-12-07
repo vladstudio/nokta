@@ -81,9 +81,6 @@ env $(cat ~/.nokta/env) ./backend/pocketbase serve  # :8090
 # Frontend
 cd frontend && bun install && bun dev  # :3000
 ```
-
-Test users (after running `backend/reset.sh`): `a@test.com` / `b@test.com`, password `1234567890`
-
 ## Build Native Apps
 
 **Prerequisites:** Node.js, Android Studio (Android), Xcode 15+ (iOS/macOS)

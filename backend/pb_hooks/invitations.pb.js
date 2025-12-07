@@ -1,19 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
 
-const CODE_LENGTH = 32
-
-function isValidCodeFormat(code) {
-  return code && typeof code === "string" && code.length === CODE_LENGTH
-}
-
-function findValidInvitation(code) {
-  return $app.findFirstRecordByFilter(
-    "invitations",
-    `code = {:code} && used != true && expires_at > {:now}`,
-    { code, now: new Date().toISOString() }
-  )
-}
-
 /**
  * Public endpoint to validate an invitation code
  * Returns minimal info needed for signup (inviter name) without exposing all invitation data
@@ -22,12 +8,17 @@ routerAdd("POST", "/api/invitations/validate", (e) => {
   const body = $apis.requestInfo(e).body
   const code = body.code
 
-  if (!isValidCodeFormat(code)) {
+  // Validate code format (32 chars)
+  if (!code || typeof code !== "string" || code.length !== 32) {
     return e.json(400, { valid: false, error: "Invalid code format" })
   }
 
   try {
-    const invitation = findValidInvitation(code)
+    const invitation = $app.findFirstRecordByFilter(
+      "invitations",
+      `code = {:code} && used != true && expires_at > {:now}`,
+      { code, now: new Date().toISOString() }
+    )
 
     if (!invitation) {
       return e.json(200, { valid: false })
@@ -55,7 +46,8 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
   const body = $apis.requestInfo(e).body
   const { code, name, email, password } = body
 
-  if (!isValidCodeFormat(code)) {
+  // Validate code format (32 chars)
+  if (!code || typeof code !== "string" || code.length !== 32) {
     throw new BadRequestError("Invalid invitation code")
   }
   if (!email || typeof email !== "string") {
@@ -70,7 +62,11 @@ routerAdd("POST", "/api/invitations/signup", (e) => {
 
   let invitation
   try {
-    invitation = findValidInvitation(code)
+    invitation = $app.findFirstRecordByFilter(
+      "invitations",
+      `code = {:code} && used != true && expires_at > {:now}`,
+      { code, now: new Date().toISOString() }
+    )
   } catch {
     throw new BadRequestError("Invalid or expired invitation")
   }
