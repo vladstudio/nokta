@@ -56,22 +56,10 @@ export default function Sidebar() {
   useEffect(() => { if (isVideoCallsEnabled) loadActiveCalls(); }, [loadActiveCalls]);
 
 
-  // Listen for chat-created events (from CreateChatView)
-  useEffect(() => {
-    const handler = async (e: Event) => {
-      const { detail } = e as CustomEvent<Chat>;
-      const fullChat = await chats.getOne(detail.id);
-      setChatList(prev => prev.some(c => c.id === fullChat.id) ? prev : [fullChat, ...prev]);
-    };
-    window.addEventListener('chat-created', handler);
-    return () => window.removeEventListener('chat-created', handler);
-  }, []);
-
   useEffect(() => {
     const unsubscribe = chats.subscribe(async (data: PocketBaseEvent<Chat>) => {
       if (data.action === 'create') {
-        const fullChat = await chats.getOne(data.record.id);
-        setChatList(prev => [fullChat, ...prev]);
+        loadChats();
       } else if (data.action === 'update') {
         const fullChat = await chats.getOne(data.record.id);
         setChatList(prev => prev.map(c => c.id === data.record.id ? fullChat : c).sort((a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || '')));
@@ -80,7 +68,7 @@ export default function Sidebar() {
       }
     });
     return () => { unsubscribe.then(fn => fn?.()); };
-  }, []);
+  }, [loadChats]);
 
   const { unreadCounts } = useUnreadMessages(chatList, chatId);
   const hasUnread = useMemo(() => Array.from(unreadCounts.values()).some(count => count > 0), [unreadCounts]);

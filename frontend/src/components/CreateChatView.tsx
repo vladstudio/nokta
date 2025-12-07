@@ -47,7 +47,6 @@ export default function CreateChatView() {
     try {
       const participants = isChatWithSelf ? [auth.user.id] : [...selectedUsers, auth.user.id];
       const newChat = await chats.create(participants, chatName.trim() || undefined);
-      window.dispatchEvent(new CustomEvent('chat-created', { detail: newChat }));
       setLocation(`/chat/${newChat.id}`);
     } catch (error) {
       console.error('Failed to create chat:', error);
