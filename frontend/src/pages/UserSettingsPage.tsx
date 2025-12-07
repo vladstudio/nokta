@@ -264,7 +264,7 @@ export default function UserSettingsPage() {
           <div className="text-xs mx-auto flex gap-2">
             <a href="https://nokta.chat/" target="_blank" className="link text-light">Nokta.chat</a>
             <span className="text-light">·</span>
-            <button onClick={() => window.location.reload()} className="link text-light">{t('common.reload')}</button>
+            <button onClick={() => window.location.reload()} className="link text-light cursor-pointer">{t('common.reload')}</button>
           </div>
 
         </div>
