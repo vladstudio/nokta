@@ -30,7 +30,7 @@ export default function VideoCompressionDialog({
   const [processingIndex, setProcessingIndex] = useState(-1);
   const { compress, cancel, isCompressing, error } = useVideoCompression();
 
-  const file = files[index];
+  // const file = files[index];
   const videoUrl = videoUrls[index] || '';
   const metadata = metadatas[index] || null;
   const quality = qualities[index];

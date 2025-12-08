@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useRoute } from 'wouter';
+import { useLocation } from 'wouter';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { useSearchMessages } from '../../hooks/useSearchMessages';

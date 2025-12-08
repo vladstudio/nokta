@@ -4,7 +4,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useSearch } from 'wouter';
 import { useAtom } from 'jotai';
-import { messages as messagesAPI, auth, chatReadStatus, chats } from '../services/pocketbase';
+import { messages as messagesAPI, auth, chatReadStatus } from '../services/pocketbase';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
 import { useTypingIndicator } from '../hooks/useTypingIndicator';
 import { useMessageList } from '../hooks/useMessageList';
@@ -28,7 +28,6 @@ import { useToastManager } from '../ui';
 import { callsAPI } from '../services/calls';
 import { activeCallChatAtom, showCallViewAtom } from '../store/callStore';
 import type { Message, Chat, DisplayMessage } from '../types';
-import type { VideoMetadata, VideoQuality } from '../types/video';
 import type { RightSidebarView } from './RightSidebar';
 
 interface ChatWindowProps {
@@ -179,7 +178,7 @@ export default function ChatWindow({ chatId, chat, rightSidebarView, onToggleRig
 
   const handleQuickVideoSelect = () => requireOnline(() => setQuickVideoRecorderOpen(true));
 
-  const handleQuickVideoSend = (blob: Blob, duration: number, _quality: VideoQuality) => {
+  const handleQuickVideoSend = (blob: Blob, duration: number) => {
     const durationStr = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
     const file = new File([blob], `quick_video_${Date.now()}.mp4`, { type: 'video/mp4' });
     uploadFiles([file], 'video', durationStr);
@@ -551,7 +550,7 @@ export default function ChatWindow({ chatId, chat, rightSidebarView, onToggleRig
         uploadProgress: u.progress,
       })),
     ];
-    return showFavsOnly ? combined.filter(m => m.favs?.includes(currentUser?.id || '')) : combined;
+    return showFavsOnly ? combined.filter(m => 'favs' in m && m.favs?.includes(currentUser?.id || '')) : combined;
   }, [messages, pendingMessages, uploadingFiles, currentUser?.id, showFavsOnly]);
 
   // Get selected message for action buttons

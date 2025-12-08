@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../ui';
 import { PaperPlaneTiltIcon, PlusIcon } from "@phosphor-icons/react";

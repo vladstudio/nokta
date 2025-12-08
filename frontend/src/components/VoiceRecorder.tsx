@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button, useToastManager } from '../ui';
-import { MicrophoneIcon, PauseIcon, PlayIcon, ArrowClockwiseIcon, XIcon, PaperPlaneRightIcon } from '@phosphor-icons/react';
+import { MicrophoneIcon, PauseIcon, PlayIcon, ArrowClockwiseIcon, PaperPlaneRightIcon } from '@phosphor-icons/react';
 import { Output, BufferTarget, WebMOutputFormat, MediaStreamAudioTrackSource, QUALITY_LOW } from 'mediabunny';
 
 interface VoiceRecorderProps {

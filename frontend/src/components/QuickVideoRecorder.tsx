@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../ui/Dialog';
 import { Button, useToastManager } from '../ui';
-import { XIcon, PaperPlaneRightIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
+import { PaperPlaneRightIcon, ArrowClockwiseIcon } from '@phosphor-icons/react';
 import { Output, BufferTarget, Mp4OutputFormat, MediaStreamAudioTrackSource, MediaStreamVideoTrackSource, QUALITY_LOW, QUALITY_MEDIUM } from 'mediabunny';
 
 interface QuickVideoRecorderProps {

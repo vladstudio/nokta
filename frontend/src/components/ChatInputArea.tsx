@@ -13,7 +13,7 @@ interface ChatInputAreaProps {
   canEditOrDelete: boolean;
   currentUserId: string;
   replyingTo: Message | null;
-  onSend: (content: string) => void;
+  onSend: (content: string) => Promise<void>;
   onTyping: () => void;
   onCancelAddActions: () => void;
   onImageSelect: () => void;
