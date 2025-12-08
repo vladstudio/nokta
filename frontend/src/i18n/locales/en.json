@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Loading...",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
