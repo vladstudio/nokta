@@ -95,7 +95,7 @@ export default function Sidebar() {
           if (!exists) {
             const currentUserId = auth.user?.id;
             if (currentUserId && !data.record.call_participants?.includes(currentUserId)) {
-              showCallNotification(t('calls.activeCall'), getCallChatName(data.record), { tag: `active-call-${data.record.id}` });
+              showCallNotification(t('calls.activeCall'), getCallChatName(data.record), { tag: `active-call-${data.record.id}`, chatId: data.record.id });
             }
             return [...prev, data.record];
           }

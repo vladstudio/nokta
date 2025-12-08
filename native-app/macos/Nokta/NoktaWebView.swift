@@ -18,6 +18,7 @@ struct NoktaWebView: NSViewRepresentable {
         webView.uiDelegate = context.coordinator
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
+        context.coordinator.webView = webView
 
         if let url = URL(string: serverUrl) {
             webView.load(URLRequest(url: url))
@@ -30,6 +31,20 @@ struct NoktaWebView: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     class Coordinator: NSObject, WKScriptMessageHandler, WKUIDelegate, WKNavigationDelegate {
+        weak var webView: WKWebView?
+        private var observer: NSObjectProtocol?
+
+        override init() {
+            super.init()
+            observer = NotificationCenter.default.addObserver(forName: .navigateToChat, object: nil, queue: .main) { [weak self] notification in
+                if let chatId = notification.object as? String {
+                    self?.webView?.evaluateJavaScript("window.location.hash = '/chat/\(chatId)'")
+                }
+            }
+        }
+
+        deinit { if let observer { NotificationCenter.default.removeObserver(observer) } }
+
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "NoktaMac", let body = message.body as? [String: Any] else { return }
 
@@ -41,7 +56,7 @@ struct NoktaWebView: NSViewRepresentable {
                     }
                 case "showNotification":
                     if let title = body["title"] as? String, let notifBody = body["body"] as? String {
-                        showNotification(title: title, body: notifBody)
+                        showNotification(title: title, body: notifBody, chatId: body["chatId"] as? String)
                     }
                 default:
                     break
@@ -49,11 +64,12 @@ struct NoktaWebView: NSViewRepresentable {
             }
         }
 
-        private func showNotification(title: String, body: String) {
+        private func showNotification(title: String, body: String, chatId: String?) {
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
             content.sound = .default
+            if let chatId { content.userInfo = ["chatId": chatId] }
 
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
             UNUserNotificationCenter.current().add(request)

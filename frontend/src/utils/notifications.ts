@@ -32,12 +32,12 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return (await Notification.requestPermission()) === 'granted';
 }
 
-async function createNotification(title: string, options: NotificationOptions): Promise<Notification | null> {
+async function createNotification(title: string, options: NotificationOptions & { chatId?: string }): Promise<Notification | null> {
   const perm = await getNotificationPermission();
   if (!perm.granted) return null;
   try {
     if (isMacApp()) {
-      window.webkit!.messageHandlers!.NoktaMac!.postMessage({ action: 'showNotification', title, body: options.body || '' });
+      window.webkit!.messageHandlers!.NoktaMac!.postMessage({ action: 'showNotification', title, body: options.body || '', chatId: options.chatId });
       return null;
     }
     return new Notification(title, options);
@@ -52,15 +52,17 @@ export async function showMessageNotification(title: string, body: string, optio
     tag: options?.tag || `chat-${options?.chatId}`,
     badge: '/logo-badge.png',
     data: { chatId: options?.chatId, timestamp: Date.now() },
+    chatId: options?.chatId,
   });
 }
 
-export function showCallNotification(title: string, chatName: string, options?: { tag?: string }) {
+export function showCallNotification(title: string, chatName: string, options?: { tag?: string; chatId?: string }) {
   return createNotification(title, {
     body: `In ${chatName}`,
     icon: '/logo.png',
     tag: options?.tag,
     badge: '/logo-badge.png',
+    chatId: options?.chatId,
   });
 }
 

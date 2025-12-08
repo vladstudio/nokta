@@ -10,10 +10,34 @@ struct NoktaApp: App {
         WindowGroup("Nokta") {
             ContentView()
                 .frame(minWidth: 400, minHeight: 300)
+                .background(WindowAccessor())
         }
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
+    }
+}
+
+struct WindowAccessor: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            if let window = view.window {
+                window.delegate = WindowDelegate.shared
+                window.setFrameAutosaveName("NoktaMainWindow")
+            }
+        }
+        return view
+    }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+class WindowDelegate: NSObject, NSWindowDelegate {
+    static let shared = WindowDelegate()
+
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        sender.orderOut(nil)
+        return false
     }
 }
 
@@ -23,6 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     var unreadIcon: NSImage?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSWindow.allowsAutomaticWindowTabbing = false
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
         setupMenuBar()
@@ -124,9 +149,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         [.banner, .badge, .sound]
     }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        if let chatId = response.notification.request.content.userInfo["chatId"] as? String {
+            NotificationCenter.default.post(name: .navigateToChat, object: chatId)
+        }
+        openWindow()
+    }
 }
 
 extension Notification.Name {
     static let setUnreadStatus = Notification.Name("setUnreadStatus")
     static let serverUrlChanged = Notification.Name("serverUrlChanged")
+    static let navigateToChat = Notification.Name("navigateToChat")
 }
