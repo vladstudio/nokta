@@ -1,6 +1,6 @@
 {
   "name": "nokta",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Desktop chat client for Nokta",
   "author": "Vlad",
   "main": "electron/main.js",
@@ -18,9 +18,16 @@
   "build": {
     "appId": "com.nokta.app",
     "productName": "Nokta",
-    "directories": { "output": "dist" },
-    "files": ["electron/**/*", "assets/**/*"],
-    "electronLanguages": ["en"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "assets/**/*"
+    ],
+    "electronLanguages": [
+      "en"
+    ],
     "mac": {
       "icon": "assets/icon.icns",
       "category": "public.app-category.social-networking",
@@ -30,7 +37,12 @@
         "NSMicrophoneUsageDescription": "Nokta needs microphone access for voice and video calls"
       }
     },
-    "win": { "icon": "assets/icon.png" },
-    "linux": { "icon": "assets/icon.png", "category": "Network" }
+    "win": {
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Network"
+    }
   }
 }

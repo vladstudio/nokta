@@ -29,7 +29,7 @@ done
 [[ "$BUILD" == "android" || "$BUILD" == "all" ]] && [ ! -f "android/gradlew" ] && { echo "Error: android/gradlew not found"; exit 1; }
 
 VERSION=$(node -p "require('./package.json').version")
-OUTDIR="releases/$VERSION"
+OUTDIR="releases"
 
 rm -rf releases
 mkdir -p "$OUTDIR"
@@ -39,7 +39,7 @@ echo "Building v$VERSION ($BUILD)..."
 if [[ "$BUILD" == "android" || "$BUILD" == "all" ]]; then
   echo "Building Android..."
   cd android && ./gradlew assembleRelease
-  cp app/build/outputs/apk/release/app-release.apk "../$OUTDIR/Nokta-$VERSION-android.apk"
+  cp app/build/outputs/apk/release/app-release.apk "../$OUTDIR/Nokta.apk"
   cd ..
 fi
 
@@ -48,21 +48,20 @@ if [[ "$BUILD" == "macos" || "$BUILD" == "all" ]]; then
   cd macos
   rm -rf build
   xcodebuild -project Nokta.xcodeproj -scheme Nokta -configuration Release -derivedDataPath build/DerivedData build
-  cp -R build/DerivedData/Build/Products/Release/Nokta.app "../$OUTDIR/"
-  hdiutil create -volname Nokta -srcfolder "../$OUTDIR/Nokta.app" -ov -format UDZO "../$OUTDIR/Nokta-$VERSION-macos.dmg"
+  hdiutil create -volname Nokta -srcfolder build/DerivedData/Build/Products/Release/Nokta.app -ov -format UDZO "../$OUTDIR/Nokta.dmg"
   cd ..
 fi
 
 if [[ "$BUILD" == "win" || "$BUILD" == "all" ]]; then
   echo "Building Windows..."
   bun run build:win
-  cp dist/*.exe "$OUTDIR/"
+  mv dist/*.exe "$OUTDIR/Nokta.exe"
 fi
 
 if [[ "$BUILD" == "linux" || "$BUILD" == "all" ]]; then
   echo "Building Linux..."
   bun run build:linux
-  cp dist/*.AppImage dist/*.deb "$OUTDIR/"
+  mv dist/*.AppImage "$OUTDIR/Nokta.AppImage"
 fi
 
 echo "Done! Apps in $OUTDIR/"
