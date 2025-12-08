@@ -46,7 +46,7 @@ export default function ChatHeader({
 
   return (
     <div className="flex items-center justify-between p-2 pl-4 border-b bg-(--color-bg-primary) border-(--color-border-default)">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center sm:gap-2">
         {isMobile && (
           <button onClick={onBack} className="p-1 -ml-2">
             <ArrowLeftIcon size={20} className="text-accent" />
@@ -63,10 +63,10 @@ export default function ChatHeader({
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center sm:gap-2">
         {/* Participant avatars for group chats */}
         {chat && (chat.participants?.length || 0) > 2 && chat.expand?.participants && (
-          <div className="flex items-center -space-x-2">
+          <div className="flex items-center -space-x-2 px-1">
             {chat.expand.participants.slice(0, 4).map((participant) => (
               <UserAvatar
                 key={participant.id}

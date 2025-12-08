@@ -7,6 +7,6 @@ export const preferences = {
   set theme(v: 'default' | 'wooden' | 'golden' | 'high-contrast' | 'green') { localStorage.setItem(KEYS.theme, v); window.dispatchEvent(new Event('preferences-change')); },
   get background(): string { return localStorage.getItem(KEYS.background) || ''; },
   set background(v: string) { localStorage.setItem(KEYS.background, v); window.dispatchEvent(new Event('preferences-change')); },
-  get size(): 'small' | 'medium' | 'large' { return (localStorage.getItem(KEYS.size) as 'small' | 'medium' | 'large') || 'small'; },
+  get size(): 'small' | 'medium' | 'large' { return (localStorage.getItem(KEYS.size) as 'small' | 'medium' | 'large') || (window.innerWidth < 640 ? 'medium' : 'small'); },
   set size(v: 'small' | 'medium' | 'large') { localStorage.setItem(KEYS.size, v); window.dispatchEvent(new Event('preferences-change')); },
 };

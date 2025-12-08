@@ -38,8 +38,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, []);
 
   useEffect(() => {
-    const effectiveSize = !localStorage.getItem('pref_size') && window.innerWidth < 640 ? 'medium' : size;
-    document.documentElement.style.zoom = { small: '', medium: '1.1', large: '1.2' }[effectiveSize];
+    document.documentElement.style.zoom = { small: '', medium: '1.1', large: '1.2' }[size];
   }, [size]);
 
   const getBgClass = () => background ? `bg-pattern-${background}-${colorScheme}` : '';
