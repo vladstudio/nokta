@@ -5,7 +5,7 @@
  * Returns minimal info needed for signup (inviter name) without exposing all invitation data
  */
 routerAdd("POST", "/api/invitations/validate", (e) => {
-  const body = $apis.requestInfo(e).body
+  const body = e.requestInfo().body
   const code = body.code
 
   // Validate code format (32 chars)
@@ -43,7 +43,7 @@ routerAdd("POST", "/api/invitations/validate", (e) => {
  * Handles user creation, invitation marking, and chat creation atomically
  */
 routerAdd("POST", "/api/invitations/signup", (e) => {
-  const body = $apis.requestInfo(e).body
+  const body = e.requestInfo().body
   const { code, name, email, password } = body
 
   // Validate code format (32 chars)
