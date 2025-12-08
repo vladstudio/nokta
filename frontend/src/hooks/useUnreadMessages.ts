@@ -262,7 +262,7 @@ export function useUnreadMessages(
   // Update native app tray icon based on unread status
   useEffect(() => {
     const totalUnread = Array.from(unreadCounts.values()).reduce((a, b) => a + b, 0);
-    (window as any).electronAPI?.setUnreadStatus(totalUnread > 0);
+    window.webkit?.messageHandlers?.NoktaMac?.postMessage({ action: 'setUnreadStatus', hasUnread: totalUnread > 0 });
   }, [unreadCounts]);
 
   return {

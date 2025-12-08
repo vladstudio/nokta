@@ -1,15 +1,15 @@
 /**
  * Browser notification utility for new message alerts
- * Supports Electron desktop app, falls back to browser API
+ * Supports macOS native app, falls back to browser API
  */
 
 declare global {
   interface Window {
-    electronAPI?: { showNotification: (title: string, body: string) => void; isElectron: boolean };
+    webkit?: { messageHandlers?: { NoktaMac?: { postMessage: (msg: unknown) => void } } };
   }
 }
 
-const isElectron = () => !!window.electronAPI?.isElectron;
+const isMacApp = () => !!window.webkit?.messageHandlers?.NoktaMac;
 
 export interface NotificationPermissionState {
   granted: boolean;
@@ -18,14 +18,14 @@ export interface NotificationPermissionState {
 }
 
 export async function getNotificationPermission(): Promise<NotificationPermissionState> {
-  if (isElectron()) return { granted: true, denied: false, canRequest: false };
+  if (isMacApp()) return { granted: true, denied: false, canRequest: false };
   if (!('Notification' in window)) return { granted: false, denied: true, canRequest: false };
   const p = Notification.permission;
   return { granted: p === 'granted', denied: p === 'denied', canRequest: p === 'default' };
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (isElectron()) return true;
+  if (isMacApp()) return true;
   if (!('Notification' in window)) return false;
   if (Notification.permission === 'granted') return true;
   if (Notification.permission === 'denied') return false;
@@ -36,8 +36,8 @@ async function createNotification(title: string, options: NotificationOptions): 
   const perm = await getNotificationPermission();
   if (!perm.granted) return null;
   try {
-    if (isElectron()) {
-      window.electronAPI!.showNotification(title, options.body || '');
+    if (isMacApp()) {
+      window.webkit!.messageHandlers!.NoktaMac!.postMessage({ action: 'showNotification', title, body: options.body || '' });
       return null;
     }
     return new Notification(title, options);
