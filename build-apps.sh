@@ -55,13 +55,14 @@ fi
 if [[ "$BUILD" == "win" || "$BUILD" == "all" ]]; then
   echo "Building Windows..."
   bun run build:win
-  mv dist/*.exe "$OUTDIR/Nokta.exe"
+  for f in dist/*Setup*.exe; do mv "$f" "$OUTDIR/Nokta.exe"; break; done
+  zip -j "$OUTDIR/Nokta.exe.zip" "$OUTDIR/Nokta.exe" && rm "$OUTDIR/Nokta.exe"
 fi
 
 if [[ "$BUILD" == "linux" || "$BUILD" == "all" ]]; then
   echo "Building Linux..."
   bun run build:linux
-  mv dist/*.AppImage "$OUTDIR/Nokta.AppImage"
+  for f in dist/*.AppImage; do mv "$f" "$OUTDIR/Nokta.AppImage"; break; done
 fi
 
 echo "Done! Apps in $OUTDIR/"

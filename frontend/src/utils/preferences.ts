@@ -1,4 +1,4 @@
-const KEYS = { language: 'pref_language', theme: 'pref_theme', background: 'pref_background', fontSize: 'pref_fontSize' } as const;
+const KEYS = { language: 'pref_language', theme: 'pref_theme', background: 'pref_background', size: 'pref_size' } as const;
 
 export const preferences = {
   get language(): 'en' | 'ru' { return (localStorage.getItem(KEYS.language) as 'en' | 'ru') || 'en'; },
@@ -7,6 +7,6 @@ export const preferences = {
   set theme(v: 'default' | 'wooden' | 'golden' | 'high-contrast' | 'green') { localStorage.setItem(KEYS.theme, v); window.dispatchEvent(new Event('preferences-change')); },
   get background(): string { return localStorage.getItem(KEYS.background) || ''; },
   set background(v: string) { localStorage.setItem(KEYS.background, v); window.dispatchEvent(new Event('preferences-change')); },
-  get fontSize(): 'default' | 'large' { return (localStorage.getItem(KEYS.fontSize) as 'default' | 'large') || 'default'; },
-  set fontSize(v: 'default' | 'large') { localStorage.setItem(KEYS.fontSize, v); window.dispatchEvent(new Event('preferences-change')); },
+  get size(): 'small' | 'medium' | 'large' { return (localStorage.getItem(KEYS.size) as 'small' | 'medium' | 'large') || 'small'; },
+  set size(v: 'small' | 'medium' | 'large') { localStorage.setItem(KEYS.size, v); window.dispatchEvent(new Event('preferences-change')); },
 };

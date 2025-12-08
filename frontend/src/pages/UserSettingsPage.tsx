@@ -24,7 +24,7 @@ export default function UserSettingsPage() {
   const [oldPassword, setOldPassword] = useState('');
   const [password, setPassword] = useState('');
   const [theme, setTheme] = useState<Theme>(preferences.theme);
-  const [fontSize, setFontSize] = useState(preferences.fontSize);
+  const [size, setSize] = useState(preferences.size);
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [birthdayDay, setBirthdayDay] = useState('');
@@ -50,7 +50,7 @@ export default function UserSettingsPage() {
   }, [currentUser?.id]);
 
   const handleThemeChange = (v: Theme) => { setTheme(v); preferences.theme = v; };
-  const handleFontSizeChange = (v: 'default' | 'large') => { setFontSize(v); preferences.fontSize = v; };
+  const handleSizeChange = (v: 'small' | 'medium' | 'large') => { setSize(v); preferences.size = v; };
   const handleBackgroundChange = (v: string) => { setBackground(v); preferences.background = v; };
 
   const handleAvatarChange = (file: File | null) => {
@@ -111,9 +111,10 @@ export default function UserSettingsPage() {
     { value: 'green' as const, label: t('themes.green') },
   ], [t]);
 
-  const fontSizeOptions = useMemo(() => [
-    { value: 'default' as const, label: t('userSettingsDialog.fontSizeDefault') },
-    { value: 'large' as const, label: t('userSettingsDialog.fontSizeLarge') },
+  const sizeOptions = useMemo(() => [
+    { value: 'small' as const, label: t('userSettingsDialog.sizeSmall') },
+    { value: 'medium' as const, label: t('userSettingsDialog.sizeMedium') },
+    { value: 'large' as const, label: t('userSettingsDialog.sizeLarge') },
   ], [t]);
 
   const dayOptions = useMemo(() => [
@@ -191,8 +192,8 @@ export default function UserSettingsPage() {
                 <RadioGroup value={theme} onChange={handleThemeChange} options={themeOptions} />
               </div>
               <div>
-                <FormLabel>{t('userSettingsDialog.fontSize')}</FormLabel>
-                <RadioGroup value={fontSize} onChange={handleFontSizeChange} options={fontSizeOptions} />
+                <FormLabel>{t('userSettingsDialog.size')}</FormLabel>
+                <RadioGroup value={size} onChange={handleSizeChange} options={sizeOptions} />
               </div>
               <div>
                 <FormLabel>{t('chats.background')}</FormLabel>
