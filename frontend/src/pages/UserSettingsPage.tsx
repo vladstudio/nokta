@@ -31,6 +31,7 @@ export default function UserSettingsPage() {
   const [birthdayMonth, setBirthdayMonth] = useState('');
   const [birthdayYear, setBirthdayYear] = useState('');
   const [background, setBackground] = useState(preferences.background);
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [error, setError] = useState('');
 
@@ -180,7 +181,7 @@ export default function UserSettingsPage() {
         </div>
       </header>
       <ScrollArea>
-        <div className="mx-auto w-full max-w-md p-6 grid gap-4">
+        <div className="mx-auto w-full max-w-md p-2 sm:p-6 grid gap-4">
           <Card border shadow="sm" padding="lg">
             <div className="grid gap-8">
               <div>
@@ -228,9 +229,7 @@ export default function UserSettingsPage() {
                         <UserAvatar user={currentUser} size={80} />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} />
-                    </div>
+                    {showAvatarUpload ? <FileUpload value={avatar} onChange={handleAvatarChange} preview={null} /> : <Button variant="outline" onClick={() => setShowAvatarUpload(true)}>{t('common.change')}</Button>}
                   </div>
                 </div>
                 <div>

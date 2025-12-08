@@ -80,7 +80,7 @@ export default function CreateChatView() {
         </Button>
       </header>
       <ScrollArea>
-        <div className="mx-auto w-full max-w-md p-6">
+        <div className="mx-auto w-full max-w-md p-2 sm:p-6">
           <Card border shadow="sm" padding="lg" className="grid gap-6">
             <RadioGroup value={chatType} onChange={setChatType} options={chatTypeOptions} />
             <div>

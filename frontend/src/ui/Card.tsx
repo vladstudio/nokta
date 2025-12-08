@@ -18,9 +18,9 @@ const shadowStyles = {
 
 const paddingStyles = {
   none: '',
-  sm: 'p-2',
-  md: 'p-4',
-  lg: 'p-6',
+  sm: 'p-1',
+  md: 'p-3',
+  lg: 'p-5',
 };
 
 export const Card: React.FC<CardProps> = ({

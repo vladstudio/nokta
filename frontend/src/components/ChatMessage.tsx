@@ -85,7 +85,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
       <img
         src={imageUrl}
         alt={message.content || 'Image'}
-        className="max-w-xs max-h-80 rounded cursor-pointer"
+        className="max-w-xs max-h-80 rounded-sm cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           onMediaClick?.(message.id);
@@ -117,7 +117,7 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
 
     return (
       <div className="flex flex-col gap-2 cursor-pointer" onClick={(e) => { e.stopPropagation(); onMediaClick?.(message.id); }}>
-        <video src={videoUrl} className="max-w-xs max-h-80 rounded pointer-events-none" preload="metadata" />
+        <video src={videoUrl} className="max-w-xs max-h-80 rounded-sm pointer-events-none" preload="metadata" />
         {duration && duration.match(/^\d+:\d{2}$/) && (
           <span className="text-xs text-light">{duration}</span>
         )}
@@ -200,7 +200,8 @@ export default function ChatMessage({ message, isOwn, currentUserId, isSelected,
           )}
         </div>
         <div onClick={(e) => e.stopPropagation()} className={clsx(
-          'msg-content rounded-xl px-4 py-2 max-w-lg min-w-0 wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
+          'msg-content rounded-lg max-w-lg min-w-0 wrap-break-word shadow-(--shadow-xs) border border-(--color-border-default)',
+          (message.type === 'image' || message.type === 'video') ? 'p-2' : 'px-4 py-2',
           isOwn
             ? 'bg-(--color-bg-primary)/30 backdrop-blur-lg'
             : 'bg-(--color-bg-primary)',

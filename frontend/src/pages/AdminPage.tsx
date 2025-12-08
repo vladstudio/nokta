@@ -92,7 +92,7 @@ export default function AdminPage() {
 
   return (
     <ScrollArea>
-      <div className="mx-auto w-full max-w-2xl grid gap-4 p-6">
+      <div className="mx-auto w-full max-w-2xl grid gap-4 p-2 sm:p-6">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setLocation('/chat')}>
             <ArrowLeftIcon size={20} className="text-accent" />
