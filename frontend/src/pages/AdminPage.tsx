@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { users, stats } from '../services/pocketbase';
 import { Button, ScrollArea, Dialog, Input, RadioGroup, useToastManager, Card } from '../ui';
 import type { User } from '../types';
-import { ArrowLeftIcon, PlusIcon, PencilIcon, ProhibitIcon, CheckCircleIcon, DatabaseIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, PlusIcon, PencilIcon, ProhibitIcon, CheckCircleIcon } from "@phosphor-icons/react";
 
 export default function AdminPage() {
   const { t } = useTranslation();
@@ -98,8 +98,10 @@ export default function AdminPage() {
             <ArrowLeftIcon size={20} className="text-accent" />
           </Button>
           <h2 className="font-semibold flex-1">{t('admin.title')}</h2>
+          <Button variant="ghost" href="https://dashboard.daily.co" target="_blank" className="text-accent">
+            Daily.co
+          </Button>
           <Button variant="ghost" href={`${import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090'}/_/`} target="_blank" className="text-accent">
-            <DatabaseIcon size={20} className="text-accent" />
             Pocketbase
           </Button>
         </div>
