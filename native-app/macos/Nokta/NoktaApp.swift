@@ -63,7 +63,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         if !flag {
             NSApp.windows.first?.makeKeyAndOrderFront(nil)
         }
-        return true
+        NSApp.activate(ignoringOtherApps: true)
+        return false
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
