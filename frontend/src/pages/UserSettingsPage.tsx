@@ -10,6 +10,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { ArrowLeftIcon, ShieldCheckIcon, EnvelopeIcon } from '@phosphor-icons/react';
 import type { Theme } from '../hooks/useTheme';
 import type { User } from '../types';
+import { version } from '../../package.json';
 
 const BIRTH_YEAR_RANGE = 100;
 
@@ -261,9 +262,11 @@ export default function UserSettingsPage() {
               </form>
             </Card>
           )}
-          <div className="text-xs mx-auto flex gap-2">
+          <div className="text-xs mx-auto flex gap-2 text-light">
+            <div>v.{version}</div>
+            &middot;
             <a href="https://nokta.chat/" target="_blank" className="link text-light">Nokta.chat</a>
-            <span className="text-light">·</span>
+            &middot;
             <button onClick={() => window.location.reload()} className="link text-light cursor-pointer">{t('common.reload')}</button>
           </div>
 
