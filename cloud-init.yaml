@@ -237,6 +237,7 @@ runcmd:
     # --- Setup Firebase (if configured) ---
     if [ -n "$FIREBASE_SA_BASE64" ]; then
       echo "$FIREBASE_SA_BASE64" | base64 -d > $SECRETS_DIR/firebase-service-account.json
+      chown $APP_USER:$APP_USER $SECRETS_DIR/firebase-service-account.json
       chmod 600 $SECRETS_DIR/firebase-service-account.json
       sudo -u $APP_USER bash -c "cd $APP_DIR/backend && ~/.bun/bin/bun install"
       cat > /etc/systemd/system/nokta-fcm.service << EOF

@@ -48,6 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
+        ProcessInfo.processInfo.disableSuddenTermination()
         UNUserNotificationCenter.current().delegate = self
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
         setupMenuBar()
@@ -60,10 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag {
-            NSApp.windows.first?.makeKeyAndOrderFront(nil)
-        }
-        NSApp.activate(ignoringOtherApps: true)
+        openWindow()
         return false
     }
 
@@ -107,7 +105,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
 
     @objc private func openWindow() {
-        NSApp.windows.first?.makeKeyAndOrderFront(nil)
+        if let window = NSApp.windows.first(where: { $0.contentView != nil }) {
+            window.makeKeyAndOrderFront(nil)
+        }
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -147,15 +147,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         }
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .badge, .sound]
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .badge, .sound])
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        if let chatId = response.notification.request.content.userInfo["chatId"] as? String {
-            NotificationCenter.default.post(name: .navigateToChat, object: chatId)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let chatId = response.notification.request.content.userInfo["chatId"] as? String
+        DispatchQueue.main.async { [weak self] in
+            if let chatId {
+                NotificationCenter.default.post(name: .navigateToChat, object: chatId)
+            }
+            self?.openWindow()
         }
-        openWindow()
+        completionHandler()
     }
 }
 
